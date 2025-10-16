@@ -22,7 +22,7 @@ const IntroVideo = ({ onEnd }: { onEnd: () => void }) => {
         onEnded={handleVideoEnd}
         className="w-full h-full object-cover"
       >
-        <source src="/intro.mp4" type="video/mp4" />
+        <source src="/intro-01.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
     </div>
