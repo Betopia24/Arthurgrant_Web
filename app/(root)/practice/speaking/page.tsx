@@ -1,7 +1,6 @@
-import PracticeHero from "@/components/practice/PracticeHero";
-import ReadingTask from "@/components/practice/ReadingTask";
-import SpeakingTask from "@/components/practice/SpeakingTask";
 import React from "react";
+import PracticeHero from "@/components/practice/PracticeHero";
+import SpeakingTask from "@/components/practice/SpeakingTask";
 
 export default function Page() {
   return (

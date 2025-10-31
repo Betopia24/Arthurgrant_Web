@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, ChevronDown, Menu, X, Globe } from "lucide-react";
+import { ChevronDown, Menu, X, Globe } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useState, useEffect } from "react";

@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import Heading from "../shared/Heading";
 import { BiVolumeFull } from "react-icons/bi";
-import { PiCheckFill } from "react-icons/pi";
 import { FaCheckCircle } from "react-icons/fa";
 import TaskHeader from "../shared/TaskHeader";
 

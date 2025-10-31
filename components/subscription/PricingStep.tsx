@@ -99,12 +99,12 @@ export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
 
             {/* Buttons */}
             {idx === 1 ? (
-              <button className="mt-10 py-2.5 w-full rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer">
+              <button className="mt-12 py-2.5 w-full rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer">
                 Start With {plan.planName} Plan
               </button>
             ) : (
               <>
-                <button className="relative mt-10 py-2.5 w-full rounded-xl bg-gradient-brand h-[44px] cursor-pointer">
+                <button className="relative mt-12 py-2.5 w-full rounded-xl bg-gradient-brand h-[44px] cursor-pointer">
                   <div className="absolute inset-[1px] bg-gradient-to-br from-[#2E2E43] via-[#2C2C41] to-[#27273B] rounded-xl p-2 flex justify-center items-center">
                     <h1 className="text-gradient font-semibold">
                       Start With {plan.planName} Plan

@@ -1,9 +1,9 @@
+import React from "react";
+import Link from "next/link";
 import About from "@/components/landing/About";
 import Heading from "@/components/shared/Heading";
-import { aboutUsInfo } from "@/lib/constants";
 import { Rocket } from "lucide-react";
-import Link from "next/link";
-import React from "react";
+import { aboutUsInfo } from "@/lib/constants";
 
 export default function Page() {
   return (
