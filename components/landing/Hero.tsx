@@ -1,6 +1,6 @@
-import { Play, Rocket, Star, X } from "lucide-react";
-import Image from "next/image";
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
+import { Play, Rocket, Star, X } from "lucide-react";
 import { useLanguageStore } from "@/stores/languageStore";
 
 interface HeroProps {
@@ -181,7 +181,7 @@ const Hero = ({
       >
         {/* Left Part (60%) */}
         <div className="w-full md:w-3/5 flex flex-col items-center md:items-start text-white">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-[80px] font-bold leading-tight md:leading-tight mb-5 sm:mb-6 md:mb-6 text-center md:text-left">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-[80px] font-bold leading-tight md:leading-tight mb-5 sm:mb-6 md:mb-6 text-center md:text-left uppercase">
             Let's Speak&nbsp;
             <span className="text-gradient-minor italic mt-0.5">Energy.</span>
           </h1>

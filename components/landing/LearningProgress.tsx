@@ -1,10 +1,10 @@
 import React from "react";
-import Heading from "../shared/Heading";
-import { FaLock, FaMedal } from "react-icons/fa";
 import Link from "next/link";
-import { activities } from "@/lib/constants";
-import { Check } from "lucide-react";
 import Image from "next/image";
+import Heading from "../shared/Heading";
+import { Check } from "lucide-react";
+import { FaLock, FaMedal } from "react-icons/fa";
+import { activities } from "@/lib/constants";
 
 interface ProgressBarProps {
   label: string;

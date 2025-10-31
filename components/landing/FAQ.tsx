@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Heading from "../shared/Heading";
 import { faq } from "@/lib/constants";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);

@@ -81,9 +81,8 @@ export const plans = [
     features: [
       "Unlimited lessons",
       "Advanced progress analytics",
-      "Full reward library access",
+      "Get Unlimited reward upon activity completion",
       "Priority AI support",
-      "Parent dashboard",
     ],
     buttonText: "Start With Premium Plan",
     highlight: true,
@@ -96,7 +95,6 @@ export const plans = [
       "Up to 5 learner profiles",
       "All Premium features",
       "Family progress reports",
-      "Shared reward library",
       "Priority support",
       "Educational resources",
     ],

@@ -1,4 +1,5 @@
 "use client";
+
 import React from "react";
 import Heading from "../shared/Heading";
 import { FaFire, FaClock, FaChartLine, FaBullseye } from "react-icons/fa";
@@ -38,7 +39,7 @@ const PracticeHero = () => {
             <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-8 border-b-8 border-r-8 border-t-transparent border-b-transparent border-r-gray-900"></div>
 
             <h1 className="text-lg sm:text-xl lg:text-3xl font-semibold mb-2">
-              <span className="text-gradient">Hi Raji!</span> Welcome Back
+              <span className="text-gradient">Hi Raju!</span> Welcome Back
             </h1>
             <p className="text-gray-300 text-sm sm:text-base lg:text-lg">
               I'm Mercury, your AI reading companion. Today we'll practice
