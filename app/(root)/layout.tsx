@@ -11,7 +11,7 @@ export default function Layout({
     <>
       <GoogleTranslateWrapper>
         <Navbar />
-        <main>{children}</main>
+        <main className="!overflow-hidden min-h-screen">{children}</main>
         <Footer />
       </GoogleTranslateWrapper>
     </>
