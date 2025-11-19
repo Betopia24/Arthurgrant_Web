@@ -1,11 +1,38 @@
-'use client'
+"use client";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FaCircleCheck } from "react-icons/fa6";
 import Heading from "../shared/Heading";
 import TaskHeader from "../shared/TaskHeader";
-import { FaCheck, FaHeadphones, FaHeadphones as FaHeadset, FaMicrophone } from "react-icons/fa";
+import { FaCheck, FaHeadphones, FaMicrophone } from "react-icons/fa";
 import { FiRefreshCcw } from "react-icons/fi";
 import { GiSpeaker } from "react-icons/gi";
+
+// Type definitions
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognition extends EventTarget {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  start(): void;
+  stop(): void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: Event) => void) | null;
+  onend: (() => void) | null;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition: {
+      new (): SpeechRecognition;
+    };
+    webkitSpeechRecognition: {
+      new (): SpeechRecognition;
+    };
+  }
+}
 
 /**
  * SpeakingTask
@@ -20,11 +47,28 @@ import { GiSpeaker } from "react-icons/gi";
 const SpeakingTask = () => {
   // Dummy data pools
   const wordsPool = useMemo(
-    () => ["Dog", "Apple", "House", "Car", "Book", "Tree", "River", "Moon", "Chair", "Phone"],
+    () => [
+      "Dog",
+      "Apple",
+      "House",
+      "Car",
+      "Book",
+      "Tree",
+      "River",
+      "Moon",
+      "Chair",
+      "Phone",
+    ],
     []
   );
   const phrasesPool = useMemo(
-    () => ["Good morning", "How are you", "See you later", "Thank you very much", "Have a nice day"],
+    () => [
+      "Good morning",
+      "How are you",
+      "See you later",
+      "Thank you very much",
+      "Have a nice day",
+    ],
     []
   );
   const sentencesPool = useMemo(
@@ -33,7 +77,7 @@ const SpeakingTask = () => {
       "I like to read books every weekend.",
       "She bought a new red bicycle.",
       "They will travel to the city tomorrow.",
-      "He made a delicious chocolate cake."
+      "He made a delicious chocolate cake.",
     ],
     []
   );
@@ -43,14 +87,16 @@ const SpeakingTask = () => {
       ["apple", "banana", "orange", "grape"],
       ["car", "bus", "train", "bike"],
       ["sun", "moon", "star", "cloud"],
-      ["red", "blue", "green", "yellow"]
+      ["red", "blue", "green", "yellow"],
     ],
     []
   );
 
   // Speech Recognition setup (works on Chrome/Edge/Chromium-based)
-  const SpeechRecognition = typeof window !== "undefined" && (window.SpeechRecognition || window.webkitSpeechRecognition);
-  const recognitionRef = useRef(null);
+  const SpeechRecognition =
+    typeof window !== "undefined" &&
+    (window.SpeechRecognition || window.webkitSpeechRecognition);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
     if (SpeechRecognition) {
@@ -60,22 +106,39 @@ const SpeakingTask = () => {
         recognitionRef.current.interimResults = false;
         recognitionRef.current.maxAlternatives = 3;
       } catch (e) {
+        console.warn("Speech recognition initialization failed:", e);
         recognitionRef.current = null;
       }
     } else {
       recognitionRef.current = null;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          // Ignore errors during cleanup
+        }
+      }
+    };
+  }, [SpeechRecognition]);
 
   // Helper: speak text
-  const speakText = (text, options = {}) => {
+  const speakText = (
+    text: string,
+    options: { rate?: number; pitch?: number } = {}
+  ) => {
     try {
+      if (typeof window === "undefined" || !window.speechSynthesis) {
+        console.warn("Speech synthesis not available");
+        return;
+      }
+
       const utter = new SpeechSynthesisUtterance(text);
       if (options.rate) utter.rate = options.rate;
       if (options.pitch) utter.pitch = options.pitch;
-      // pick an available voice if user prefers (default system voice otherwise)
-      // (No need to change voice for now to keep compatibility)
+
       window.speechSynthesis.cancel(); // stop previous if any
       window.speechSynthesis.speak(utter);
     } catch (e) {
@@ -85,25 +148,31 @@ const SpeakingTask = () => {
   };
 
   // Levenshtein distance for similarity
-  const levenshtein = (a = "", b = "") => {
+  const levenshtein = (a: string = "", b: string = ""): number => {
     const A = a.toLowerCase().trim();
     const B = b.toLowerCase().trim();
     if (A === B) return 0;
     const alen = A.length;
     const blen = B.length;
-    const dp = Array.from({ length: alen + 1 }, () => new Array(blen + 1).fill(0));
+    const dp = Array.from({ length: alen + 1 }, () =>
+      new Array(blen + 1).fill(0)
+    );
     for (let i = 0; i <= alen; i++) dp[i][0] = i;
     for (let j = 0; j <= blen; j++) dp[0][j] = j;
     for (let i = 1; i <= alen; i++) {
       for (let j = 1; j <= blen; j++) {
         const cost = A[i - 1] === B[j - 1] ? 0 : 1;
-        dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+        dp[i][j] = Math.min(
+          dp[i - 1][j] + 1,
+          dp[i][j - 1] + 1,
+          dp[i - 1][j - 1] + cost
+        );
       }
     }
     return dp[alen][blen];
   };
 
-  const similarityPercent = (expected, actual) => {
+  const similarityPercent = (expected: string, actual: string): number => {
     const expectedTrim = expected.trim();
     const actualTrim = actual.trim();
     if (!expectedTrim && !actualTrim) return 100;
@@ -114,7 +183,9 @@ const SpeakingTask = () => {
   };
 
   // ---- Task 1: Pronunciation Practice (word)
-  const [task1Word, setTask1Word] = useState(() => wordsPool[Math.floor(Math.random() * wordsPool.length)]);
+  const [task1Word, setTask1Word] = useState(
+    () => wordsPool[Math.floor(Math.random() * wordsPool.length)]
+  );
   const [task1Done, setTask1Done] = useState(false);
   const [task1Listening, setTask1Listening] = useState(false);
 
@@ -125,30 +196,40 @@ const SpeakingTask = () => {
   };
 
   // ---- Task 2: Phrase repeat (phrase + fluency)
-  const [task2Phrase, setTask2Phrase] = useState(() => phrasesPool[Math.floor(Math.random() * phrasesPool.length)]);
-  const [task2Fluency, setTask2Fluency] = useState(null);
+  const [task2Phrase, setTask2Phrase] = useState(
+    () => phrasesPool[Math.floor(Math.random() * phrasesPool.length)]
+  );
+  const [task2Fluency, setTask2Fluency] = useState<number | null>(null);
   const [task2Listening, setTask2Listening] = useState(false);
 
   const task2Refresh = () => {
-    const newPhrase = phrasesPool[Math.floor(Math.random() * phrasesPool.length)];
+    const newPhrase =
+      phrasesPool[Math.floor(Math.random() * phrasesPool.length)];
     setTask2Phrase(newPhrase);
     setTask2Fluency(null);
   };
 
   // ---- Task 3: Sentence repeat (listen/slow, message)
-  const [task3Sentence, setTask3Sentence] = useState(() => sentencesPool[Math.floor(Math.random() * sentencesPool.length)]);
+  const [task3Sentence, setTask3Sentence] = useState(
+    () => sentencesPool[Math.floor(Math.random() * sentencesPool.length)]
+  );
   const [task3Done, setTask3Done] = useState(false);
   const [task3Listening, setTask3Listening] = useState(false);
 
   const task3Refresh = () => {
-    const newSen = sentencesPool[Math.floor(Math.random() * sentencesPool.length)];
+    const newSen =
+      sentencesPool[Math.floor(Math.random() * sentencesPool.length)];
     setTask3Sentence(newSen);
     setTask3Done(false);
   };
 
   // ---- Task 4: Vocabulary challenge (4 words)
-  const [task4Words, setTask4Words] = useState(() => vocabPool[Math.floor(Math.random() * vocabPool.length)]);
-  const [task4Correct, setTask4Correct] = useState(() => new Set());
+  const [task4Words, setTask4Words] = useState(
+    () => vocabPool[Math.floor(Math.random() * vocabPool.length)]
+  );
+  const [task4Correct, setTask4Correct] = useState<Set<string>>(
+    () => new Set()
+  );
   const [task4Listening, setTask4Listening] = useState(false);
 
   const task4Refresh = () => {
@@ -158,7 +239,9 @@ const SpeakingTask = () => {
   };
 
   // Utility: start recognition and return a promise that resolves to transcript or null
-  const startRecognitionOnce = (timeoutMs = 7000) => {
+  const startRecognitionOnce = (
+    timeoutMs: number = 7000
+  ): Promise<string | null> => {
     return new Promise((resolve) => {
       const recognition = recognitionRef.current;
       if (!recognition) {
@@ -167,7 +250,8 @@ const SpeakingTask = () => {
       }
 
       let finished = false;
-      const onResult = (e) => {
+
+      const onResult = (e: SpeechRecognitionEvent) => {
         if (finished) return;
         finished = true;
         try {
@@ -182,7 +266,7 @@ const SpeakingTask = () => {
         }
       };
 
-      const onError = (e) => {
+      const onError = (e: Event) => {
         if (finished) return;
         finished = true;
         cleanup();
@@ -190,7 +274,6 @@ const SpeakingTask = () => {
       };
 
       const onEnd = () => {
-        // ended without result
         if (finished) return;
         finished = true;
         cleanup();
@@ -199,15 +282,17 @@ const SpeakingTask = () => {
 
       const cleanup = () => {
         try {
-          recognition.removeEventListener("result", onResult);
+          recognition.removeEventListener("result", onResult as EventListener);
           recognition.removeEventListener("error", onError);
           recognition.removeEventListener("end", onEnd);
           recognition.stop();
-        } catch (e) {}
+        } catch (e) {
+          // Ignore cleanup errors
+        }
         if (timer) clearTimeout(timer);
       };
 
-      recognition.addEventListener("result", onResult);
+      recognition.addEventListener("result", onResult as EventListener);
       recognition.addEventListener("error", onError);
       recognition.addEventListener("end", onEnd);
 
@@ -218,7 +303,9 @@ const SpeakingTask = () => {
         // sometimes start throws if previously not properly stopped
         try {
           recognition.stop();
-        } catch (e2) {}
+        } catch (e2) {
+          // Ignore stop errors
+        }
         resolve(null);
         return;
       }
@@ -227,20 +314,25 @@ const SpeakingTask = () => {
         if (finished) return;
         finished = true;
         try {
-          recognition.removeEventListener("result", onResult);
+          recognition.removeEventListener("result", onResult as EventListener);
           recognition.removeEventListener("error", onError);
           recognition.removeEventListener("end", onEnd);
           recognition.stop();
-        } catch (e) {}
+        } catch (e) {
+          // Ignore cleanup errors
+        }
         resolve(null);
       }, timeoutMs);
     });
   };
 
   // Fallback: prompt typed input when recognition is not available
-  const typedInputFallback = async (message = "Type what you said:") => {
+  const typedInputFallback = async (
+    message: string = "Type what you said:"
+  ): Promise<string | null> => {
     // use window.prompt for simple fallback
     try {
+      if (typeof window === "undefined") return null;
       const typed = window.prompt(message);
       return typed ? typed.trim() : null;
     } catch (e) {
@@ -255,27 +347,25 @@ const SpeakingTask = () => {
 
   const handleTask1Mic = async () => {
     setTask1Listening(true);
-    let transcript = null;
+    let transcript: string | null = null;
     if (recognitionRef.current) {
       transcript = await startRecognitionOnce(7000);
     } else {
-      transcript = await typedInputFallback("Type the word you said (fallback):");
+      transcript = await typedInputFallback(
+        "Type the word you said (fallback):"
+      );
     }
     setTask1Listening(false);
 
     if (!transcript) {
       // nothing recognized
-      // optionally give a visual feedback; but design shouldn't change
       return;
     }
-    // compare first word recognized to expected word
+
     const recognized = transcript.split(/\s+/)[0] || transcript;
     const sim = similarityPercent(task1Word, recognized);
     if (sim >= 80) {
       setTask1Done(true);
-    } else {
-      // not correct; you could show a small toast — but design mustn't change
-      // do nothing
     }
   };
 
@@ -286,17 +376,18 @@ const SpeakingTask = () => {
 
   const handleTask2Mic = async () => {
     setTask2Listening(true);
-    let transcript = null;
+    let transcript: string | null = null;
     if (recognitionRef.current) {
       transcript = await startRecognitionOnce(9000);
     } else {
-      transcript = await typedInputFallback("Type the phrase you said (fallback):");
+      transcript = await typedInputFallback(
+        "Type the phrase you said (fallback):"
+      );
     }
     setTask2Listening(false);
 
     if (!transcript) return;
     const sim = similarityPercent(task2Phrase, transcript);
-    // set fluency equal to similarity for now
     setTask2Fluency(sim);
   };
 
@@ -311,11 +402,13 @@ const SpeakingTask = () => {
 
   const handleTask3Mic = async () => {
     setTask3Listening(true);
-    let transcript = null;
+    let transcript: string | null = null;
     if (recognitionRef.current) {
       transcript = await startRecognitionOnce(10000);
     } else {
-      transcript = await typedInputFallback("Type the sentence you said (fallback):");
+      transcript = await typedInputFallback(
+        "Type the sentence you said (fallback):"
+      );
     }
     setTask3Listening(false);
     if (!transcript) return;
@@ -326,23 +419,27 @@ const SpeakingTask = () => {
   };
 
   // ---- Handlers for Task 4
-  const handleTask4PlayWord = (word) => {
+  const handleTask4PlayWord = (word: string) => {
     speakText(word);
   };
 
   const handleTask4Mic = async () => {
     setTask4Listening(true);
-    let transcript = null;
+    let transcript: string | null = null;
     if (recognitionRef.current) {
       transcript = await startRecognitionOnce(7000);
     } else {
-      transcript = await typedInputFallback("Type the word you said (fallback):");
+      transcript = await typedInputFallback(
+        "Type the word you said (fallback):"
+      );
     }
     setTask4Listening(false);
     if (!transcript) return;
     const recognized = transcript.split(/\s+/)[0] || transcript;
-    // check against words
-    const foundIndex = task4Words.findIndex((w) => similarityPercent(w, recognized) >= 80);
+
+    const foundIndex = task4Words.findIndex(
+      (w) => similarityPercent(w, recognized) >= 80
+    );
     if (foundIndex >= 0) {
       setTask4Correct((prev) => {
         const copy = new Set(prev);
@@ -353,9 +450,13 @@ const SpeakingTask = () => {
   };
 
   // derived progress for task 4
-  const task4Progress = Math.round((task4Correct.size / task4Words.length) * 100);
+  const task4Progress = Math.round(
+    (task4Correct.size / task4Words.length) * 100
+  );
 
-  // keep design same: conditional render texts where previously static
+  // Check if speech recognition is available for button titles
+  const isSpeechRecognitionAvailable = !!recognitionRef.current;
+
   return (
     <div className="py-20 bg-section-dark">
       <div className="app-container flex flex-col items-start gap-12 w-full">
@@ -370,46 +471,49 @@ const SpeakingTask = () => {
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Task 01 */}
           <div className="w-full bg-[#2D2F4A] text-white p-6 rounded-xl shadow-lg flex flex-col gap-6">
-            <TaskHeader title="Pronunciation Practice" description="Word Level Training" taskNumber={1} />
+            <TaskHeader
+              title="Pronunciation Practice"
+              description="Word Level Training"
+              taskNumber={1}
+            />
 
             {/* Test Holder */}
             <div>
               <div className="bg-[#101231] p-6 rounded-xl flex flex-col items-center justify-center gap-6">
-                <h1 className="text-3xl sm:text-4xl font-semibold">{task1Word}</h1>
+                <h1 className="text-3xl sm:text-4xl font-semibold">
+                  {task1Word}
+                </h1>
                 <p className="px-5 py-2 text-sm rounded-full bg-[#2D2F4A] inline-block">
                   Tap the microphone & say the word clearly
                 </p>
                 <div className="flex items-center justify-center gap-6">
                   <button
                     className="p-3.5 rounded-full bg-[#2D2F4A]"
-                    onClick={() => {
-                      handleTask1Play();
-                    }}
-                    title="Play word"
-                  >
+                    onClick={handleTask1Play}
+                    title="Play word">
                     <FaHeadphones className="w-5 h-5" />
                   </button>
                   <button
                     className="p-3.5 rounded-full bg-gradient-brand"
-                    onClick={() => {
-                      handleTask1Mic();
-                    }}
-                    title={recognitionRef.current ? "Record your voice" : "Fallback input"}
-                  >
+                    onClick={handleTask1Mic}
+                    title={
+                      isSpeechRecognitionAvailable
+                        ? "Record your voice"
+                        : "Fallback input"
+                    }>
                     <FaMicrophone className="w-5 h-5" />
                   </button>
                   <button
                     className="p-3.5 rounded-full bg-[#2D2F4A]"
-                    onClick={() => {
-                      task1Refresh();
-                    }}
-                    title="Get a new word"
-                  >
+                    onClick={task1Refresh}
+                    title="Get a new word">
                     <FiRefreshCcw className="w-5 h-5" />
                   </button>
                 </div>
                 {/* small indicator for listening */}
-                {task1Listening && <div className="text-xs mt-2">Listening...</div>}
+                {task1Listening && (
+                  <div className="text-xs mt-2">Listening...</div>
+                )}
               </div>
 
               <div className="flex items-center justify-center w-full mt-4 px-8 py-4 font-semibold rounded-xl bg-[#464860] cursor-pointer">
@@ -417,7 +521,9 @@ const SpeakingTask = () => {
                   {task1Done ? (
                     <>
                       <FaCheck className="w-4 h-4 p-1 rounded-full bg-gradient-brand text-white" />
-                      <span className="text-gradient">Perfect Go to Next Challenge</span>
+                      <span className="text-gradient">
+                        Perfect Go to Next Challenge
+                      </span>
                     </>
                   ) : (
                     <>
@@ -432,53 +538,64 @@ const SpeakingTask = () => {
 
           {/* Task 02 */}
           <div className="w-full bg-[#2D2F4A] text-white p-6 rounded-xl shadow-lg flex flex-col gap-6">
-            <TaskHeader title="Phrase Repeat" description="Follow Mercury's Lead" taskNumber={2} />
+            <TaskHeader
+              title="Phrase Repeat"
+              description="Follow Mercury's Lead"
+              taskNumber={2}
+            />
 
             {/* Test Holder */}
             <div>
               <div className="bg-[#101231] p-6 rounded-xl flex flex-col items-center justify-center gap-6">
-                <h1 className="text-lg sm:text-xl font-semibold bg-gradient-brand py-2 px-6 rounded-xl">{task2Phrase}</h1>
-                <p className="px-5 py-2 text-sm rounded-full bg-[#2D2F4A] inline-block">Listen first, then repeat after Mercury</p>
+                <h1 className="text-lg sm:text-xl font-semibold bg-gradient-brand py-2 px-6 rounded-xl">
+                  {task2Phrase}
+                </h1>
+                <p className="px-5 py-2 text-sm rounded-full bg-[#2D2F4A] inline-block">
+                  Listen first, then repeat after Mercury
+                </p>
                 <div className="flex items-center justify-center gap-6">
                   <button
                     className="p-3.5 rounded-full bg-[#2D2F4A]"
-                    onClick={() => {
-                      handleTask2Play();
-                    }}
-                    title="Play phrase"
-                  >
+                    onClick={handleTask2Play}
+                    title="Play phrase">
                     <FaHeadphones className="w-5 h-5" />
                   </button>
                   <button
                     className="p-3.5 rounded-full bg-gradient-brand"
-                    onClick={() => {
-                      handleTask2Mic();
-                    }}
-                    title={recognitionRef.current ? "Record your voice" : "Fallback input"}
-                  >
+                    onClick={handleTask2Mic}
+                    title={
+                      isSpeechRecognitionAvailable
+                        ? "Record your voice"
+                        : "Fallback input"
+                    }>
                     <FaMicrophone className="w-5 h-5" />
                   </button>
                   <button
                     className="p-3.5 rounded-full bg-[#2D2F4A]"
-                    onClick={() => {
-                      task2Refresh();
-                    }}
-                    title="New phrase"
-                  >
+                    onClick={task2Refresh}
+                    title="New phrase">
                     <FiRefreshCcw className="w-5 h-5" />
                   </button>
                 </div>
-                {task2Listening && <div className="text-xs mt-2">Listening...</div>}
+                {task2Listening && (
+                  <div className="text-xs mt-2">Listening...</div>
+                )}
               </div>
 
               <div className="flex flex-col items-center justify-center w-full mt-4 px-4 py-2 font-semibold rounded-xl bg-[#464860] cursor-pointer">
                 <div className="flex items-center justify-between text-sm w-full">
-                  <p>Fluency Score</p> <span>{task2Fluency !== null ? `${task2Fluency}%` : "--"}</span>
+                  <p>Fluency Score</p>{" "}
+                  <span>
+                    {task2Fluency !== null ? `${task2Fluency}%` : "--"}
+                  </span>
                 </div>
 
                 {/* Progress bar with gradient */}
                 <div className="w-full mt-2 h-2 bg-gray-500 rounded-full">
-                  <div className="h-full rounded-full bg-gradient-brand" style={{ width: `${task2Fluency ?? 0}%` }} />
+                  <div
+                    className="h-full rounded-full bg-gradient-brand"
+                    style={{ width: `${task2Fluency ?? 0}%` }}
+                  />
                 </div>
               </div>
             </div>
@@ -486,7 +603,11 @@ const SpeakingTask = () => {
 
           {/* Task 03 */}
           <div className="w-full bg-[#2D2F4A] text-white p-6 rounded-xl shadow-lg flex flex-col gap-6">
-            <TaskHeader title="Listen & Speak" description="Sentence Repetition" taskNumber={3} />
+            <TaskHeader
+              title="Listen & Speak"
+              description="Sentence Repetition"
+              taskNumber={3}
+            />
 
             {/* Test Holder */}
             <div>
@@ -496,49 +617,46 @@ const SpeakingTask = () => {
                   <div className="flex items-center gap-2 text-sm">
                     <button
                       className="px-3 py-1 rounded-full bg-[#2D2F4A] flex items-center gap-1"
-                      onClick={() => handleTask3Play()}
-                    >
+                      onClick={handleTask3Play}>
                       <GiSpeaker /> <span>Listen</span>
                     </button>
                     <button
                       className="px-3 py-1 rounded-full bg-[#2D2F4A] flex items-center gap-1"
-                      onClick={() => handleTask3Slow()}
-                    >
+                      onClick={handleTask3Slow}>
                       <span>Slow</span>
                     </button>
                   </div>
                 </div>
-                <p className="px-5 py-2 text-sm rounded-full bg-[#2D2F4A] inline-block">Now repeat the sentence</p>
+                <p className="px-5 py-2 text-sm rounded-full bg-[#2D2F4A] inline-block">
+                  Now repeat the sentence
+                </p>
                 <div className="flex items-center justify-center gap-6">
                   <button
                     className="p-3.5 rounded-full bg-[#2D2F4A]"
-                    onClick={() => {
-                      handleTask3Play();
-                    }}
-                    title="Play sentence"
-                  >
+                    onClick={handleTask3Play}
+                    title="Play sentence">
                     <FaHeadphones className="w-5 h-5" />
                   </button>
                   <button
                     className="p-3.5 rounded-full bg-gradient-brand"
-                    onClick={() => {
-                      handleTask3Mic();
-                    }}
-                    title={recognitionRef.current ? "Record your voice" : "Fallback input"}
-                  >
+                    onClick={handleTask3Mic}
+                    title={
+                      isSpeechRecognitionAvailable
+                        ? "Record your voice"
+                        : "Fallback input"
+                    }>
                     <FaMicrophone className="w-5 h-5" />
                   </button>
                   <button
                     className="p-3.5 rounded-full bg-[#2D2F4A]"
-                    onClick={() => {
-                      task3Refresh();
-                    }}
-                    title="New sentence"
-                  >
+                    onClick={task3Refresh}
+                    title="New sentence">
                     <FiRefreshCcw className="w-5 h-5" />
                   </button>
                 </div>
-                {task3Listening && <div className="text-xs mt-2">Listening...</div>}
+                {task3Listening && (
+                  <div className="text-xs mt-2">Listening...</div>
+                )}
               </div>
 
               <div className="flex items-center justify-start w-full mt-4 px-8 py-4 font-semibold rounded-xl bg-[#464860] cursor-pointer">
@@ -546,7 +664,9 @@ const SpeakingTask = () => {
                   {task3Done ? (
                     <>
                       <FaCheck className="w-4 h-4 p-1 rounded-full bg-gradient-brand text-white" />
-                      <span className="text-gradient">Perfect Great Pronunciation!</span>
+                      <span className="text-gradient">
+                        Perfect Great Pronunciation!
+                      </span>
                     </>
                   ) : (
                     <>
@@ -561,11 +681,17 @@ const SpeakingTask = () => {
 
           {/* Task 04 */}
           <div className="w-full bg-[#2D2F4A] text-white p-6 rounded-xl shadow-lg flex flex-col gap-6">
-            <TaskHeader title="Vucabulary Challenge" description="Daily Word Practice" taskNumber={4} />
+            <TaskHeader
+              title="Vocabulary Challenge"
+              description="Daily Word Practice"
+              taskNumber={4}
+            />
             <div>
               {/* Test Holder */}
               <div className="bg-[#101231] p-6 rounded-xl flex flex-col items-center justify-center gap-6">
-                <p className="px-5 py-2 text-sm rounded-full bg-[#2D2F4A] inline-block">Listen first, then repeat after Mercury</p>
+                <p className="px-5 py-2 text-sm rounded-full bg-[#2D2F4A] inline-block">
+                  Listen first, then repeat after Mercury
+                </p>
 
                 {/* 4 Static Divs */}
                 <div className="w-full grid grid-cols-2 gap-4 mt-4">
@@ -574,11 +700,18 @@ const SpeakingTask = () => {
                     return (
                       <div
                         key={w}
-                        className={`border-2 ${isCorrect ? "border-green-500 text-green-500" : "border-gray-500 text-gray-500"} p-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer`}
+                        className={`border-2 ${
+                          isCorrect
+                            ? "border-green-500 text-green-500"
+                            : "border-gray-500 text-gray-500"
+                        } p-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer`}
                         onClick={() => handleTask4PlayWord(w)}
-                        title="Play this word"
-                      >
-                        {isCorrect ? <FaCheck className="w-5 h-5" /> : <FaMicrophone className="w-5 h-5" />}
+                        title="Play this word">
+                        {isCorrect ? (
+                          <FaCheck className="w-5 h-5" />
+                        ) : (
+                          <FaMicrophone className="w-5 h-5" />
+                        )}
                         <span>{w}</span>
                       </div>
                     );
@@ -589,42 +722,46 @@ const SpeakingTask = () => {
                 <div className="flex items-center justify-center gap-6">
                   <button
                     className="p-3.5 rounded-full bg-gradient-brand"
-                    onClick={() => {
-                      handleTask4Mic();
-                    }}
-                    title={recognitionRef.current ? "Record a word" : "Fallback input"}
-                  >
+                    onClick={handleTask4Mic}
+                    title={
+                      isSpeechRecognitionAvailable
+                        ? "Record a word"
+                        : "Fallback input"
+                    }>
                     <FaMicrophone className="w-5 h-5 text-white" />
                   </button>
                   <button
                     className="p-3.5 rounded-full bg-[#2D2F4A]"
-                    onClick={() => {
-                      task4Refresh();
-                    }}
-                    title="New words"
-                  >
+                    onClick={task4Refresh}
+                    title="New words">
                     <FiRefreshCcw className="w-5 h-5 text-white" />
                   </button>
                 </div>
-                {task4Listening && <div className="text-xs mt-2">Listening...</div>}
+                {task4Listening && (
+                  <div className="text-xs mt-2">Listening...</div>
+                )}
               </div>
 
               {/* Word Target Section */}
               <div className="flex flex-col items-center justify-center w-full mt-4 px-4 py-2 font-semibold rounded-xl bg-[#464860] cursor-pointer">
                 <div className="flex items-center justify-between text-sm w-full">
-                  <p>Word Target</p> <span>{`${task4Correct.size}/${task4Words.length}`}</span>
+                  <p>Word Target</p>{" "}
+                  <span>{`${task4Correct.size}/${task4Words.length}`}</span>
                 </div>
 
                 {/* Progress bar with gradient */}
                 <div className="w-full mt-2 h-2 bg-gray-500 rounded-full">
-                  <div className="h-full rounded-full bg-gradient-brand" style={{ width: `${task4Progress}%` }} />
+                  <div
+                    className="h-full rounded-full bg-gradient-brand"
+                    style={{ width: `${task4Progress}%` }}
+                  />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Complemetion message */}
+        {/* Completion message */}
         <div className="w-full flex items-center justify-center gap-3 border-2 border-green-500 rounded-xl p-6 bg-[#1a2a1a]">
           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-500 text-white">
             <FaCircleCheck className="w-5 h-5 text-white" />
