@@ -35,13 +35,8 @@ declare global {
 }
 
 /**
- * SpeakingTask
- *
- * - Uses speechSynthesis for playback (text-to-speech)
- * - Uses Web Speech API (SpeechRecognition) when available; otherwise falls back to a typed-input modal
- * - All data is dummy and randomizes on refresh
- *
- * Design and classes are intentionally preserved.
+ * Minimal Web Speech API typings to avoid "Cannot find name 'SpeechRecognition'"
+ * in projects that don't include experimental DOM lib definitions.
  */
 
 const SpeakingTask = () => {
@@ -71,7 +66,8 @@ const SpeakingTask = () => {
     ],
     []
   );
-  const sentencesPool = useMemo(
+
+  const sentencesPool = useMemo<string[]>(
     () => [
       "The sun is so hot today.",
       "I like to read books every weekend.",
@@ -81,7 +77,8 @@ const SpeakingTask = () => {
     ],
     []
   );
-  const vocabPool = useMemo(
+
+  const vocabPool = useMemo<string[][]>(
     () => [
       ["cat", "dog", "bird", "fish"],
       ["apple", "banana", "orange", "grape"],
@@ -99,7 +96,7 @@ const SpeakingTask = () => {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
-    if (SpeechRecognition) {
+    if (SpeechRecognitionConstructor) {
       try {
         recognitionRef.current = new SpeechRecognition();
         recognitionRef.current.lang = "en-US";
@@ -109,8 +106,6 @@ const SpeakingTask = () => {
         console.warn("Speech recognition initialization failed:", e);
         recognitionRef.current = null;
       }
-    } else {
-      recognitionRef.current = null;
     }
 
     return () => {
@@ -141,9 +136,8 @@ const SpeakingTask = () => {
 
       window.speechSynthesis.cancel(); // stop previous if any
       window.speechSynthesis.speak(utter);
-    } catch (e) {
-      console.warn("TTS unavailable:", e);
-      // no-op fallback
+    } catch (err) {
+      console.warn("TTS unavailable:", err);
     }
   };
 
@@ -244,26 +238,20 @@ const SpeakingTask = () => {
   ): Promise<string | null> => {
     return new Promise((resolve) => {
       const recognition = recognitionRef.current;
-      if (!recognition) {
-        resolve(null);
-        return;
-      }
+      if (!recognition) return resolve(null);
 
       let finished = false;
 
       const onResult = (e: SpeechRecognitionEvent) => {
         if (finished) return;
         finished = true;
-        try {
-          const transcript = Array.from(e.results)
-            .map((r) => r[0].transcript)
-            .join(" ");
-          cleanup();
-          resolve(transcript);
-        } catch (err) {
-          cleanup();
-          resolve(null);
-        }
+
+        const transcript = Array.from(e.results as any)
+          .map((r: any) => r[0].transcript)
+          .join(" ");
+
+        cleanup();
+        resolve(transcript);
       };
 
       const onError = (e: Event) => {
@@ -296,7 +284,6 @@ const SpeakingTask = () => {
       recognition.addEventListener("error", onError);
       recognition.addEventListener("end", onEnd);
 
-      // start recognizing
       try {
         recognition.start();
       } catch (e) {
@@ -340,12 +327,55 @@ const SpeakingTask = () => {
     }
   };
 
-  // ---- Handlers for Task 1
-  const handleTask1Play = () => {
-    speakText(task1Word);
+  /** ----------------------------
+   *  TASK STATES (Typed)
+   * ---------------------------- */
+  const [task1Word, setTask1Word] = useState<string>(() => wordsPool[Math.random() * wordsPool.length | 0]);
+  const [task1Done, setTask1Done] = useState<boolean>(false);
+  const [task1Listening, setTask1Listening] = useState<boolean>(false);
+
+  const task1Refresh = () => {
+    setTask1Word(wordsPool[Math.floor(Math.random() * wordsPool.length)]);
+    setTask1Done(false);
   };
 
-  const handleTask1Mic = async () => {
+  /** TASK 2 */
+  const [task2Phrase, setTask2Phrase] = useState<string>(() => phrasesPool[Math.random() * phrasesPool.length | 0]);
+  const [task2Fluency, setTask2Fluency] = useState<number | null>(null);
+  const [task2Listening, setTask2Listening] = useState<boolean>(false);
+
+  const task2Refresh = () => {
+    setTask2Phrase(phrasesPool[Math.random() * phrasesPool.length | 0]);
+    setTask2Fluency(null);
+  };
+
+  /** TASK 3 */
+  const [task3Sentence, setTask3Sentence] = useState<string>(() => sentencesPool[Math.random() * sentencesPool.length | 0]);
+  const [task3Done, setTask3Done] = useState<boolean>(false);
+  const [task3Listening, setTask3Listening] = useState<boolean>(false);
+
+  const task3Refresh = () => {
+    setTask3Sentence(sentencesPool[Math.random() * sentencesPool.length | 0]);
+    setTask3Done(false);
+  };
+
+  /** TASK 4 */
+  const [task4Words, setTask4Words] = useState<string[]>(() => vocabPool[Math.random() * vocabPool.length | 0]);
+  const [task4Correct, setTask4Correct] = useState<Set<string>>(new Set());
+  const [task4Listening, setTask4Listening] = useState<boolean>(false);
+
+  const task4Refresh = () => {
+    setTask4Words(vocabPool[Math.random() * vocabPool.length | 0]);
+    setTask4Correct(new Set());
+  };
+
+  /** ----------------------------
+   *  Handlers (All Typed)
+   * ---------------------------- */
+
+  const handleTask1Play = (): void => speakText(task1Word);
+
+  const handleTask1Mic = async (): Promise<void> => {
     setTask1Listening(true);
     let transcript: string | null = null;
     if (recognitionRef.current) {
@@ -356,6 +386,7 @@ const SpeakingTask = () => {
       );
     }
     setTask1Listening(false);
+    if (!transcript) return;
 
     if (!transcript) {
       // nothing recognized
@@ -369,10 +400,7 @@ const SpeakingTask = () => {
     }
   };
 
-  // ---- Handlers for Task 2
-  const handleTask2Play = () => {
-    speakText(task2Phrase);
-  };
+  const handleTask2Play = () => speakText(task2Phrase);
 
   const handleTask2Mic = async () => {
     setTask2Listening(true);
@@ -386,19 +414,17 @@ const SpeakingTask = () => {
     }
     setTask2Listening(false);
 
+    setTask2Listening(false);
     if (!transcript) return;
     const sim = similarityPercent(task2Phrase, transcript);
     setTask2Fluency(sim);
   };
 
-  // ---- Handlers for Task 3
-  const handleTask3Play = () => {
-    speakText(task3Sentence, { rate: 1 });
+    setTask2Fluency(similarityPercent(task2Phrase, transcript));
   };
 
-  const handleTask3Slow = () => {
-    speakText(task3Sentence, { rate: 0.7 });
-  };
+  const handleTask3Play = () => speakText(task3Sentence);
+  const handleTask3Slow = () => speakText(task3Sentence, { rate: 0.7 });
 
   const handleTask3Mic = async () => {
     setTask3Listening(true);
@@ -412,18 +438,15 @@ const SpeakingTask = () => {
     }
     setTask3Listening(false);
     if (!transcript) return;
-    const sim = similarityPercent(task3Sentence, transcript);
-    if (sim >= 75) {
-      setTask3Done(true);
-    }
-  };
 
   // ---- Handlers for Task 4
   const handleTask4PlayWord = (word: string) => {
     speakText(word);
   };
 
-  const handleTask4Mic = async () => {
+  const handleTask4PlayWord = (word: string): void => speakText(word);
+
+  const handleTask4Mic = async (): Promise<void> => {
     setTask4Listening(true);
     let transcript: string | null = null;
     if (recognitionRef.current) {
