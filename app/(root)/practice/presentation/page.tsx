@@ -1,4 +1,4 @@
-import PresentationContent from "@/components/presentation/PresentationContent";
+import PresentationContent from "@/components/practice/presentation/PresentationContent";
 
 export default function PresentationPage() {
   return <PresentationContent />;

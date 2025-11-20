@@ -7,14 +7,14 @@ import React, {
   useCallback,
 } from "react";
 import { FaCircleCheck } from "react-icons/fa6";
-import Heading from "../shared/Heading";
+import PracticeHero from "../PracticeHero2";
+import Heading from "@/components/shared/Heading";
 import { SpeechRecognition, SpeechRecognitionEvent } from "./speakingTypes";
 import TaskCard from "./TaskCard";
 import Task1Content from "./Task1Content";
 import Task2Content from "./Task2Content";
 import Task3Content from "./Task3Content";
 import Task4Content from "./Task4Content";
-import PracticeHero from "../practice/PracticeHero2";
 
 // Speech Recognition setup
 const SpeechRecognitionAPI =
