@@ -7,8 +7,7 @@ import PowerWordsPulse from "./PowerWordsPulse";
 import PrecisionDrill from "./PrecisionDrill";
 import ContextSpin from "./ContextSpin";
 import FlowChain from "./FlowChain";
-import PresentationHero from "./PresentationHero";
-
+import PracticeHero from "../practice/PracticeHero2";
 // Types for API integration
 export interface PresentationTask {
   id: string;
@@ -212,7 +211,20 @@ const PresentationContent = () => {
 
   return (
     <div className="min-h-screen bg-section-dark">
-      <PresentationHero />
+      <PracticeHero
+        heading="Today's Presentation Practice"
+        subheading="Master your delivery with Mercury's AI-powered coaching."
+        specialText="Practice"
+        align="center"
+        greetText="Hi Raju!"
+        streakValue="6"
+        sessionTime="12:34"
+        progressValue="2/4"
+        goalValue="75%"
+        sessionProgressWidth="60%"
+        progressWidth="40%"
+        goalWidth="70%"
+      />
 
       <div className="py-12 lg:py-20">
         <div className="app-container flex flex-col gap-8 lg:gap-12 w-full">

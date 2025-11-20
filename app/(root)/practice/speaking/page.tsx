@@ -1,12 +1,5 @@
-import React from "react";
-import PracticeHero from "@/components/practice/PracticeHero";
-import SpeakingTask from "@/components/practice/SpeakingTask";
+import SpeakingTaskContent from "@/components/speakingtask/SpeakingTaskContent";
 
-export default function Page() {
-  return (
-    <>
-      <PracticeHero />
-      <SpeakingTask />
-    </>
-  );
+export default function SpeakingTaskPage() {
+  return <SpeakingTaskContent />;
 }
