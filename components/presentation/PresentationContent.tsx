@@ -219,7 +219,7 @@ const PresentationContent = () => {
           {/* Header with Progress */}
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <Heading
-              heading="Presentation Skills"
+              heading="Presentation Tasks"
               subheading="Complete each task to improve your presentation skills"
               specialText="Tasks"
               align="left"
