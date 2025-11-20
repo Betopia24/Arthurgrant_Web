@@ -13,9 +13,9 @@ const navLinks = [
   {
     label: "Practice",
     dropdown: [
+      { href: "/practice/writing", label: "Writing Practice" },
       { href: "/practice/reading", label: "Reading Practice" },
       { href: "/practice/speaking", label: "Speaking Practice" },
-      { href: "/practice/writing", label: "Writing Practice" },
       { href: "/practice/presentation", label: "Presentation Practice" },
       { href: "/practice/learn-english", label: "English for Adult Practice" },
     ],
@@ -158,7 +158,7 @@ const Navbar = () => {
 
                   {/* Dropdown Menu */}
                   {isDropdown && hoveredDropdown === link.label && (
-                    <div className="absolute top-[calc(100%+0.5rem)] left-0 w-56 bg-gradient-to-br from-[#28284A] via-[#28284A] to-[#12122A] border border-gray-700 rounded-xl shadow-lg flex flex-col py-2 px-2 z-50">
+                    <div className="absolute top-[calc(100%+0.5rem)] left-0 w-60 bg-gradient-to-br from-[#28284A] via-[#28284A] to-[#12122A] border border-gray-700 rounded-lg shadow-lg flex flex-col px-4 z-50">
                       {link.dropdown.map((item) => {
                         const isItemActive = isDropdownItemActive(item.href);
                         return (
@@ -166,10 +166,10 @@ const Navbar = () => {
                             key={item.href}
                             href={item.href}
                             className={clsx(
-                              "px-3 py-2 text-sm font-semibold tracking-wide rounded-lg transition-colors",
+                              "py-4 text-base font-medium tracking-wide  transition-colors border-b-[1px] border-gray-700 last:border-b-0",
                               isItemActive
-                                ? "text-gradient bg-white/10"
-                                : "text-gray-300 hover:text-white hover:bg-white/10"
+                                ? "text-gradient"
+                                : "text-gray-300 hover:text-white"
                             )}>
                             {item.label}
                           </Link>
