@@ -1,16 +1,16 @@
 "use client";
 
 import React from "react";
-import Heading from "../shared/Heading";
 import AuditoryDiscrimination from "./AuditoryDiscrimination";
 import PhonemeGraphemeMapping from "./PhonemeGraphemeMapping";
 import WordFlash from "./WordFlash";
 import WordPartsWorkshop from "./WordPartsWorkshop";
 import PhraseMaker from "./PhraseMaker";
 import SentenceBuilder from "./SentenceBuilder";
-import CompletePageFooterMessage from "../shared/CompletePageFooterMessage";
 import "./gradient-button.css";
-import PracticeHero from "../practice/PracticeHero2";
+import PracticeHero from "../PracticeHero2";
+import Heading from "@/components/shared/Heading";
+import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMessage";
 
 const LearnEnglishContent = () => {
   return (

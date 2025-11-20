@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Heading from "../shared/Heading";
-import CompletePageFooterMessage from "../shared/CompletePageFooterMessage";
+
 import PowerWordsPulse from "./PowerWordsPulse";
 import PrecisionDrill from "./PrecisionDrill";
 import ContextSpin from "./ContextSpin";
 import FlowChain from "./FlowChain";
-import PracticeHero from "../practice/PracticeHero2";
+import PracticeHero from "../PracticeHero2";
+import Heading from "@/components/shared/Heading";
+import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMessage";
 // Types for API integration
 export interface PresentationTask {
   id: string;

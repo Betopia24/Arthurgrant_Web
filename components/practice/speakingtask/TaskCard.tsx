@@ -1,5 +1,5 @@
+import TaskHeader from "@/components/shared/TaskHeader";
 import React from "react";
-import TaskHeader from "../shared/TaskHeader";
 
 interface TaskCardProps {
   taskNumber: number;
