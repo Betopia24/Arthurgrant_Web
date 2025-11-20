@@ -53,6 +53,7 @@ interface SpeechRecognition extends EventTarget {
   maxAlternatives: number;
   start(): void;
   stop(): void;
+  abort(): void;
   onresult: ((event: SpeechRecognitionEvent) => void) | null;
   onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
   onend: (() => void) | null;
@@ -151,6 +152,7 @@ const SpeakingTask = () => {
     (window.SpeechRecognition || window.webkitSpeechRecognition);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const speechSynthRef = useRef<SpeechSynthesis | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Initialize speech synthesis and recognition
   useEffect(() => {
@@ -181,9 +183,15 @@ const SpeakingTask = () => {
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
+          recognitionRef.current.abort?.();
         } catch (e) {
           // Ignore errors during cleanup
         }
+      }
+
+      // Cleanup abort controller
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
   }, [SpeechRecognition]);
@@ -327,6 +335,8 @@ const SpeakingTask = () => {
         }
 
         let finished = false;
+        abortControllerRef.current = new AbortController();
+        const { signal } = abortControllerRef.current;
 
         const cleanup = () => {
           if (finished) return;
@@ -337,6 +347,7 @@ const SpeakingTask = () => {
             recognition.removeEventListener("error", onError);
             recognition.removeEventListener("end", onEnd);
             recognition.stop();
+            recognition.abort?.();
           } catch (e) {
             // Ignore cleanup errors
           }
@@ -344,13 +355,19 @@ const SpeakingTask = () => {
           if (timer) clearTimeout(timer);
         };
 
+        // Check if aborted
+        if (signal.aborted) {
+          cleanup();
+          resolve(null);
+          return;
+        }
+
         const onResult = (e: Event) => {
-          if (finished) return;
+          if (finished || signal.aborted) return;
           cleanup();
 
           try {
-            // Convert to unknown first, then to SpeechRecognitionEvent
-            const speechEvent = e as unknown as SpeechRecognitionEvent;
+            const speechEvent = e as SpeechRecognitionEvent;
             if (speechEvent.results && speechEvent.results.length > 0) {
               const transcript = speechEvent.results[0][0].transcript;
               resolve(transcript || null);
@@ -358,18 +375,20 @@ const SpeakingTask = () => {
               resolve(null);
             }
           } catch (err) {
+            console.warn("Error processing speech result:", err);
             resolve(null);
           }
         };
 
         const onError = (e: Event) => {
-          if (finished) return;
+          if (finished || signal.aborted) return;
           cleanup();
+          console.warn("Speech recognition error:", e);
           resolve(null);
         };
 
         const onEnd = () => {
-          if (finished) return;
+          if (finished || signal.aborted) return;
           cleanup();
           resolve(null);
         };
@@ -381,15 +400,24 @@ const SpeakingTask = () => {
         try {
           recognition.start();
         } catch (e) {
+          console.warn("Speech recognition start failed:", e);
           cleanup();
           resolve(null);
           return;
         }
 
         const timer = setTimeout(() => {
+          if (!finished && !signal.aborted) {
+            cleanup();
+            resolve(null);
+          }
+        }, timeoutMs);
+
+        // Handle abort signal
+        signal.addEventListener("abort", () => {
           cleanup();
           resolve(null);
-        }, timeoutMs);
+        });
       });
     },
     []
@@ -412,9 +440,11 @@ const SpeakingTask = () => {
   const task1Refresh = useCallback(() => {
     const usedWords = new Set([task1Word]);
     let newWord;
+    let attempts = 0;
     do {
       newWord = wordsPool[Math.floor(Math.random() * wordsPool.length)];
-    } while (usedWords.has(newWord) && usedWords.size < wordsPool.length);
+      attempts++;
+    } while (usedWords.has(newWord) && attempts < wordsPool.length * 2);
 
     setTask1Word(newWord);
     setTask1Done(false);
@@ -424,12 +454,11 @@ const SpeakingTask = () => {
   const task2Refresh = useCallback(() => {
     const usedPhrases = new Set([task2Phrase]);
     let newPhrase;
+    let attempts = 0;
     do {
       newPhrase = phrasesPool[Math.floor(Math.random() * phrasesPool.length)];
-    } while (
-      usedPhrases.has(newPhrase) &&
-      usedPhrases.size < phrasesPool.length
-    );
+      attempts++;
+    } while (usedPhrases.has(newPhrase) && attempts < phrasesPool.length * 2);
 
     setTask2Phrase(newPhrase);
     setTask2Fluency(null);
@@ -439,12 +468,14 @@ const SpeakingTask = () => {
   const task3Refresh = useCallback(() => {
     const usedSentences = new Set([task3Sentence]);
     let newSentence;
+    let attempts = 0;
     do {
       newSentence =
         sentencesPool[Math.floor(Math.random() * sentencesPool.length)];
+      attempts++;
     } while (
       usedSentences.has(newSentence) &&
-      usedSentences.size < sentencesPool.length
+      attempts < sentencesPool.length * 2
     );
 
     setTask3Sentence(newSentence);
@@ -455,12 +486,11 @@ const SpeakingTask = () => {
   const task4Refresh = useCallback(() => {
     const usedSets = new Set([task4Words.join(",")]);
     let newSet;
+    let attempts = 0;
     do {
       newSet = vocabPool[Math.floor(Math.random() * vocabPool.length)];
-    } while (
-      usedSets.has(newSet.join(",")) &&
-      usedSets.size < vocabPool.length
-    );
+      attempts++;
+    } while (usedSets.has(newSet.join(",")) && attempts < vocabPool.length * 2);
 
     setTask4Words(newSet);
     setTask4Correct(new Set());
@@ -468,141 +498,175 @@ const SpeakingTask = () => {
   }, [task4Words, vocabPool]);
 
   // Task handlers
-  const handleTask1Play = () => {
+  const handleTask1Play = useCallback(() => {
     stopSpeaking();
     speakText(task1Word, { rate: 0.8 });
-  };
+  }, [stopSpeaking, speakText, task1Word]);
 
   const handleTask1Mic = async () => {
     setTask1Listening(true);
     stopSpeaking();
 
-    let transcript: string | null = null;
-    if (recognitionRef.current) {
-      transcript = await startRecognitionOnce(5000);
-    } else {
-      transcript = await typedInputFallback(`Type the word "${task1Word}":`);
-    }
+    try {
+      let transcript: string | null = null;
+      if (recognitionRef.current) {
+        transcript = await startRecognitionOnce(5000);
+      } else {
+        transcript = await typedInputFallback(`Type the word "${task1Word}":`);
+      }
 
-    setTask1Listening(false);
-    setTask1Attempts((prev) => prev + 1);
+      setTask1Attempts((prev) => prev + 1);
 
-    if (!transcript) return;
+      if (!transcript) {
+        setTask1Listening(false);
+        return;
+      }
 
-    const recognized = transcript.split(/\s+/)[0] || transcript;
-    const sim = similarityPercent(task1Word, recognized);
+      const recognized = transcript.split(/\s+/)[0] || transcript;
+      const sim = similarityPercent(task1Word, recognized);
 
-    if (sim >= 70) {
-      setTask1Done(true);
-      setCurrentTask((prev) => Math.min(prev + 1, 4));
+      if (sim >= 70) {
+        setTask1Done(true);
+        // Use functional update to avoid stale state
+        setCurrentTask((prev) => Math.min(prev + 1, 4));
+      }
+    } catch (error) {
+      console.error("Task 1 error:", error);
+    } finally {
+      setTask1Listening(false);
     }
   };
 
-  const handleTask2Play = () => {
+  const handleTask2Play = useCallback(() => {
     stopSpeaking();
     speakText(task2Phrase, { rate: 0.9 });
-  };
+  }, [stopSpeaking, speakText, task2Phrase]);
 
   const handleTask2Mic = async () => {
     setTask2Listening(true);
     stopSpeaking();
 
-    let transcript: string | null = null;
-    if (recognitionRef.current) {
-      transcript = await startRecognitionOnce(8000);
-    } else {
-      transcript = await typedInputFallback(
-        `Type the phrase "${task2Phrase}":`
-      );
-    }
+    try {
+      let transcript: string | null = null;
+      if (recognitionRef.current) {
+        transcript = await startRecognitionOnce(8000);
+      } else {
+        transcript = await typedInputFallback(
+          `Type the phrase "${task2Phrase}":`
+        );
+      }
 
-    setTask2Listening(false);
+      if (!transcript) {
+        setTask2Listening(false);
+        return;
+      }
 
-    if (!transcript) return;
+      const sim = similarityPercent(task2Phrase, transcript);
+      setTask2Fluency(sim);
 
-    const sim = similarityPercent(task2Phrase, transcript);
-    setTask2Fluency(sim);
-
-    if (sim >= 65) {
-      setTask2Done(true);
-      setCurrentTask((prev) => Math.min(prev + 1, 4));
+      if (sim >= 65) {
+        setTask2Done(true);
+        setCurrentTask((prev) => Math.min(prev + 1, 4));
+      }
+    } catch (error) {
+      console.error("Task 2 error:", error);
+    } finally {
+      setTask2Listening(false);
     }
   };
 
-  const handleTask3Play = () => {
+  const handleTask3Play = useCallback(() => {
     stopSpeaking();
     speakText(task3Sentence, { rate: 1 });
-  };
+  }, [stopSpeaking, speakText, task3Sentence]);
 
-  const handleTask3Slow = () => {
+  const handleTask3Slow = useCallback(() => {
     stopSpeaking();
     speakText(task3Sentence, { rate: 0.7 });
-  };
+  }, [stopSpeaking, speakText, task3Sentence]);
 
   const handleTask3Mic = async () => {
     setTask3Listening(true);
     stopSpeaking();
 
-    let transcript: string | null = null;
-    if (recognitionRef.current) {
-      transcript = await startRecognitionOnce(10000);
-    } else {
-      transcript = await typedInputFallback(
-        `Type the sentence "${task3Sentence}":`
-      );
-    }
+    try {
+      let transcript: string | null = null;
+      if (recognitionRef.current) {
+        transcript = await startRecognitionOnce(10000);
+      } else {
+        transcript = await typedInputFallback(
+          `Type the sentence "${task3Sentence}":`
+        );
+      }
 
-    setTask3Listening(false);
-    setTask3Attempts((prev) => prev + 1);
+      setTask3Attempts((prev) => prev + 1);
 
-    if (!transcript) return;
+      if (!transcript) {
+        setTask3Listening(false);
+        return;
+      }
 
-    const sim = similarityPercent(task3Sentence, transcript);
-    if (sim >= 60) {
-      setTask3Done(true);
-      setCurrentTask((prev) => Math.min(prev + 1, 4));
+      const sim = similarityPercent(task3Sentence, transcript);
+      if (sim >= 60) {
+        setTask3Done(true);
+        setCurrentTask((prev) => Math.min(prev + 1, 4));
+      }
+    } catch (error) {
+      console.error("Task 3 error:", error);
+    } finally {
+      setTask3Listening(false);
     }
   };
 
-  const handleTask4PlayWord = (word: string) => {
-    stopSpeaking();
-    speakText(word, { rate: 0.8 });
-  };
+  const handleTask4PlayWord = useCallback(
+    (word: string) => {
+      stopSpeaking();
+      speakText(word, { rate: 0.8 });
+    },
+    [stopSpeaking, speakText]
+  );
 
   const handleTask4Mic = async () => {
     setTask4Listening(true);
     stopSpeaking();
 
-    let transcript: string | null = null;
-    if (recognitionRef.current) {
-      transcript = await startRecognitionOnce(6000);
-    } else {
-      transcript = await typedInputFallback(
-        "Type one of the vocabulary words:"
+    try {
+      let transcript: string | null = null;
+      if (recognitionRef.current) {
+        transcript = await startRecognitionOnce(6000);
+      } else {
+        transcript = await typedInputFallback(
+          "Type one of the vocabulary words:"
+        );
+      }
+
+      if (!transcript) {
+        setTask4Listening(false);
+        return;
+      }
+
+      const recognized = transcript.split(/\s+/)[0] || transcript;
+      const foundWord = task4Words.find(
+        (w) => similarityPercent(w, recognized) >= 70
       );
-    }
 
-    setTask4Listening(false);
+      if (foundWord) {
+        setTask4Correct((prev) => {
+          const newCorrect = new Set(prev);
+          newCorrect.add(foundWord.toLowerCase());
 
-    if (!transcript) return;
+          if (newCorrect.size === task4Words.length) {
+            setTask4Done(true);
+            setCurrentTask((prev) => Math.min(prev + 1, 4));
+          }
 
-    const recognized = transcript.split(/\s+/)[0] || transcript;
-    const foundWord = task4Words.find(
-      (w) => similarityPercent(w, recognized) >= 70
-    );
-
-    if (foundWord) {
-      setTask4Correct((prev) => {
-        const newCorrect = new Set(prev);
-        newCorrect.add(foundWord.toLowerCase());
-
-        if (newCorrect.size === task4Words.length) {
-          setTask4Done(true);
-          setCurrentTask((prev) => Math.min(prev + 1, 4));
-        }
-
-        return newCorrect;
-      });
+          return newCorrect;
+        });
+      }
+    } catch (error) {
+      console.error("Task 4 error:", error);
+    } finally {
+      setTask4Listening(false);
     }
   };
 
@@ -660,19 +724,16 @@ const SpeakingTask = () => {
 
                 <div className="flex items-center justify-center gap-4 md:gap-6 flex-wrap">
                   <button
-                    className="p-3 rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200 disabled:opacity-50"
+                    className="p-3 rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     onClick={handleTask1Play}
                     title="Play word"
-                    disabled={isSpeaking}>
-                    {isSpeaking ? (
-                      <FaVolumeMute className="w-4 h-4 md:w-5 md:h-5" />
-                    ) : (
-                      <FaVolumeUp className="w-4 h-4 md:w-5 md:h-5" />
-                    )}
+                    disabled={isSpeaking}
+                    aria-label="Play word audio">
+                    <FaHeadphones className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
 
                   <button
-                    className={`p-3 rounded-full hover:brightness-110 transition-all duration-200 ${
+                    className={`p-3 rounded-full hover:brightness-110 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                       task1Listening
                         ? "bg-red-500 animate-pulse ring-2 ring-red-300"
                         : "bg-gradient-brand hover:shadow-lg"
@@ -683,7 +744,10 @@ const SpeakingTask = () => {
                         ? "Record your voice"
                         : "Type your response"
                     }
-                    disabled={task1Listening || task1Done}>
+                    disabled={task1Listening || task1Done}
+                    aria-label={
+                      task1Listening ? "Listening..." : "Start recording"
+                    }>
                     {task1Listening ? (
                       <FaMicrophoneSlash className="w-4 h-4 md:w-5 md:h-5" />
                     ) : (
@@ -692,9 +756,10 @@ const SpeakingTask = () => {
                   </button>
 
                   <button
-                    className="p-3 rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200"
+                    className="p-3 rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     onClick={task1Refresh}
-                    title="Get a new word">
+                    title="Get a new word"
+                    aria-label="Refresh word">
                     <FiRefreshCcw className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
                 </div>
@@ -718,7 +783,7 @@ const SpeakingTask = () => {
                     <>
                       <FaCheck className="w-4 h-4 p-1 rounded-full bg-gradient-brand text-white" />
                       <span className="text-gradient">
-                        Perfect Go to Next Challenge
+                        Perfect! Go to Next Challenge
                       </span>
                     </>
                   ) : (
@@ -753,19 +818,16 @@ const SpeakingTask = () => {
 
                 <div className="flex items-center justify-center gap-4 md:gap-6 flex-wrap">
                   <button
-                    className="p-3 rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200 disabled:opacity-50"
+                    className="p-3 rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     onClick={handleTask2Play}
                     title="Play phrase"
-                    disabled={isSpeaking}>
-                    {isSpeaking ? (
-                      <FaVolumeMute className="w-4 h-4 md:w-5 md:h-5" />
-                    ) : (
-                      <FaVolumeUp className="w-4 h-4 md:w-5 md:h-5" />
-                    )}
+                    disabled={isSpeaking}
+                    aria-label="Play phrase audio">
+                    <FaHeadphones className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
 
                   <button
-                    className={`p-3 rounded-full transition-all duration-200  hover:brightness-110 ${
+                    className={`p-3 rounded-full transition-all duration-200 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                       task2Listening
                         ? "bg-red-500 animate-pulse ring-2 ring-red-300"
                         : "bg-gradient-brand hover:shadow-lg"
@@ -776,7 +838,10 @@ const SpeakingTask = () => {
                         ? "Record your voice"
                         : "Type your response"
                     }
-                    disabled={task2Listening || task2Done}>
+                    disabled={task2Listening || task2Done}
+                    aria-label={
+                      task2Listening ? "Listening..." : "Start recording"
+                    }>
                     {task2Listening ? (
                       <FaMicrophoneSlash className="w-4 h-4 md:w-5 md:h-5" />
                     ) : (
@@ -785,9 +850,10 @@ const SpeakingTask = () => {
                   </button>
 
                   <button
-                    className="p-3 rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200"
+                    className="p-3 rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     onClick={task2Refresh}
-                    title="New phrase">
+                    title="New phrase"
+                    aria-label="Refresh phrase">
                     <FiRefreshCcw className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
                 </div>
@@ -807,7 +873,12 @@ const SpeakingTask = () => {
                   </span>
                 </div>
 
-                <div className="w-full bg-gray-500 rounded-full h-2">
+                <div
+                  className="w-full bg-gray-500 rounded-full h-2"
+                  role="progressbar"
+                  aria-valuenow={task2Fluency ?? 0}
+                  aria-valuemin={0}
+                  aria-valuemax={100}>
                   <div
                     className="h-full rounded-full bg-gradient-brand transition-all duration-1000 ease-out"
                     style={{ width: `${task2Fluency ?? 0}%` }}
@@ -835,16 +906,18 @@ const SpeakingTask = () => {
 
                   <div className="flex items-center justify-center gap-2 md:gap-3 flex-wrap">
                     <button
-                      className="px-3 py-1.5 text-xs md:text-sm rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200 flex items-center gap-1 disabled:opacity-50"
+                      className="px-3 py-1.5 text-xs md:text-sm rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200 flex items-center gap-1 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       onClick={handleTask3Play}
-                      disabled={isSpeaking}>
+                      disabled={isSpeaking}
+                      aria-label="Listen to sentence">
                       <GiSpeaker className="w-3 h-3 md:w-4 md:h-4" />
                       <span>Listen</span>
                     </button>
                     <button
-                      className="px-3 py-1.5 text-xs md:text-sm rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200 disabled:opacity-50"
+                      className="px-3 py-1.5 text-xs md:text-sm rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       onClick={handleTask3Slow}
-                      disabled={isSpeaking}>
+                      disabled={isSpeaking}
+                      aria-label="Listen to sentence slowly">
                       <span>Slow Speed</span>
                     </button>
                   </div>
@@ -856,15 +929,16 @@ const SpeakingTask = () => {
 
                 <div className="flex items-center justify-center gap-4 md:gap-6 flex-wrap">
                   <button
-                    className="p-3 rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200 disabled:opacity-50"
+                    className="p-3 rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     onClick={handleTask3Play}
                     title="Play sentence"
-                    disabled={isSpeaking}>
+                    disabled={isSpeaking}
+                    aria-label="Play sentence audio">
                     <FaHeadphones className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
 
                   <button
-                    className={`p-3 rounded-full transition-all duration-200  hover:brightness-110 ${
+                    className={`p-3 rounded-full transition-all duration-200 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                       task3Listening
                         ? "bg-red-500 animate-pulse ring-2 ring-red-300"
                         : "bg-gradient-brand hover:shadow-lg"
@@ -875,7 +949,10 @@ const SpeakingTask = () => {
                         ? "Record your voice"
                         : "Type your response"
                     }
-                    disabled={task3Listening || task3Done}>
+                    disabled={task3Listening || task3Done}
+                    aria-label={
+                      task3Listening ? "Listening..." : "Start recording"
+                    }>
                     {task3Listening ? (
                       <FaMicrophoneSlash className="w-4 h-4 md:w-5 md:h-5" />
                     ) : (
@@ -884,9 +961,10 @@ const SpeakingTask = () => {
                   </button>
 
                   <button
-                    className="p-3 rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200"
+                    className="p-3 rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     onClick={task3Refresh}
-                    title="New sentence">
+                    title="New sentence"
+                    aria-label="Refresh sentence">
                     <FiRefreshCcw className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
                 </div>
@@ -910,7 +988,7 @@ const SpeakingTask = () => {
                     <>
                       <FaCheck className="w-4 h-4 p-1 rounded-full bg-gradient-brand text-white" />
                       <span className="text-gradient">
-                        Perfect Great Pronunciation!
+                        Perfect! Great Pronunciation!
                       </span>
                     </>
                   ) : (
@@ -944,15 +1022,17 @@ const SpeakingTask = () => {
                   {task4Words.map((word) => {
                     const isCorrect = task4Correct.has(word.toLowerCase());
                     return (
-                      <div
+                      <button
                         key={word}
-                        className={`p-3 md:p-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 ${
+                        className={`p-3 md:p-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                           isCorrect
                             ? "border-2 border-green-500 bg-green-500/10 text-green-400"
                             : "border-2 border-gray-500 bg-[#2D2F4A] text-gray-300 hover:border-blue-400 hover:text-blue-300"
                         }`}
                         onClick={() => handleTask4PlayWord(word)}
-                        title={`Play "${word}"`}>
+                        title={`Play "${word}"`}
+                        aria-label={`Play pronunciation for ${word}`}
+                        disabled={isSpeaking}>
                         {isCorrect ? (
                           <FaCheck className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
                         ) : (
@@ -961,7 +1041,7 @@ const SpeakingTask = () => {
                         <span className="text-sm md:text-base font-medium text-center">
                           {word}
                         </span>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -969,7 +1049,7 @@ const SpeakingTask = () => {
                 {/* Buttons */}
                 <div className="flex items-center justify-center gap-4 md:gap-6 flex-wrap">
                   <button
-                    className={`p-3 rounded-full transition-all duration-200 hover:brightness-110 ${
+                    className={`p-3 rounded-full transition-all duration-200 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                       task4Listening
                         ? "bg-red-500 animate-pulse ring-2 ring-red-300"
                         : "bg-gradient-brand hover:shadow-lg"
@@ -980,7 +1060,10 @@ const SpeakingTask = () => {
                         ? "Record a word"
                         : "Type a word"
                     }
-                    disabled={task4Listening || task4Done}>
+                    disabled={task4Listening || task4Done}
+                    aria-label={
+                      task4Listening ? "Listening..." : "Start recording"
+                    }>
                     {task4Listening ? (
                       <FaMicrophoneSlash className="w-4 h-4 md:w-5 md:h-5 text-white" />
                     ) : (
@@ -989,9 +1072,10 @@ const SpeakingTask = () => {
                   </button>
 
                   <button
-                    className="p-3 rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200"
+                    className="p-3 rounded-full bg-[#2D2F4A] hover:bg-[#3A3C58] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     onClick={task4Refresh}
-                    title="New words">
+                    title="New words"
+                    aria-label="Refresh vocabulary words">
                     <FiRefreshCcw className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </button>
                 </div>
@@ -1012,7 +1096,12 @@ const SpeakingTask = () => {
                   </span>
                 </div>
 
-                <div className="w-full bg-gray-500 rounded-full h-2">
+                <div
+                  className="w-full bg-gray-500 rounded-full h-2"
+                  role="progressbar"
+                  aria-valuenow={task4Progress}
+                  aria-valuemin={0}
+                  aria-valuemax={100}>
                   <div
                     className="h-full rounded-full bg-gradient-brand transition-all duration-1000 ease-out"
                     style={{ width: `${task4Progress}%` }}
@@ -1024,13 +1113,15 @@ const SpeakingTask = () => {
 
           {/* Completion Message */}
           {allTasksCompleted && (
-            <div className="w-full flex items-center justify-center gap-3 border-2 border-green-500 rounded-xl p-6 bg-[#1a2a1a] animate-fade-in">
+            <div
+              className="w-full flex items-center justify-center gap-3 border-2 border-green-500 rounded-xl p-6 bg-[#1a2a1a] animate-fade-in"
+              role="alert"
+              aria-live="polite">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-500 text-white">
                 <FaCircleCheck className="w-5 h-5 text-white" />
               </div>
               <span className="text-lg text-green-500 font-semibold text-center">
-                "Congratulations Jobair! You've completed all speaking tasks for
-                today!
+                Congratulations! You've completed all speaking tasks for today!
               </span>
             </div>
           )}
