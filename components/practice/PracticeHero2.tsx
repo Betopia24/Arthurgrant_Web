@@ -40,7 +40,7 @@ const PracticeHero = ({
   goalWidth,
 }: PracticeHeroProps) => {
   return (
-    <div className="pt-28 pb-24 sm:pt-36 sm:pb-24 bg-gradient-to-br from-brand-dark via-brand-darker to-brand-darker">
+    <div className="pt-36 pb-16 md:py-44 bg-gradient-to-br from-brand-dark via-brand-darker to-brand-darker">
       <div className="app-container flex flex-col items-center gap-12">
         {/* Heading */}
         <Heading
