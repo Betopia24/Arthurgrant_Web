@@ -275,10 +275,6 @@ const ContextSpin: React.FC<ContextSpinProps> = ({
         <FeedbackScore
           score={feedback.score}
           feedbackText={feedback.feedback}
-          suggestions={feedback.suggestions}
-          pronunciationScore={feedback.pronunciationScore}
-          fluencyScore={feedback.fluencyScore}
-          clarityScore={feedback.clarityScore}
         />
       )}
     </div>

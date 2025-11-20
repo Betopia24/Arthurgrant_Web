@@ -273,10 +273,6 @@ const FlowChain: React.FC<FlowChainProps> = ({
         <FeedbackScore
           score={feedback.score}
           feedbackText={feedback.feedback}
-          suggestions={feedback.suggestions}
-          pronunciationScore={feedback.pronunciationScore}
-          fluencyScore={feedback.fluencyScore}
-          clarityScore={feedback.clarityScore}
         />
       )}
     </div>
