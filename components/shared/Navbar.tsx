@@ -11,14 +11,13 @@ import { useLanguageStore, languages } from "@/stores/languageStore";
 const navLinks = [
   { href: "/", label: "Home" },
   {
-    href: "/practice",
     label: "Practice",
     dropdown: [
-      { href: "/practice/speaking", label: "Speaking" },
-      { href: "/practice/listening", label: "Listening" },
-      { href: "/practice/writing", label: "Writing" },
-      { href: "/practice/presentation", label: "Presentation" },
-      { href: "/practice/learn-english", label: "Learn English With Us" },
+      { href: "/practice/reading", label: "Reading Practice" },
+      { href: "/practice/speaking", label: "Speaking Practice" },
+      { href: "/practice/writing", label: "Writing Practice" },
+      { href: "/practice/presentation", label: "Presentation Practice" },
+      { href: "/practice/learn-english", label: "English for Adult Practice" },
     ],
   },
   { href: "/progress", label: "Progress" },
@@ -76,6 +75,22 @@ const Navbar = () => {
     setHoveredDropdown(null);
   };
 
+  // Check if a link or its dropdown items are active
+  const isLinkActive = (link: (typeof navLinks)[0]) => {
+    if (link.href && pathname === link.href) {
+      return true;
+    }
+    if (link.dropdown) {
+      return link.dropdown.some((item) => pathname === item.href);
+    }
+    return false;
+  };
+
+  // Check if a dropdown item is active
+  const isDropdownItemActive = (href: string) => {
+    return pathname === href;
+  };
+
   return (
     <>
       {/* Desktop + Mobile Navbar */}
@@ -97,54 +112,69 @@ const Navbar = () => {
           <nav className="hidden md:flex gap-8 relative">
             {navLinks.map((link) => {
               const isDropdown = !!link.dropdown;
-              const isActive = pathname === link.href;
+              const isActive = isLinkActive(link);
 
               return (
                 <div
-                  key={link.href}
+                  key={link.href || link.label}
                   className="relative"
                   onMouseEnter={() =>
-                    isDropdown ? setHoveredDropdown(link.href) : null
+                    isDropdown ? setHoveredDropdown(link.label) : null
                   }
                   onMouseLeave={() =>
                     isDropdown ? setHoveredDropdown(null) : null
-                  }
-                >
-                  <Link
-                    href={link.href}
-                    className={clsx(
-                      "flex items-center gap-1 text-base md:text-lg font-semibold transition-colors hover:text-white",
-                      isActive ? "text-gradient" : "text-gray-300"
-                    )}
-                  >
-                    {link.label}
-                    {isDropdown && (
+                  }>
+                  {isDropdown ? (
+                    // For dropdown items, use button or span instead of Link
+                    <button
+                      className={clsx(
+                        "flex items-center gap-1 text-base md:text-lg font-semibold transition-colors hover:text-white",
+                        isActive ? "text-gradient" : "text-gray-300"
+                      )}>
+                      {link.label}
                       <ChevronDown
                         className={clsx(
                           "w-6 h-6 font-bold transition-transform",
-                          hoveredDropdown === link.href ? "rotate-180" : ""
+                          hoveredDropdown === link.label ? "rotate-180" : ""
                         )}
                       />
-                    )}
-                  </Link>
+                    </button>
+                  ) : (
+                    // For regular links, use Link component
+                    <Link
+                      href={link.href!}
+                      className={clsx(
+                        "flex items-center gap-1 text-base md:text-lg font-semibold transition-colors hover:text-white",
+                        isActive ? "text-gradient" : "text-gray-300"
+                      )}>
+                      {link.label}
+                    </Link>
+                  )}
 
                   {/* Invisible buffer to avoid flicker */}
-                  {isDropdown && hoveredDropdown === link.href && (
+                  {isDropdown && hoveredDropdown === link.label && (
                     <div className="absolute left-0 top-full w-full h-3 bg-transparent"></div>
                   )}
 
                   {/* Dropdown Menu */}
-                  {isDropdown && hoveredDropdown === link.href && (
+                  {isDropdown && hoveredDropdown === link.label && (
                     <div className="absolute top-[calc(100%+0.5rem)] left-0 w-56 bg-gradient-to-br from-[#28284A] via-[#28284A] to-[#12122A] border border-gray-700 rounded-xl shadow-lg flex flex-col py-2 px-2 z-50">
-                      {link.dropdown.map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className="px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 text-sm font-semibold tracking-wide rounded-lg"
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
+                      {link.dropdown.map((item) => {
+                        const isItemActive = isDropdownItemActive(item.href);
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={clsx(
+                              "px-3 py-2 text-sm font-semibold tracking-wide rounded-lg transition-colors",
+                              isItemActive
+                                ? "text-gradient bg-white/10"
+                                : "text-gray-300 hover:text-white hover:bg-white/10"
+                            )}>
+                            {item.label}
+                          </Link>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -172,8 +202,7 @@ const Navbar = () => {
               <>
                 <Link
                   href="/signin"
-                  className="text-gray-300 text-base md:text-lg font-semibold hover:text-white"
-                >
+                  className="text-gray-300 text-base md:text-lg font-semibold hover:text-white">
                   Login
                 </Link>
 
@@ -181,8 +210,7 @@ const Navbar = () => {
                 <div
                   className="relative"
                   onMouseEnter={() => setHoveredDropdown("language")}
-                  onMouseLeave={() => setHoveredDropdown(null)}
-                >
+                  onMouseLeave={() => setHoveredDropdown(null)}>
                   <button className="relative inline-flex items-center gap-2 px-5 py-3 text-base md:text-lg font-semibold text-white bg-transparent rounded-2xl">
                     <Globe className="w-5 h-5 z-10" />
                     <span className="z-10">
@@ -222,8 +250,7 @@ const Navbar = () => {
                         <button
                           key={language.code}
                           onClick={() => handleLanguageSelect(language.code)}
-                          className="flex items-center justify-between px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 text-sm font-semibold tracking-wide rounded-lg text-left"
-                        >
+                          className="flex items-center justify-between px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 text-sm font-semibold tracking-wide rounded-lg text-left">
                           <div>
                             <div className="font-semibold">{language.name}</div>
                             <div className="text-xs text-gray-400">
@@ -246,8 +273,7 @@ const Navbar = () => {
           <button
             className="md:hidden text-white"
             onClick={() => setSidebarOpen(true)}
-            aria-label="Open Menu"
-          >
+            aria-label="Open Menu">
             <Menu className="w-6 h-6" />
           </button>
         </div>
@@ -257,8 +283,7 @@ const Navbar = () => {
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 transition-opacity"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
+          onClick={() => setSidebarOpen(false)}></div>
       )}
 
       {/* Mobile Sidebar Panel */}
@@ -266,8 +291,7 @@ const Navbar = () => {
         className={clsx(
           "fixed top-0 right-0 h-full z-50 w-4/5 max-w-xs bg-gradient-to-br from-brand-dark to-brand-darker transform transition-transform duration-300 overflow-y-auto",
           sidebarOpen ? "translate-x-0" : "translate-x-full"
-        )}
-      >
+        )}>
         <div className="flex flex-col min-h-full p-6">
           {/* Top: Branding + Close */}
           <div className="flex items-center justify-between mb-8">
@@ -284,8 +308,7 @@ const Navbar = () => {
             <button
               onClick={() => setSidebarOpen(false)}
               className="text-white"
-              aria-label="Close Menu"
-            >
+              aria-label="Close Menu">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -294,18 +317,17 @@ const Navbar = () => {
           <nav className="flex flex-col gap-1 mb-8">
             {navLinks.map((link) => {
               const isDropdown = !!link.dropdown;
-              const isActive = pathname === link.href;
+              const isActive = isLinkActive(link);
 
               if (isDropdown) {
                 return (
-                  <div key={link.href} className="flex flex-col">
+                  <div key={link.label} className="flex flex-col">
                     <button
                       className={clsx(
                         "flex justify-between items-center text-lg font-semibold text-gray-300 hover:text-white py-2 transition-colors",
                         isActive && "text-gradient"
                       )}
-                      onClick={() => setMobileDropdownOpen((prev) => !prev)}
-                    >
+                      onClick={() => setMobileDropdownOpen((prev) => !prev)}>
                       {link.label}
                       <ChevronDown
                         className={clsx(
@@ -322,22 +344,28 @@ const Navbar = () => {
                         mobileDropdownOpen
                           ? "max-h-60 opacity-100"
                           : "max-h-0 opacity-0"
-                      )}
-                    >
+                      )}>
                       <div className="flex flex-col pl-4 mt-1 border-l-2 border-gray-700">
-                        {link.dropdown.map((item) => (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            className="py-2 text-gray-300 hover:text-white text-base font-semibold tracking-wide"
-                            onClick={() => {
-                              setSidebarOpen(false);
-                              setMobileDropdownOpen(false);
-                            }}
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
+                        {link.dropdown.map((item) => {
+                          const isItemActive = isDropdownItemActive(item.href);
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className={clsx(
+                                "py-2 text-base font-semibold tracking-wide transition-colors",
+                                isItemActive
+                                  ? "text-gradient"
+                                  : "text-gray-300 hover:text-white"
+                              )}
+                              onClick={() => {
+                                setSidebarOpen(false);
+                                setMobileDropdownOpen(false);
+                              }}>
+                              {item.label}
+                            </Link>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
@@ -347,13 +375,12 @@ const Navbar = () => {
               return (
                 <Link
                   key={link.href}
-                  href={link.href}
+                  href={link.href!}
                   className={clsx(
                     "text-lg font-semibold hover:text-white py-2 transition-colors",
-                    pathname === link.href ? "text-gradient" : "text-gray-300"
+                    isActive ? "text-gradient" : "text-gray-300"
                   )}
-                  onClick={() => setSidebarOpen(false)}
-                >
+                  onClick={() => setSidebarOpen(false)}>
                   {link.label}
                 </Link>
               );
@@ -378,8 +405,7 @@ const Navbar = () => {
                     preferredLang === language.code
                       ? "bg-white/10 text-white border-blue-500"
                       : "text-gray-300 border-gray-600 hover:bg-white/5 hover:text-white"
-                  )}
-                >
+                  )}>
                   <div className="font-semibold">{language.name}</div>
                   <div className="text-xs text-gray-400">
                     {language.nativeName}
@@ -395,8 +421,7 @@ const Navbar = () => {
               <Link
                 href="/profile"
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/10 transition"
-                onClick={() => setSidebarOpen(false)}
-              >
+                onClick={() => setSidebarOpen(false)}>
                 <div className="relative w-10 h-10">
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to p-0.5">
                     <div className="bg-black rounded-full w-full h-full overflow-hidden">
@@ -420,8 +445,7 @@ const Navbar = () => {
                 <Link
                   href="/signin"
                   className="text-gray-300 text-lg font-semibold hover:text-white text-center py-2"
-                  onClick={() => setSidebarOpen(false)}
-                >
+                  onClick={() => setSidebarOpen(false)}>
                   Login
                 </Link>
               </>
