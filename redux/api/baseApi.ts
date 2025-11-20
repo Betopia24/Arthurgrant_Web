@@ -7,10 +7,10 @@ import {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query";
 import { RootState } from "../store";
-import {  setUser } from "../features/auth/authSlice";
+import { setUser } from "../features/auth/authSlice";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+  baseUrl: process.env.NEXT_PUBLIC_BACKEND_API,
   credentials: "include",
   prepareHeaders: (headers, { getState }) => {
     const access_token = (getState() as RootState).auth.access_token;
