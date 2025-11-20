@@ -10,6 +10,7 @@ import WordPartsWorkshop from "./WordPartsWorkshop";
 import PhraseMaker from "./PhraseMaker";
 import SentenceBuilder from "./SentenceBuilder";
 import CompletePageFooterMessage from "../shared/CompletePageFooterMessage";
+import "./gradient-button.css";
 
 const LearnEnglishContent = () => {
   return (
