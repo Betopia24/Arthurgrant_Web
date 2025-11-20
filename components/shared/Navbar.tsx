@@ -169,7 +169,7 @@ const Navbar = () => {
 
                   {/* Dropdown Menu */}
                   {isDropdown && hoveredDropdown === link.label && (
-                    <div className="absolute top-[calc(100%+0.5rem)] left-0 w-60 bg-gradient-to-br from-[#28284A] via-[#28284A] to-[#12122A] border border-gray-700 rounded-lg shadow-lg flex flex-col px-4 z-50">
+                    <div className="absolute top-[calc(100%+0.5rem)] left-0 w-56 lg:w-60 bg-gradient-to-br from-[#28284A] via-[#28284A] to-[#12122A] border border-gray-700 rounded-lg shadow-lg flex flex-col px-4 z-50">
                       {link.dropdown.map((item) => {
                         const isItemActive = isDropdownItemActive(item.href);
                         return (
@@ -177,7 +177,7 @@ const Navbar = () => {
                             key={item.href}
                             href={item.href}
                             className={clsx(
-                              "py-4 text-base font-medium tracking-wide  transition-colors border-b-[1px] border-gray-700 last:border-b-0",
+                              "py-3 lg:py-4 text-sm lg:text-base font-medium tracking-wide transition-colors border-b-[1px] border-gray-700 last:border-b-0",
                               isItemActive
                                 ? "text-gradient"
                                 : "text-gray-300 hover:text-white"
