@@ -1,33 +1,34 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { BiVolumeFull } from "react-icons/bi";
-import { FaCheckCircle } from "react-icons/fa";
-
+import { FaCheckCircle, FaArrowRight } from "react-icons/fa";
 import { useAuthStore } from "@/stores/authStore";
 import TaskHeader from "@/components/shared/TaskHeader";
 
+interface TaskResult {
+  isAnswer: boolean;
+  mark: number;
+}
+
 interface Task1Props {
-  taskResult: boolean | null;
-  onTaskComplete: (passed: boolean) => void;
+  taskResult: TaskResult | null;
+  onTaskComplete: (result: TaskResult | null) => void;
 }
 
 const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
   const { user, accessToken } = useAuthStore();
   const [letters, setLetters] = useState<string[]>([]);
   const [targetWord, setTargetWord] = useState<string>("");
-  const [task1Loading, setTask1Loading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [assembledWord, setAssembledWord] = useState("");
+  const [showResult, setShowResult] = useState(false);
 
   useEffect(() => {
     const fetchFlashcards = async () => {
-      setTask1Loading(true);
+      setIsLoading(true);
       try {
         const res = await fetch(
-          `${
-            process.env.NEXT_PUBLIC_AI_API
-          }phoneme_flashcards/generate_phoneme_flashcards?age=${
-            user?.age.split(" ")[0]
-          }`,
+          `${process.env.NEXT_PUBLIC_AI_API}/reading/phoneme-flashcards/generate_phoneme_flashcards?age=${user?.age.split(" ")[0]}`,
           {
             method: "GET",
             headers: {
@@ -45,7 +46,7 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
       } catch (error) {
         console.error("Failed to load phoneme flashcards", error);
       } finally {
-        setTask1Loading(false);
+        setIsLoading(false);
       }
     };
     if (user?.age && accessToken) {
@@ -54,6 +55,8 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
   }, [user?.age, accessToken]);
 
   const handlePlayLetter = (letter: string) => {
+    if (taskResult !== null) return;
+
     const utterance = new SpeechSynthesisUtterance(letter);
     utterance.lang = "en-US";
     utterance.pitch = 1;
@@ -62,14 +65,22 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
     setAssembledWord((prev) => prev + letter);
   };
 
-  const handleResetTask1 = () => {
+  const handleReset = () => {
     setAssembledWord("");
-    onTaskComplete(null as any);
+    setShowResult(false);
   };
 
-  const handleCheckTask1 = () => {
+  const handleNext = () => {
     const isCorrect = assembledWord.toUpperCase() === targetWord.toUpperCase();
-    onTaskComplete(isCorrect);
+    
+    // Task 1: Either 100 or 0
+    const result: TaskResult = {
+      isAnswer: true,
+      mark: isCorrect ? 100 : 0,
+    };
+    
+    setShowResult(true);
+    onTaskComplete(result);
   };
 
   return (
@@ -79,7 +90,8 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
         description="Click the cards to hear the sound"
         taskNumber={1}
       />
-      {task1Loading ? (
+
+      {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <p className="text-gray-400 text-lg">Loading flashcards...</p>
         </div>
@@ -107,6 +119,7 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
               );
             })}
           </div>
+
           <div className="bg-[#363851] p-8 rounded-xl flex flex-col items-center justify-center gap-4 w-full">
             <h2 className="text-white font-semibold text-lg">
               Now spell the word:{" "}
@@ -121,56 +134,47 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
                 <span className="text-gray-500">_</span>
               )}
             </div>
-            {taskResult === null && (
+
+            {!showResult && taskResult === null && (
               <div className="flex gap-4">
                 <button
-                  onClick={handleResetTask1}
+                  onClick={handleReset}
                   className="px-8 py-2 font-semibold rounded-xl bg-[#33354F] border-2 border-gray-600 cursor-pointer hover:bg-[#3a3c55] transition-colors"
                 >
                   Reset
                 </button>
                 <button
-                  onClick={handleCheckTask1}
+                  onClick={handleNext}
                   disabled={assembledWord.length === 0}
-                  className={`px-8 py-2 font-semibold rounded-xl bg-[#33354F] border-2 border-blue-500 cursor-pointer hover:bg-[#3a3c55] transition-colors ${
+                  className={`flex items-center gap-2 px-8 py-2 font-semibold rounded-xl bg-gradient-to-r from-yellow-400 to-pink-500 text-white cursor-pointer hover:opacity-90 transition-opacity ${
                     assembledWord.length === 0
                       ? "opacity-50 cursor-not-allowed"
                       : ""
                   }`}
                 >
-                  Check Answer
+                  Next <FaArrowRight className="w-4 h-4" />
                 </button>
               </div>
             )}
-            {taskResult === true && (
+
+            {showResult && taskResult && taskResult.mark === 100 && (
               <div className="flex flex-col items-center gap-4">
                 <div className="flex items-center gap-3 bg-green-500/20 border-2 border-green-500 rounded-xl px-6 py-3">
                   <FaCheckCircle className="w-6 h-6 text-green-500" />
                   <span className="text-green-500 font-semibold text-lg">
-                    Perfect! Correct Answer! Move to next task.
+                    Perfect! Correct Answer! (100/100)
                   </span>
                 </div>
-                <button
-                  onClick={handleResetTask1}
-                  className="px-8 py-2 font-semibold rounded-xl text-gradient bg-[#33354F] border-2 border-gray-600 cursor-pointer hover:bg-[#3a3c55] transition-colors"
-                >
-                  Try Again
-                </button>
               </div>
             )}
-            {taskResult === false && (
+
+            {showResult && taskResult && taskResult.mark === 0 && (
               <div className="flex flex-col items-center gap-4">
-                <div className="flex items-center gap-3 bg-red-500/20 border-2 border-red-500 rounded-xl px-6 py-3">
-                  <span className="text-red-500 font-semibold text-lg">
-                    Wrong! Try again
+                <div className="flex items-center gap-3 bg-yellow-500/20 border-2 border-yellow-500 rounded-xl px-6 py-3">
+                  <span className="text-yellow-500 font-semibold text-lg">
+                    The correct word was: {targetWord} (0/100)
                   </span>
                 </div>
-                <button
-                  onClick={handleResetTask1}
-                  className="px-8 py-2 font-semibold rounded-xl bg-[#33354F] border-2 border-gray-600 cursor-pointer hover:bg-[#3a3c55] transition-colors"
-                >
-                  Try Again
-                </button>
               </div>
             )}
           </div>
