@@ -11,6 +11,7 @@ import Heading from "@/components/shared/Heading";
 import "./gradient-button.css";
 import { aiRequest } from "@/lib/aiRequest";
 import TaskLoadingLockError from "../TaskLoadingLock";
+import { useAppSelector } from "@/redux/hooks";
 
 type ScenariosTypes = {
   slow: string[];
@@ -37,6 +38,9 @@ type ErrorState = {
 };
 
 const PresentationContent = () => {
+  const { task_1, task_2, task_3, task_4 } = useAppSelector(
+    (state) => state.presentation
+  );
   const [powerWords, setPowerWords] = useState<string[]>([]);
   const [scenarios, setScenarios] = useState<ScenariosTypes | null>(null);
   const [contextData, setContextData] = useState<ContextDataType | null>(null);

@@ -1,6 +1,7 @@
 import Footer from "@/components/landing/Footer";
 import Navbar from "@/components/shared/Navbar";
 import GoogleTranslateWrapper from "@/components/shared/GoogleTranslateWrapper";
+import ReduxStoreProvider from "@/redux/ReduxStoreProvider";
 
 export default function Layout({
   children,
@@ -8,12 +9,12 @@ export default function Layout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
+    <ReduxStoreProvider>
       <GoogleTranslateWrapper>
         <Navbar />
         <main className="!overflow-hidden min-h-screen">{children}</main>
         <Footer />
       </GoogleTranslateWrapper>
-    </>
+    </ReduxStoreProvider>
   );
 }

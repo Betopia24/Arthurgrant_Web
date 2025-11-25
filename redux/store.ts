@@ -14,6 +14,7 @@ import {
   REHYDRATE,
 } from "redux-persist";
 import authReducer from "./features/auth/authSlice";
+import presentationReducer from "./features/presentation/presentationSlice";
 import { baseApi } from "./api/baseApi";
 
 // ✅ Fix SSR localStorage (for Next.js)
@@ -50,12 +51,17 @@ const persistMorphConfig = {
 
 // ✅ Wrap reducers
 const persistedAuthReducer = persistReducer(persistAuthConfig, authReducer);
+const persistedPresentationReducer = persistReducer(
+  persistAuthConfig,
+  presentationReducer
+);
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
       [baseApi.reducerPath]: baseApi.reducer,
       auth: persistedAuthReducer,
+      presentation: persistedPresentationReducer,
     },
     middleware: (getDefaultMiddlewares) =>
       getDefaultMiddlewares({

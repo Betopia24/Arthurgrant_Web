@@ -23,7 +23,7 @@ const TaskLoadingLockError: React.FC<CommonCardProps> = ({
   children,
 }) => {
   const baseClasses =
-    "p-6 bg-[#FFFFFF1F] border rounded-2xl flex flex-col gap-4 w-full transition-all";
+    "p-6 bg-[#FFFFFF1F] border rounded-2xl min-h-52 flex flex-col items-center justify-center gap-4 w-full transition-all";
 
   const variantClasses = {
     locked: "cursor-not-allowed opacity-60 border-white/15",
