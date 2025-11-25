@@ -4,6 +4,8 @@ import { BiVolumeFull } from "react-icons/bi";
 import { FaCheckCircle, FaArrowRight } from "react-icons/fa";
 import { useAuthStore } from "@/stores/authStore";
 import TaskHeader from "@/components/shared/TaskHeader";
+import toast from "react-hot-toast";
+import { AnyCnameRecord } from "dns";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -28,7 +30,11 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
       setIsLoading(true);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_AI_API}/reading/phoneme-flashcards/generate_phoneme_flashcards?age=${user?.age.split(" ")[0]}`,
+          `${
+            process.env.NEXT_PUBLIC_AI_API
+          }/reading/phoneme-flashcards/generate_phoneme_flashcards?age=${
+            user?.age.split("-")[0]
+          }`,
           {
             method: "GET",
             headers: {
@@ -43,8 +49,10 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
         );
         setLetters(shuffledLetters);
         setTargetWord(data.word || "");
-      } catch (error) {
-        console.error("Failed to load phoneme flashcards", error);
+      } catch (error: any) {
+        toast.error(
+          error?.data?.errorMessages?.[0]?.message || error?.data?.message
+        );
       } finally {
         setIsLoading(false);
       }
@@ -72,13 +80,13 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
 
   const handleNext = () => {
     const isCorrect = assembledWord.toUpperCase() === targetWord.toUpperCase();
-    
+
     // Task 1: Either 100 or 0
     const result: TaskResult = {
       isAnswer: true,
       mark: isCorrect ? 100 : 0,
     };
-    
+
     setShowResult(true);
     onTaskComplete(result);
   };

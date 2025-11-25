@@ -1,13 +1,14 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
-import { FaCheckCircle } from "react-icons/fa";
 import { useAuthStore } from "@/stores/authStore";
+import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { FaCheckCircle } from "react-icons/fa";
 import Heading from "../shared/Heading";
 import PracticeHero from "./PracticeHero2";
-import Task1PhonemeFlashcards from "./Reading/TaskOne";
-import Task2SightWordPractice from "./Reading/TaskTwo";
-import Task3DragMatch from "./Reading/TaskThree";
 import Task4ReadingComprehension from "./Reading/TaskFour";
+import Task1PhonemeFlashcards from "./Reading/TaskOne";
+import Task3DragMatch from "./Reading/TaskThree";
+import Task2SightWordPractice from "./Reading/TaskTwo";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -120,10 +121,6 @@ const ReadingTask = () => {
 
   // Handle final submission
   const handleSubmitAllAnswers = async () => {
-    console.log("Submit button clicked!");
-    console.log("Current task results:", taskResults);
-    console.log("Current task completed:", taskCompleted);
-
     setIsSubmitting(true);
 
     // Calculate final time spent
@@ -135,54 +132,51 @@ const ReadingTask = () => {
     const submissionData = {
       tasks: [
         {
-          taskName: "Task 1",
-          isanswer: taskResults.task1?.isAnswer || false,
-          mark: taskResults.task1?.mark || 0,
+          taskName: "Phoneme Flashcards",
+          isAnswer: taskResults.task1?.isAnswer || false,
+          marks: taskResults.task1?.mark || 0,
         },
         {
-          taskName: "Task 2",
-          isanswer: taskResults.task2?.isAnswer || false,
-          mark: taskResults.task2?.mark || 0,
+          taskName: "Sight Word Practice",
+          isAnswer: taskResults.task2?.isAnswer || false,
+          marks: taskResults.task2?.mark || 0,
         },
         {
-          taskName: "Task 3",
-          isanswer: taskResults.task3?.isAnswer || false,
-          mark: taskResults.task3?.mark || 0,
+          taskName: "Drag & Match Words",
+          isAnswer: taskResults.task3?.isAnswer || false,
+          marks: taskResults.task3?.mark || 0,
         },
         {
-          taskName: "Task 4",
-          isanswer: taskResults.task4?.isAnswer || false,
-          mark: taskResults.task4?.mark || 0,
+          taskName: "Reading Comprehension",
+          isAnswer: taskResults.task4?.isAnswer || false,
+          marks: taskResults.task4?.mark || 0,
         },
       ],
       timeSpent: finalTimeSpent,
     };
 
-    console.log("===== SUBMISSION DATA =====");
-    console.log(JSON.stringify(submissionData, null, 2));
-    console.log("===========================");
-
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_AI_API}/reading/submit_reading_tasks`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/reading-task/submit`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            authtoken: `${accessToken}`,
+            Authorization: `${accessToken}`,
           },
           body: JSON.stringify(submissionData),
         }
       );
       const data = await res.json();
-      console.log("===== SUBMISSION RESPONSE =====");
-      console.log(JSON.stringify(data, null, 2));
-      console.log("===============================");
-      setIsSubmitted(true);
-    } catch (error) {
-      console.error("===== SUBMISSION ERROR =====");
-      console.error(error);
-      console.error("============================");
+
+      if (data?.success === true) {
+        toast.success("Answers submitted successfully!");
+        setIsSubmitted(true);
+      }
+    } catch (error: any) {
+      toast.error(
+        error?.data?.errorMessages?.[0]?.message || error?.data?.message || 'Something went wrong'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -266,11 +260,11 @@ const ReadingTask = () => {
               Complete all 4 tasks to submit your answers
             </p>
           )}
-          {isSubmitted && (
+          {/* {isSubmitted && (
             <p className="text-green-400 text-sm">
               Time taken: {formatTime(timeSpent)}
             </p>
-          )}
+          )} */}
         </div>
 
         {isSubmitted && (

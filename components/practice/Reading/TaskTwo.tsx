@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { FaLock, FaCheckCircle, FaArrowRight } from "react-icons/fa";
 import TaskHeader from "@/components/shared/TaskHeader";
 import { useAuthStore } from "@/stores/authStore";
+import toast from "react-hot-toast";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -24,7 +25,8 @@ const Task2SightWordPractice = ({
   const [sentence, setSentence] = useState<string>("");
   const [sightWords, setSightWords] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [clickedWords, setClickedWords] = useState<Record<number, "correct" | "wrong">
+  const [clickedWords, setClickedWords] = useState<
+    Record<number, "correct" | "wrong">
   >({});
   const [showResult, setShowResult] = useState(false);
 
@@ -43,17 +45,18 @@ const Task2SightWordPractice = ({
               authtoken: `${accessToken}`,
             },
             body: JSON.stringify({
-              age: user?.age.split(" ")[0],
+              age: user?.age.split("-")[0],
             }),
           }
         );
         const data = await res.json();
-        console.log("Task 2 API Response:", data);
 
         setSentence(data.sentence || "");
         setSightWords(data.sight_words || []);
-      } catch (error) {
-        console.error("Failed to load sight words", error);
+      } catch (error:any) {
+        toast.error(
+          error?.data?.errorMessages?.[0]?.message || error?.data?.message
+        );
       } finally {
         setIsLoading(false);
       }
@@ -84,9 +87,10 @@ const Task2SightWordPractice = ({
   const handleNext = () => {
     // Calculate percentage: (correct / total) * 100
     const totalSightWords = sightWords.length;
-    const mark = totalSightWords > 0 
-      ? Math.round((correctCount / totalSightWords) * 100) 
-      : 0;
+    const mark =
+      totalSightWords > 0
+        ? Math.round((correctCount / totalSightWords) * 100)
+        : 0;
 
     const result: TaskResult = {
       isAnswer: true,
