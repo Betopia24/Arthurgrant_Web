@@ -10,7 +10,7 @@ import PracticeHero from "../PracticeHero2";
 import Heading from "@/components/shared/Heading";
 import "./gradient-button.css";
 import { aiRequest } from "@/lib/aiRequest";
-import TaskLoadingLock from "../TaskLoadingLock";
+import TaskLoadingLockError from "../TaskLoadingLock";
 
 type ScenariosTypes = {
   slow: string[];
@@ -180,12 +180,12 @@ const PresentationContent = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Power Words Pulse */}
             {loading.powerWords ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="loading"
                 title="Power Words Loading..."
               />
             ) : errors.powerWords ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="error"
                 title="Failed to Load Power Words"
                 onRetry={fetchPowerWords}
@@ -196,12 +196,12 @@ const PresentationContent = () => {
 
             {/* Precision Drill */}
             {loading.scenarios ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="loading"
                 title="Precision Drill Loading..."
               />
             ) : errors.scenarios ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="error"
                 title="Failed to Load Precision Drill"
                 onRetry={fetchScenarios}
@@ -212,12 +212,12 @@ const PresentationContent = () => {
 
             {/* Context Spin */}
             {loading.contextData ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="loading"
                 title="Context Spin Loading..."
               />
             ) : errors.contextData ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="error"
                 title="Failed to Load Context Spin"
                 onRetry={fetchContext}
@@ -228,12 +228,12 @@ const PresentationContent = () => {
 
             {/* Flow Chain */}
             {loading.flowChainData ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="loading"
                 title="Flow Chain Loading..."
               />
             ) : errors.flowChainData ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="error"
                 title="Failed to Load Flow Chain"
                 onRetry={fetchFlowChainData}
