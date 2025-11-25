@@ -1,14 +1,14 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
-import { FaCheckCircle } from "react-icons/fa";
 import { useAuthStore } from "@/stores/authStore";
+import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { FaCheckCircle } from "react-icons/fa";
 import Heading from "../shared/Heading";
 import PracticeHero from "./PracticeHero2";
-import Task1PhonemeFlashcards from "./Reading/TaskOne";
-import Task2SightWordPractice from "./Reading/TaskTwo";
-import Task3DragMatch from "./Reading/TaskThree";
 import Task4ReadingComprehension from "./Reading/TaskFour";
-import toast from "react-hot-toast";
+import Task1PhonemeFlashcards from "./Reading/TaskOne";
+import Task3DragMatch from "./Reading/TaskThree";
+import Task2SightWordPractice from "./Reading/TaskTwo";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -121,10 +121,6 @@ const ReadingTask = () => {
 
   // Handle final submission
   const handleSubmitAllAnswers = async () => {
-    console.log("Submit button clicked!");
-    console.log("Current task results:", taskResults);
-    console.log("Current task completed:", taskCompleted);
-
     setIsSubmitting(true);
 
     // Calculate final time spent
@@ -173,17 +169,13 @@ const ReadingTask = () => {
       );
       const data = await res.json();
 
-      if (data?.success) {
+      if (data?.success === true) {
         toast.success("Answers submitted successfully!");
+        setIsSubmitted(true);
       }
-
-      setIsSubmitted(true);
     } catch (error: any) {
-      console.log(error?.data?.errorMessages[0], '1');
-      console.log(error?.errorMessages,'2');
       toast.error(error?.errorMessages[0] || "Failed to submit answers");
       toast.error(error?.data?.errorMessages[0] || "Failed to submit answers");
-
     } finally {
       setIsSubmitting(false);
     }
