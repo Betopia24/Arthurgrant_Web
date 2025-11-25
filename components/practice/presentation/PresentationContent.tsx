@@ -257,16 +257,8 @@ const PresentationContent = () => {
 
           {/* Tasks Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-            <PowerWordsPulse
-              onTaskUpdate={updateTaskProgress}
-              onAIFeedback={handleAIFeedback}
-              task={tasks.find((t) => t.id === "1")}
-            />
-            <PrecisionDrill
-              onTaskUpdate={updateTaskProgress}
-              onAIFeedback={handleAIFeedback}
-              task={tasks.find((t) => t.id === "2")}
-            />
+            <PowerWordsPulse />
+            <PrecisionDrill />
             <ContextSpin
               onTaskUpdate={updateTaskProgress}
               onAIFeedback={handleAIFeedback}
