@@ -8,6 +8,7 @@ import Task1PhonemeFlashcards from "./Reading/TaskOne";
 import Task2SightWordPractice from "./Reading/TaskTwo";
 import Task3DragMatch from "./Reading/TaskThree";
 import Task4ReadingComprehension from "./Reading/TaskFour";
+import toast from "react-hot-toast";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -158,13 +159,9 @@ const ReadingTask = () => {
       timeSpent: finalTimeSpent,
     };
 
-    console.log("===== SUBMISSION DATA =====");
-    console.log(JSON.stringify(submissionData, null, 2));
-    console.log("===========================");
-
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_AI_API}/reading/submit_reading_tasks`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/reading-task/submit`,
         {
           method: "POST",
           headers: {
@@ -175,7 +172,8 @@ const ReadingTask = () => {
         }
       );
       const data = await res.json();
-      console.log("===== SUBMISSION RESPONSE =====");
+      toast.success("Answers submitted successfully!");
+
       console.log(JSON.stringify(data, null, 2));
       console.log("===============================");
       setIsSubmitted(true);
@@ -183,6 +181,7 @@ const ReadingTask = () => {
       console.error("===== SUBMISSION ERROR =====");
       console.error(error);
       console.error("============================");
+      toast.error("Failed to submit answers");
     } finally {
       setIsSubmitting(false);
     }
@@ -266,11 +265,11 @@ const ReadingTask = () => {
               Complete all 4 tasks to submit your answers
             </p>
           )}
-          {isSubmitted && (
+          {/* {isSubmitted && (
             <p className="text-green-400 text-sm">
               Time taken: {formatTime(timeSpent)}
             </p>
-          )}
+          )} */}
         </div>
 
         {isSubmitted && (
