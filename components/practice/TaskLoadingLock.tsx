@@ -13,7 +13,7 @@ interface CommonCardProps {
   children?: React.ReactNode;
 }
 
-const TaskLoadingLock: React.FC<CommonCardProps> = ({
+const TaskLoadingLockError: React.FC<CommonCardProps> = ({
   title,
   description,
   variant,
@@ -89,4 +89,4 @@ const TaskLoadingLock: React.FC<CommonCardProps> = ({
   );
 };
 
-export default TaskLoadingLock;
+export default TaskLoadingLockError;
