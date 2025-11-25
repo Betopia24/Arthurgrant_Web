@@ -5,15 +5,17 @@ import React, { useState, useEffect, useCallback } from "react";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
 import { aiRequest } from "@/lib/aiRequest";
-import { SkeletonCard } from "../TaskCardSkeleton";
 
 interface AIFeedback {
   score: number;
   feedback: string;
 }
 
-const PowerWordsPulse = () => {
-  const [powerWords, setPowerWords] = useState<string[]>([]);
+interface PropsType {
+  powerWords: string[];
+}
+
+const PowerWordsPulse = ({ powerWords }: PropsType) => {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [activeRecording, setActiveRecording] = useState<
@@ -32,21 +34,6 @@ const PowerWordsPulse = () => {
     definition?: File;
     sentence?: File;
   }>({});
-
-  useEffect(() => {
-    const fetchPowerWords = async () => {
-      try {
-        const data = await aiRequest(
-          "/presentation/power-words/get_power_words",
-          "GET"
-        );
-        setPowerWords(data);
-      } catch (error) {
-        console.error("Error fetching power words:", error);
-      }
-    };
-    fetchPowerWords();
-  }, []);
 
   const currentWord = powerWords[currentWordIndex];
 
@@ -165,10 +152,6 @@ const PowerWordsPulse = () => {
 
   // Check if both recordings are completed
   const isComplete = recordings.definition && recordings.sentence;
-
-  if (powerWords.length === 0) {
-    return <SkeletonCard />;
-  }
 
   if (!currentWord) {
     return (
