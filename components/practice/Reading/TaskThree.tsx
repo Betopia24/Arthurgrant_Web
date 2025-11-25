@@ -144,30 +144,30 @@ const Task3DragMatch = ({
     // Check if this picture already has a word - if yes, put the old word back
     const currentPicture = pictureCards.find((p) => p.id === picId);
     if (currentPicture && currentPicture.word) {
-      // Find the word card that was previously on this picture
+      
       const oldWordCard = wordCardsInitial.find(
         (w) => w.word === currentPicture.word
       );
       if (oldWordCard) {
-        // Put the old word back in the word cards
+      
         setWordCards((prev) => [...prev, oldWordCard]);
       }
     }
 
-    // Update the picture with new word (can be correct or wrong)
+
     setPictureCards((prev) =>
       prev.map((pic) =>
         pic.id === picId
           ? {
               ...pic,
-              matched: pic.id === wordId, // Check if it's correct
+              matched: pic.id === wordId, 
               word: wordCard.word,
             }
           : pic
       )
     );
 
-    // Remove the word card from available words
+    
     setWordCards((prev) => prev.filter((w) => w.id !== wordId));
   };
 
