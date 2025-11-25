@@ -5,12 +5,15 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
 import { aiRequest } from "@/lib/aiRequest";
+import { setTaskComplete } from "@/redux/features/presentation/presentationSlice";
+import { useAppDispatch } from "@/redux/hooks";
 
 interface AIFeedback {
   score: number;
   feedback: string;
+  status: string;
+  message: string;
 }
-
 interface ContextDataType {
   words: string[];
   scenario: string;
@@ -20,6 +23,7 @@ interface PropsType {
   contextData: ContextDataType | null;
 }
 const ContextSpin = ({ contextData }: PropsType) => {
+  const dispatch = useAppDispatch();
   const [selectedWords, setSelectedWords] = useState<string[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -139,6 +143,7 @@ const ContextSpin = ({ contextData }: PropsType) => {
         formData
       );
       setFeedback(data);
+      dispatch(setTaskComplete({ task: "task_3", feedback: data }));
     } catch (error) {
       console.error("Error getting AI feedback:", error);
       alert("Failed to get AI feedback. Please try again.");

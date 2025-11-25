@@ -5,10 +5,14 @@ import React, { useState, useEffect, useCallback } from "react";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
 import { aiRequest } from "@/lib/aiRequest";
+import { useAppDispatch } from "@/redux/hooks";
+import { setTaskComplete } from "@/redux/features/presentation/presentationSlice";
 
 interface AIFeedback {
   score: number;
   feedback: string;
+  status: string;
+  message: string;
 }
 
 interface PropsType {
@@ -16,6 +20,7 @@ interface PropsType {
 }
 
 const PowerWordsPulse = ({ powerWords }: PropsType) => {
+  const dispatch = useAppDispatch();
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [activeRecording, setActiveRecording] = useState<
@@ -143,6 +148,7 @@ const PowerWordsPulse = ({ powerWords }: PropsType) => {
         formData
       );
       setFeedback(data);
+      dispatch(setTaskComplete({ task: "task_1", feedback: data }));
     } catch (error) {
       console.error("Error submitting for AI feedback:", error);
     } finally {
