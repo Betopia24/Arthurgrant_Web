@@ -104,7 +104,6 @@ const AuditoryDiscrimination = ({
       const isCorrect =
         selectedAnswer.toLowerCase() === currentPair.answer.toLowerCase();
 
-      // Calculate marks: (correct answers / total pairs) * 100
       const correctAnswers = wordPairs.filter(
         (pair, idx) =>
           idx <= currentIndex &&

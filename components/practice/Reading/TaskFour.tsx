@@ -1,9 +1,9 @@
-
 "use client";
 import React, { useEffect, useState } from "react";
 import { FaLock, FaCheckCircle, FaArrowRight } from "react-icons/fa";
 import TaskHeader from "@/components/shared/TaskHeader";
 import { useAuthStore } from "@/stores/authStore";
+import toast from "react-hot-toast";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -35,7 +35,8 @@ const Task4ReadingComprehension = ({
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>
+  const [selectedAnswers, setSelectedAnswers] = useState<
+    Record<number, string>
   >({});
   const [showResult, setShowResult] = useState(false);
 
@@ -46,7 +47,11 @@ const Task4ReadingComprehension = ({
       setIsLoading(true);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_AI_API}/reading/comprehension/generate_comprehension?age=${user?.age.split(" ")[0]}`,
+          `${
+            process.env.NEXT_PUBLIC_AI_API
+          }/reading/comprehension/generate_comprehension?age=${
+            user?.age.split("-")[0]
+          }`,
           {
             method: "GET",
             headers: {
@@ -56,14 +61,15 @@ const Task4ReadingComprehension = ({
           }
         );
         const data = await res.json();
-        console.log("Task 4 API Response:", data);
 
         setPassageName(data.passage_name || "");
         setPassageText(data.text || "");
         setPassageImage(data.image || "");
         setQuestions(data.questions || []);
-      } catch (error) {
-        console.error("Failed to load reading comprehension", error);
+      } catch (error: any) {
+        toast.error(
+          error?.data?.errorMessages?.[0]?.message || error?.data?.message
+        );
       } finally {
         setIsLoading(false);
       }
@@ -91,9 +97,10 @@ const Task4ReadingComprehension = ({
 
     // Calculate percentage: (correct / total) * 100
     const totalQuestions = questions.length;
-    const mark = totalQuestions > 0 
-      ? Math.round((correctAnswersCount / totalQuestions) * 100) 
-      : 0;
+    const mark =
+      totalQuestions > 0
+        ? Math.round((correctAnswersCount / totalQuestions) * 100)
+        : 0;
 
     const result: TaskResult = {
       isAnswer: true,

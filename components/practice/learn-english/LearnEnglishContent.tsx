@@ -261,24 +261,24 @@ const LearnEnglishContent = () => {
               onTaskComplete={handleTask1Complete}
             />
             <PhonemeGraphemeMapping
-              // taskResult={taskResults.task2}
-              // onTaskComplete={handleTask2Complete}
+            // taskResult={taskResults.task2}
+            // onTaskComplete={handleTask2Complete}
             />
             <WordFlash
-              // taskResult={taskResults.task3}
-              // onTaskComplete={handleTask3Complete}
+            // taskResult={taskResults.task3}
+            // onTaskComplete={handleTask3Complete}
             />
             <WordPartsWorkshop
-              // taskResult={taskResults.task4}
-              // onTaskComplete={handleTask4Complete}
+            // taskResult={taskResults.task4}
+            // onTaskComplete={handleTask4Complete}
             />
             <PhraseMaker
-              // taskResult={taskResults.task5}
-              // onTaskComplete={handleTask5Complete}
+            // taskResult={taskResults.task5}
+            // onTaskComplete={handleTask5Complete}
             />
             <SentenceBuilder
-              // taskResult={taskResults.task6}
-              // onTaskComplete={handleTask6Complete}
+            // taskResult={taskResults.task6}
+            // onTaskComplete={handleTask6Complete}
             />
           </div>
 
@@ -316,9 +316,11 @@ const LearnEnglishContent = () => {
 
           {/* Completion Message */}
           {isSubmitted && (
-            <CompletePageFooterMessage text={`Congratulations ${
-              user?.firstName || "there"
-            }! You've completed all adult learning tasks for today. Your progress is outstanding!`} />
+            <CompletePageFooterMessage
+              text={`Congratulations ${
+                user?.firstName || "there"
+              }! You've completed all adult learning tasks for today. Your progress is outstanding!`}
+            />
           )}
         </div>
       </div>

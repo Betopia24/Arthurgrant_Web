@@ -132,22 +132,22 @@ const ReadingTask = () => {
     const submissionData = {
       tasks: [
         {
-          taskName: "Task 1",
+          taskName: "Phoneme Flashcards",
           isAnswer: taskResults.task1?.isAnswer || false,
           marks: taskResults.task1?.mark || 0,
         },
         {
-          taskName: "Task 2",
+          taskName: "Sight Word Practice",
           isAnswer: taskResults.task2?.isAnswer || false,
           marks: taskResults.task2?.mark || 0,
         },
         {
-          taskName: "Task 3",
+          taskName: "Drag & Match Words",
           isAnswer: taskResults.task3?.isAnswer || false,
           marks: taskResults.task3?.mark || 0,
         },
         {
-          taskName: "Task 4",
+          taskName: "Reading Comprehension",
           isAnswer: taskResults.task4?.isAnswer || false,
           marks: taskResults.task4?.mark || 0,
         },
@@ -174,8 +174,9 @@ const ReadingTask = () => {
         setIsSubmitted(true);
       }
     } catch (error: any) {
-      toast.error(error?.errorMessages[0] || "Failed to submit answers");
-      toast.error(error?.data?.errorMessages[0] || "Failed to submit answers");
+      toast.error(
+        error?.data?.errorMessages?.[0]?.message || error?.data?.message || 'Something went wrong'
+      );
     } finally {
       setIsSubmitting(false);
     }
