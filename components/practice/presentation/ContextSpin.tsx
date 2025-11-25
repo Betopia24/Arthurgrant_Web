@@ -1,39 +1,25 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
-import { AIFeedback, PresentationTask } from "./PresentationContent";
-import "./gradient-button.css";
+import { aiRequest } from "@/lib/aiRequest";
+import { SkeletonCard } from "../TaskCardSkeleton";
 
-interface ContextSpinProps {
-  onTaskUpdate: (taskId: string, progress: number, completed?: boolean) => void;
-  onAIFeedback: (
-    taskId: string,
-    audioBlob: Blob,
-    transcript: string
-  ) => Promise<AIFeedback>;
-  task?: PresentationTask;
+interface AIFeedback {
+  score: number;
+  feedback: string;
 }
 
-const scenarios = [
-  "Product Launch",
-  "Team Motivation",
-  "Crisis Management",
-  "Investor Pitch",
-  "Client Negotiation",
-];
+interface ContextDataType {
+  words: string[];
+  scenario: string;
+}
 
-const words = ["confidence", "inspire", "transform", "growth", "achieve"];
-
-const ContextSpin: React.FC<ContextSpinProps> = ({
-  onTaskUpdate,
-  onAIFeedback,
-  task,
-}) => {
-  const [selectedScenario, setSelectedScenario] = useState<string>("");
-  const [selectedWords, setSelectedWords] = useState<Set<string>>(new Set());
+const ContextSpin = () => {
+  const [contextData, setContextData] = useState<ContextDataType | null>(null);
+  const [selectedWords, setSelectedWords] = useState<string[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<AIFeedback | null>(null);
@@ -41,49 +27,70 @@ const ContextSpin: React.FC<ContextSpinProps> = ({
     null
   );
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout>(null);
+
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => {
+    const fetchContext = async () => {
+      try {
+        const data = await aiRequest(
+          "/presentation/context-spin/get_context_spin",
+          "GET"
+        );
+        setContextData(data);
+      } catch (error) {
+        console.error("Error fetching context data:", error);
+      }
+    };
+    fetchContext();
+  }, []);
 
   const toggleWord = (word: string) => {
     setSelectedWords((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(word)) {
-        newSet.delete(word);
+      if (prev.includes(word)) {
+        return prev.filter((w) => w !== word);
       } else {
-        newSet.add(word);
+        return [...prev, word];
       }
-      return newSet;
     });
   };
 
   const startRecording = async () => {
-    if (!selectedScenario || selectedWords.size === 0) {
-      alert("Please select a scenario and at least one word to include.");
-      return;
-    }
-
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
       const recorder = new MediaRecorder(stream);
       const audioChunks: BlobPart[] = [];
 
       recorder.ondataavailable = (event) => {
-        audioChunks.push(event.data);
+        if (event.data.size > 0) {
+          audioChunks.push(event.data);
+        }
       };
 
       recorder.onstop = () => {
         const blob = new Blob(audioChunks, { type: "audio/wav" });
-        setAudioBlob(blob);
-        stream.getTracks().forEach((track) => track.stop());
+        const file = new File([blob], "context_spin_recording.wav", {
+          type: "audio/wav",
+        });
 
-        // Update progress
-        onTaskUpdate("3", 50);
+        setAudioBlob(blob);
+        setAudioFile(file);
+
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
+        }
       };
 
       recorder.start();
       setMediaRecorder(recorder);
       setIsRecording(true);
       setRecordingTime(0);
+      setFeedback(null);
 
       // Start timer
       timerRef.current = setInterval(() => {
@@ -104,23 +111,48 @@ const ContextSpin: React.FC<ContextSpinProps> = ({
       // Stop timer
       if (timerRef.current) {
         clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+
+      // Stop stream if still active
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
       }
     }
   };
 
+  const handleRecordingClick = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
   const handleAICheck = async () => {
-    if (!audioBlob) {
-      alert("Please record your response first.");
+    if (!audioFile || selectedWords.length === 0 || !contextData) {
+      alert("Please record your speech and select words first.");
       return;
     }
 
     setIsLoading(true);
     try {
-      const transcript = `Response for ${selectedScenario} including words: ${Array.from(
-        selectedWords
-      ).join(", ")}...`;
-      const feedback = await onAIFeedback("3", audioBlob, transcript);
-      setFeedback(feedback);
+      const wordsWithQuotes = selectedWords
+        .map((word) => `"${word}"`)
+        .join(", ");
+
+      const formData = new FormData();
+      formData.append("scenario", contextData.scenario);
+      formData.append("words", wordsWithQuotes);
+      formData.append("file", audioFile);
+
+      const data = await aiRequest(
+        "/presentation/context-spin/context_spin",
+        "POST",
+        formData
+      );
+      setFeedback(data);
     } catch (error) {
       console.error("Error getting AI feedback:", error);
       alert("Failed to get AI feedback. Please try again.");
@@ -135,59 +167,58 @@ const ContextSpin: React.FC<ContextSpinProps> = ({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const isReadyToRecord = selectedScenario && selectedWords.size > 0;
+  // Check if ready to record
+  const isReadyToRecord = contextData && selectedWords.length > 0;
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
+  if (!contextData) {
+    return <SkeletonCard />;
+  }
 
   return (
     <div className="p-6 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-6 w-full">
-      <div className="flex items-center justify-between">
-        <h1 className="font-semibold text-2xl text-white">Context Spin</h1>
-        {task && (
-          <div
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
-              task.completed
-                ? "bg-green-500/20 text-green-400"
-                : "bg-blue-500/20 text-blue-400"
-            }`}>
-            {task.completed ? "Completed" : `${task.progress}%`}
-          </div>
-        )}
-      </div>
+      <h1 className="font-semibold text-2xl text-white">Context Spin</h1>
 
       <div className="rounded-xl p-6 bg-[#101231] space-y-8">
-        {/* Scenario Selection */}
-        <div className="space-y-4">
-          <h2 className="text-white font-medium">Select a scenario:</h2>
-          <div className="flex gap-3 flex-wrap">
-            {scenarios.map((scenario) => (
-              <button
-                key={scenario}
-                onClick={() => setSelectedScenario(scenario)}
-                className={`px-8 py-4 rounded-2xl border transition-all ${
-                  selectedScenario === scenario
-                    ? "bg-gradient-brand border-transparent text-white"
-                    : "gradient-button"
-                }`}>
-                {scenario}
-              </button>
-            ))}
-          </div>
+        {/* Scenario Display */}
+        <div className="px-4 py-8 bg-[#000000] border border-white/15 rounded-xl overflow-hidden">
+          <p className="text-white text-lg leading-relaxed">
+            {contextData.scenario &&
+              contextData.scenario.charAt(0).toUpperCase() +
+                contextData.scenario.slice(1)}
+          </p>
         </div>
 
         {/* Word Selection */}
         <div className="space-y-4">
-          <h2 className="text-white font-medium">Select words to include:</h2>
+          <h2 className="text-white font-medium text-lg">
+            Select words to include:
+          </h2>
           <div className="flex gap-3 flex-wrap">
-            {words.map((word) => (
+            {contextData.words.map((word) => (
               <button
                 key={word}
                 onClick={() => toggleWord(word)}
-                className={`px-4 py-2 rounded-full border transition-all ${
-                  selectedWords.has(word)
+                className={`px-8 py-4 rounded-2xl transition-all ${
+                  selectedWords.includes(word)
                     ? "bg-gradient-brand border-transparent text-white"
-                    : "bg-[#FFFFFF1F] border-white/15 text-white/80 hover:bg-white/20"
+                    : "gradient-button"
                 }`}>
                 {word}
-                {selectedWords.has(word) && <span className="ml-1">✓</span>}
+                {selectedWords.includes(word) && (
+                  <span className="ml-1">✓</span>
+                )}
               </button>
             ))}
           </div>
@@ -197,7 +228,7 @@ const ContextSpin: React.FC<ContextSpinProps> = ({
         <div className="px-4 py-8 bg-[#FFFFFF1F] border border-white/15 rounded-xl flex flex-col items-center justify-center gap-6 w-full">
           <div className="text-center space-y-2">
             <button
-              onClick={isRecording ? stopRecording : startRecording}
+              onClick={handleRecordingClick}
               disabled={!isReadyToRecord}
               className={`rounded-full font-semibold text-white w-20 h-20 flex items-center justify-center transition-all ${
                 isRecording
@@ -222,7 +253,7 @@ const ContextSpin: React.FC<ContextSpinProps> = ({
 
           <span className="font-medium text-white text-md text-center">
             {!isReadyToRecord
-              ? "Select scenario and words to begin"
+              ? "Select words to begin recording"
               : isRecording
               ? "Recording... Click to stop"
               : audioBlob
@@ -230,33 +261,12 @@ const ContextSpin: React.FC<ContextSpinProps> = ({
               : "Click to start your 20-30s response"}
           </span>
         </div>
-
-        {selectedScenario && selectedWords.size > 0 && (
-          <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-            <h3 className="text-green-400 font-semibold text-sm mb-2">
-              Your Challenge:
-            </h3>
-            <p className="text-white/80 text-sm mb-2">
-              Create a 20-30 second response for{" "}
-              <strong>{selectedScenario}</strong> that naturally includes these
-              words:
-            </p>
-            <div className="flex gap-2 flex-wrap">
-              {Array.from(selectedWords).map((word) => (
-                <span
-                  key={word}
-                  className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-sm">
-                  {word}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
+      {/* AI Check Button */}
       <button
         onClick={handleAICheck}
-        disabled={!audioBlob || isLoading}
+        disabled={!audioFile || isLoading || selectedWords.length === 0}
         className="p-4 inline-flex items-center justify-center gap-2 bg-gradient-brand rounded-2xl font-semibold text-base text-white hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed">
         {isLoading ? (
           <>
@@ -271,6 +281,7 @@ const ContextSpin: React.FC<ContextSpinProps> = ({
         )}
       </button>
 
+      {/* AI Feedback */}
       {feedback && (
         <FeedbackScore
           score={feedback.score}
