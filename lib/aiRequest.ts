@@ -1,0 +1,43 @@
+import { useAuthStore } from "@/stores/authStore";
+
+export const aiRequest = async (
+  endpoint: string,
+  method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
+  body?: any
+) => {
+  try {
+    const accessToken = useAuthStore.getState().accessToken;
+
+    if (!accessToken) {
+      console.warn("Blocked: No access token found.");
+      return null;
+    }
+
+    // Check if body is FormData to set appropriate headers
+    const isFormData = body instanceof FormData;
+
+    const headers: HeadersInit = {
+      authtoken: `Bearer ${accessToken}`,
+    };
+
+    // Only set Content-Type for non-FormData requests
+    if (!isFormData) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_AI_API}${endpoint}`, {
+      method,
+      headers,
+      body: isFormData ? body : body ? JSON.stringify(body) : undefined,
+    });
+
+    if (!res.ok) {
+      throw new Error(`Request failed: ${res.status}`);
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error("AI Request Error:", err);
+    return null;
+  }
+};

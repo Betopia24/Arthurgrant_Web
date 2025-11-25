@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import PowerWordsPulse from "./PowerWordsPulse";
 import PrecisionDrill from "./PrecisionDrill";
@@ -8,207 +8,144 @@ import ContextSpin from "./ContextSpin";
 import FlowChain from "./FlowChain";
 import PracticeHero from "../PracticeHero2";
 import Heading from "@/components/shared/Heading";
-import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMessage";
-// Types for API integration
-export interface PresentationTask {
-  id: string;
-  title: string;
-  description: string;
-  completed: boolean;
-  progress: number;
+import "./gradient-button.css";
+import { aiRequest } from "@/lib/aiRequest";
+import TaskLoadingLock from "../TaskLoadingLock";
+
+type ScenariosTypes = {
+  slow: string[];
+  medium: string[];
+  fast: string[];
+};
+interface ContextDataType {
+  words: string[];
+  scenario: string;
 }
 
-export interface SpeechRecognitionResult {
-  transcript: string;
-  confidence: number;
-  isFinal: boolean;
-}
+type LoadingState = {
+  powerWords: boolean;
+  scenarios: boolean;
+  contextData: boolean;
+  flowChainData: boolean;
+};
 
-export interface AIFeedback {
-  score: number;
-  feedback: string;
-  suggestions: string[];
-  pronunciationScore?: number;
-  fluencyScore?: number;
-  clarityScore?: number;
-}
-
-// Mock API service (replace with actual API calls)
-const presentationAPI = {
-  async getTasks(): Promise<PresentationTask[]> {
-    // Simulate API call
-    return [
-      {
-        id: "1",
-        title: "Power Words Pulse",
-        description: "Vocabulary building",
-        completed: false,
-        progress: 0,
-      },
-      {
-        id: "2",
-        title: "Precision Drill",
-        description: "Scenario practice",
-        completed: false,
-        progress: 0,
-      },
-      {
-        id: "3",
-        title: "Context Spin",
-        description: "Contextual speaking",
-        completed: false,
-        progress: 0,
-      },
-      {
-        id: "4",
-        title: "Flow Chain",
-        description: "Continuous speech",
-        completed: false,
-        progress: 0,
-      },
-    ];
-  },
-
-  async submitRecording(
-    taskId: string,
-    audioBlob: Blob,
-    transcript: string
-  ): Promise<AIFeedback> {
-    // Simulate API processing
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          score: Math.floor(Math.random() * 30) + 70, // 70-100
-          feedback:
-            "Good job! Your pronunciation was clear and confident. Try to vary your tone more for better engagement.",
-          suggestions: [
-            "Speak slightly slower for better clarity",
-            "Use more pauses between key points",
-            "Vary your pitch to maintain listener interest",
-          ],
-          pronunciationScore: 85,
-          fluencyScore: 78,
-          clarityScore: 82,
-        });
-      }, 2000);
-    });
-  },
-
-  async getPowerWords(): Promise<
-    { word: string; definition: string; example: string }[]
-  > {
-    return [
-      {
-        word: "Dynamic",
-        definition: "Characterized by constant change, activity, or progress",
-        example: "The dynamic presentation captivated the audience.",
-      },
-      {
-        word: "Innovation",
-        definition: "The introduction of new ideas or methods",
-        example: "Their innovation in technology revolutionized the industry.",
-      },
-      {
-        word: "Strategy",
-        definition: "A plan of action designed to achieve a long-term goal",
-        example: "The company's growth strategy proved highly effective.",
-      },
-    ];
-  },
+type ErrorState = {
+  powerWords: string | null;
+  scenarios: string | null;
+  contextData: string | null;
+  flowChainData: string | null;
 };
 
 const PresentationContent = () => {
-  const [tasks, setTasks] = useState<PresentationTask[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [overallProgress, setOverallProgress] = useState(0);
-  const [allTasksCompleted, setAllTasksCompleted] = useState(false);
+  const [powerWords, setPowerWords] = useState<string[]>([]);
+  const [scenarios, setScenarios] = useState<ScenariosTypes | null>(null);
+  const [contextData, setContextData] = useState<ContextDataType | null>(null);
+  const [flowChainData, setFlowChainData] = useState<string[]>([]);
 
-  // Load tasks on component mount
-  useEffect(() => {
-    const loadTasks = async () => {
-      try {
-        setIsLoading(true);
-        const tasksData = await presentationAPI.getTasks();
-        setTasks(tasksData);
-        calculateOverallProgress(tasksData);
-      } catch (error) {
-        console.error("Failed to load tasks:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const [loading, setLoading] = useState<LoadingState>({
+    powerWords: true,
+    scenarios: true,
+    contextData: true,
+    flowChainData: true,
+  });
 
-    loadTasks();
-  }, []);
+  const [errors, setErrors] = useState<ErrorState>({
+    powerWords: null,
+    scenarios: null,
+    contextData: null,
+    flowChainData: null,
+  });
 
-  // Calculate overall progress
-  const calculateOverallProgress = (tasksList: PresentationTask[]) => {
-    const completedCount = tasksList.filter((task) => task.completed).length;
-    const totalProgress = tasksList.reduce(
-      (sum, task) => sum + task.progress,
-      0
-    );
-    const averageProgress = totalProgress / tasksList.length;
-
-    const progress = Math.round(
-      (completedCount / tasksList.length) * 50 + averageProgress * 0.5
-    );
-    setOverallProgress(progress);
-
-    // Check if all tasks are completed
-    const allCompleted = tasksList.every((task) => task.completed);
-    setAllTasksCompleted(allCompleted);
-  };
-
-  // Update task progress
-  const updateTaskProgress = (
-    taskId: string,
-    progress: number,
-    completed: boolean = false
-  ) => {
-    setTasks((prev) => {
-      const updatedTasks = prev.map((task) =>
-        task.id === taskId
-          ? { ...task, progress, completed: task.completed || completed }
-          : task
-      );
-      calculateOverallProgress(updatedTasks);
-      return updatedTasks;
-    });
-  };
-
-  // Handle AI feedback submission
-  const handleAIFeedback = async (
-    taskId: string,
-    audioBlob: Blob,
-    transcript: string
-  ): Promise<AIFeedback> => {
+  const fetchPowerWords = async () => {
     try {
-      const feedback = await presentationAPI.submitRecording(
-        taskId,
-        audioBlob,
-        transcript
+      setLoading((prev) => ({ ...prev, powerWords: true }));
+      setErrors((prev) => ({ ...prev, powerWords: null }));
+
+      const data = await aiRequest(
+        "/presentation/power-words/get_power_words",
+        "GET"
       );
-
-      // Update task progress based on feedback score
-      const progress = Math.min(100, feedback.score);
-      const completed = progress >= 70; // Mark as completed if score >= 70
-      updateTaskProgress(taskId, progress, completed);
-
-      return feedback;
+      setPowerWords(data);
     } catch (error) {
-      console.error("Failed to get AI feedback:", error);
-      throw error;
+      console.error("Error fetching power words:", error);
+      setErrors((prev) => ({
+        ...prev,
+        powerWords: "Failed to load power words",
+      }));
+    } finally {
+      setLoading((prev) => ({ ...prev, powerWords: false }));
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-section-dark flex items-center justify-center">
-        <div className="text-white text-lg">Loading presentation tasks...</div>
-      </div>
-    );
-  }
+  const fetchScenarios = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, scenarios: true }));
+      setErrors((prev) => ({ ...prev, scenarios: null }));
+
+      const data = await aiRequest(
+        "/presentation/precision-drill/get_precision_drill",
+        "GET"
+      );
+      setScenarios(data);
+    } catch (error) {
+      console.error("Error fetching scenarios:", error);
+      setErrors((prev) => ({ ...prev, scenarios: "Failed to load scenarios" }));
+    } finally {
+      setLoading((prev) => ({ ...prev, scenarios: false }));
+    }
+  };
+
+  const fetchContext = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, contextData: true }));
+      setErrors((prev) => ({ ...prev, contextData: null }));
+
+      const data = await aiRequest(
+        "/presentation/context-spin/get_context_spin",
+        "GET"
+      );
+      setContextData(data);
+    } catch (error) {
+      console.error("Error fetching context data:", error);
+      setErrors((prev) => ({
+        ...prev,
+        contextData: "Failed to load context data",
+      }));
+    } finally {
+      setLoading((prev) => ({ ...prev, contextData: false }));
+    }
+  };
+
+  const fetchFlowChainData = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, flowChainData: true }));
+      setErrors((prev) => ({ ...prev, flowChainData: null }));
+
+      const data = await aiRequest(
+        "/presentation/flow-chain/get_flow_chain",
+        "GET"
+      );
+      setFlowChainData(data);
+    } catch (error) {
+      console.error("Error fetching flow chain data:", error);
+      setErrors((prev) => ({
+        ...prev,
+        flowChainData: "Failed to load flow chain",
+      }));
+    } finally {
+      setLoading((prev) => ({ ...prev, flowChainData: false }));
+    }
+  };
+
+  useEffect(() => {
+    // Fetch all data in parallel
+    Promise.all([
+      fetchPowerWords(),
+      fetchScenarios(),
+      fetchContext(),
+      fetchFlowChainData(),
+    ]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-section-dark">
@@ -237,52 +174,74 @@ const PresentationContent = () => {
               specialText="Tasks"
               align="left"
             />
-
-            {/* Overall Progress */}
-            <div className="flex flex-col gap-2 min-w-[200px]">
-              <div className="flex justify-between text-sm">
-                <span className="text-white/80">Overall Progress</span>
-                <span className="text-white font-semibold">
-                  {overallProgress}%
-                </span>
-              </div>
-              <div className="w-full bg-white/20 rounded-full h-2">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
-                  style={{ width: `${overallProgress}%` }}
-                />
-              </div>
-            </div>
           </div>
 
           {/* Tasks Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-            <PowerWordsPulse
-              onTaskUpdate={updateTaskProgress}
-              onAIFeedback={handleAIFeedback}
-              task={tasks.find((t) => t.id === "1")}
-            />
-            <PrecisionDrill
-              onTaskUpdate={updateTaskProgress}
-              onAIFeedback={handleAIFeedback}
-              task={tasks.find((t) => t.id === "2")}
-            />
-            <ContextSpin
-              onTaskUpdate={updateTaskProgress}
-              onAIFeedback={handleAIFeedback}
-              task={tasks.find((t) => t.id === "3")}
-            />
-            <FlowChain
-              onTaskUpdate={updateTaskProgress}
-              onAIFeedback={handleAIFeedback}
-              task={tasks.find((t) => t.id === "4")}
-            />
-          </div>
+            {/* Power Words Pulse */}
+            {loading.powerWords ? (
+              <TaskLoadingLock
+                variant="loading"
+                title="Power Words Loading..."
+              />
+            ) : errors.powerWords ? (
+              <TaskLoadingLock
+                variant="error"
+                title="Failed to Load Power Words"
+                onRetry={fetchPowerWords}
+              />
+            ) : (
+              <PowerWordsPulse powerWords={powerWords} />
+            )}
 
-          {/* Completion Message */}
-          {allTasksCompleted && (
-            <CompletePageFooterMessage text="Congratulations! You've completed all presentation tasks for today. Your progress is outstanding!" />
-          )}
+            {/* Precision Drill */}
+            {loading.scenarios ? (
+              <TaskLoadingLock
+                variant="loading"
+                title="Precision Drill Loading..."
+              />
+            ) : errors.scenarios ? (
+              <TaskLoadingLock
+                variant="error"
+                title="Failed to Load Precision Drill"
+                onRetry={fetchScenarios}
+              />
+            ) : (
+              <PrecisionDrill scenarios={scenarios!} />
+            )}
+
+            {/* Context Spin */}
+            {loading.contextData ? (
+              <TaskLoadingLock
+                variant="loading"
+                title="Context Spin Loading..."
+              />
+            ) : errors.contextData ? (
+              <TaskLoadingLock
+                variant="error"
+                title="Failed to Load Context Spin"
+                onRetry={fetchContext}
+              />
+            ) : (
+              <ContextSpin contextData={contextData!} />
+            )}
+
+            {/* Flow Chain */}
+            {loading.flowChainData ? (
+              <TaskLoadingLock
+                variant="loading"
+                title="Flow Chain Loading..."
+              />
+            ) : errors.flowChainData ? (
+              <TaskLoadingLock
+                variant="error"
+                title="Failed to Load Flow Chain"
+                onRetry={fetchFlowChainData}
+              />
+            ) : (
+              <FlowChain scenarios={flowChainData} />
+            )}
+          </div>
         </div>
       </div>
     </div>

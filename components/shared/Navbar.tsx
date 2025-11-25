@@ -13,9 +13,9 @@ const navLinks = [
   {
     label: "Practice",
     dropdown: [
+      { href: "/practice/writing", label: "Writing Practice" },
       { href: "/practice/reading", label: "Reading Practice" },
       { href: "/practice/speaking", label: "Speaking Practice" },
-      { href: "/practice/writing", label: "Writing Practice" },
       { href: "/practice/presentation", label: "Presentation Practice" },
       { href: "/practice/learn-english", label: "English for Adult Practice" },
     ],
@@ -107,20 +107,20 @@ const Navbar = () => {
       <div className="fixed top-0 inset-x-0 z-50 backdrop-blur-md py-2">
         <div className="app-container flex items-center justify-between py-4">
           {/* Branding */}
-          <Link href="/" className="text-center flex gap-2">
+          <Link href="/" className="text-center flex gap-2 items-center">
             <img
               src="/manifex-logo-02.png"
               alt="Manifex Logo"
-              className="h-8 mx-auto"
+              className="h-6 sm:h-8 mx-auto"
             />
-            <h1 className="inline-block text-2xl sm:text-3xl font-bold uppercase text-gradient tracking-tight notranslate">
+            <h1 className="inline-block text-xl sm:text-2xl md:text-3xl font-bold uppercase text-gradient tracking-tight notranslate">
               Manifex
             </h1>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex gap-8 relative">
-            {filteredNavLinks.map((link) => {
+          <nav className="hidden lg:flex gap-6 xl:gap-8 relative">
+            {navLinks.map((link) => {
               const isDropdown = !!link.dropdown;
               const isActive = isLinkActive(link);
 
@@ -133,20 +133,18 @@ const Navbar = () => {
                   }
                   onMouseLeave={() =>
                     isDropdown ? setHoveredDropdown(null) : null
-                  }
-                >
+                  }>
                   {isDropdown ? (
                     // For dropdown items, use button or span instead of Link
                     <button
                       className={clsx(
-                        "flex items-center gap-1 text-base md:text-lg font-semibold transition-colors hover:text-white",
+                        "flex items-center gap-1 text-base lg:text-lg xl:text-lg font-semibold transition-colors hover:text-white whitespace-nowrap",
                         isActive ? "text-gradient" : "text-gray-300"
-                      )}
-                    >
+                      )}>
                       {link.label}
                       <ChevronDown
                         className={clsx(
-                          "w-6 h-6 font-bold transition-transform",
+                          "w-4 h-4 lg:w-5 lg:h-5 font-bold transition-transform",
                           hoveredDropdown === link.label ? "rotate-180" : ""
                         )}
                       />
@@ -156,10 +154,9 @@ const Navbar = () => {
                     <Link
                       href={link.href!}
                       className={clsx(
-                        "flex items-center gap-1 text-base md:text-lg font-semibold transition-colors hover:text-white",
+                        "flex items-center gap-1 text-base lg:text-lg xl:text-lg font-semibold transition-colors hover:text-white whitespace-nowrap",
                         isActive ? "text-gradient" : "text-gray-300"
-                      )}
-                    >
+                      )}>
                       {link.label}
                     </Link>
                   )}
@@ -171,7 +168,7 @@ const Navbar = () => {
 
                   {/* Dropdown Menu */}
                   {isDropdown && hoveredDropdown === link.label && (
-                    <div className="absolute top-[calc(100%+0.5rem)] left-0 w-56 bg-gradient-to-br from-[#28284A] via-[#28284A] to-[#12122A] border border-gray-700 rounded-xl shadow-lg flex flex-col py-2 px-2 z-50">
+                    <div className="absolute top-[calc(100%+0.5rem)] left-0 w-56 lg:w-60 bg-gradient-to-br from-[#28284A] via-[#28284A] to-[#12122A] border border-gray-700 rounded-lg shadow-lg flex flex-col px-4 z-50">
                       {link.dropdown.map((item) => {
                         const isItemActive = isDropdownItemActive(item.href);
                         return (
@@ -179,12 +176,11 @@ const Navbar = () => {
                             key={item.href}
                             href={item.href}
                             className={clsx(
-                              "px-3 py-2 text-sm font-semibold tracking-wide rounded-lg transition-colors",
+                              "py-3 lg:py-4 text-sm lg:text-base font-medium tracking-wide transition-colors border-b-[1px] border-gray-700 last:border-b-0",
                               isItemActive
-                                ? "text-gradient bg-white/10"
-                                : "text-gray-300 hover:text-white hover:bg-white/10"
-                            )}
-                          >
+                                ? "text-gradient"
+                                : "text-gray-300 hover:text-white"
+                            )}>
                             {item.label}
                           </Link>
                         );
@@ -197,10 +193,10 @@ const Navbar = () => {
           </nav>
 
           {/* Desktop Buttons */}
-          <div className="hidden md:flex items-center gap-10">
+          <div className="hidden md:flex items-center gap-6 lg:gap-10">
             {isAuthenticated && user ? (
               <Link href="/profile" className="flex items-center">
-                <div className="relative w-12 h-12">
+                <div className="relative w-10 h-10 lg:w-12 lg:h-12">
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to p-0.5">
                     <div className="bg-black rounded-full w-full h-full overflow-hidden">
                       <img
@@ -216,8 +212,7 @@ const Navbar = () => {
               <>
                 <Link
                   href="/signin"
-                  className="text-gray-300 text-base md:text-lg font-semibold hover:text-white"
-                >
+                  className="text-gray-300 text-base lg:text-lg font-semibold hover:text-white whitespace-nowrap">
                   Login
                 </Link>
 
@@ -225,16 +220,15 @@ const Navbar = () => {
                 <div
                   className="relative"
                   onMouseEnter={() => setHoveredDropdown("language")}
-                  onMouseLeave={() => setHoveredDropdown(null)}
-                >
-                  <button className="relative inline-flex items-center gap-2 px-5 py-3 text-base md:text-lg font-semibold text-white bg-transparent rounded-2xl">
-                    <Globe className="w-5 h-5 z-10" />
-                    <span className="z-10">
+                  onMouseLeave={() => setHoveredDropdown(null)}>
+                  <button className="relative inline-flex items-center gap-2 px-4 lg:px-5 py-2 lg:py-3 text-base lg:text-lg font-semibold text-white bg-transparent rounded-2xl">
+                    <Globe className="w-4 h-4 lg:w-5 lg:h-5 z-10" />
+                    <span className="z-10 whitespace-nowrap">
                       {isMounted ? currentLanguageName : "English"}
                     </span>
                     <ChevronDown
                       className={clsx(
-                        "w-5 h-5 z-10 transition-transform",
+                        "w-4 h-4 lg:w-5 lg:h-5 z-10 transition-transform",
                         hoveredDropdown === "language" ? "rotate-180" : ""
                       )}
                     />
@@ -261,15 +255,16 @@ const Navbar = () => {
 
                   {/* Language Dropdown Menu */}
                   {hoveredDropdown === "language" && (
-                    <div className="absolute top-[calc(100%+0.5rem)] right-0 w-56 bg-gradient-to-br from-[#28284A] via-[#28284A] to-[#12122A] border border-gray-700 rounded-xl shadow-lg flex flex-col py-2 px-2 z-50 notranslate">
+                    <div className="absolute top-[calc(100%+0.5rem)] right-0 w-48 lg:w-56 bg-gradient-to-br from-[#28284A] via-[#28284A] to-[#12122A] border border-gray-700 rounded-xl shadow-lg flex flex-col py-2 px-2 z-50 notranslate">
                       {languages.map((language) => (
                         <button
                           key={language.code}
                           onClick={() => handleLanguageSelect(language.code)}
-                          className="flex items-center justify-between px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 text-sm font-semibold tracking-wide rounded-lg text-left"
-                        >
+                          className="flex items-center justify-between px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 text-sm font-semibold tracking-wide rounded-lg text-left">
                           <div>
-                            <div className="font-semibold">{language.name}</div>
+                            <div className="font-semibold text-xs lg:text-sm">
+                              {language.name}
+                            </div>
                             <div className="text-xs text-gray-400">
                               {language.nativeName}
                             </div>
@@ -288,10 +283,9 @@ const Navbar = () => {
 
           {/* Mobile Hamburger */}
           <button
-            className="md:hidden text-white"
+            className="lg:hidden text-white"
             onClick={() => setSidebarOpen(true)}
-            aria-label="Open Menu"
-          >
+            aria-label="Open Menu">
             <Menu className="w-6 h-6" />
           </button>
         </div>
@@ -301,8 +295,7 @@ const Navbar = () => {
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 transition-opacity"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
+          onClick={() => setSidebarOpen(false)}></div>
       )}
 
       {/* Mobile Sidebar Panel */}
@@ -310,12 +303,11 @@ const Navbar = () => {
         className={clsx(
           "fixed top-0 right-0 h-full z-50 w-4/5 max-w-xs bg-gradient-to-br from-brand-dark to-brand-darker transform transition-transform duration-300 overflow-y-auto",
           sidebarOpen ? "translate-x-0" : "translate-x-full"
-        )}
-      >
+        )}>
         <div className="flex flex-col min-h-full p-6">
           {/* Top: Branding + Close */}
           <div className="flex items-center justify-between mb-8">
-            <Link href="/" className="text-center flex gap-2">
+            <Link href="/" className="text-center flex gap-2 items-center">
               <img
                 src="/manifex-logo-02.png"
                 alt="Manifex Logo"
@@ -328,8 +320,7 @@ const Navbar = () => {
             <button
               onClick={() => setSidebarOpen(false)}
               className="text-white"
-              aria-label="Close Menu"
-            >
+              aria-label="Close Menu">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -348,8 +339,7 @@ const Navbar = () => {
                         "flex justify-between items-center text-lg font-semibold text-gray-300 hover:text-white py-2 transition-colors",
                         isActive && "text-gradient"
                       )}
-                      onClick={() => setMobileDropdownOpen((prev) => !prev)}
-                    >
+                      onClick={() => setMobileDropdownOpen((prev) => !prev)}>
                       {link.label}
                       <ChevronDown
                         className={clsx(
@@ -366,8 +356,7 @@ const Navbar = () => {
                         mobileDropdownOpen
                           ? "max-h-60 opacity-100"
                           : "max-h-0 opacity-0"
-                      )}
-                    >
+                      )}>
                       <div className="flex flex-col pl-4 mt-1 border-l-2 border-gray-700">
                         {link.dropdown.map((item) => {
                           const isItemActive = isDropdownItemActive(item.href);
@@ -384,8 +373,7 @@ const Navbar = () => {
                               onClick={() => {
                                 setSidebarOpen(false);
                                 setMobileDropdownOpen(false);
-                              }}
-                            >
+                              }}>
                               {item.label}
                             </Link>
                           );
@@ -404,8 +392,7 @@ const Navbar = () => {
                     "text-lg font-semibold hover:text-white py-2 transition-colors",
                     isActive ? "text-gradient" : "text-gray-300"
                   )}
-                  onClick={() => setSidebarOpen(false)}
-                >
+                  onClick={() => setSidebarOpen(false)}>
                   {link.label}
                 </Link>
               );
@@ -430,8 +417,7 @@ const Navbar = () => {
                     preferredLang === language.code
                       ? "bg-white/10 text-white border-blue-500"
                       : "text-gray-300 border-gray-600 hover:bg-white/5 hover:text-white"
-                  )}
-                >
+                  )}>
                   <div className="font-semibold">{language.name}</div>
                   <div className="text-xs text-gray-400">
                     {language.nativeName}
@@ -447,8 +433,7 @@ const Navbar = () => {
               <Link
                 href="/profile"
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/10 transition"
-                onClick={() => setSidebarOpen(false)}
-              >
+                onClick={() => setSidebarOpen(false)}>
                 <div className="relative w-10 h-10">
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to p-0.5">
                     <div className="bg-black rounded-full w-full h-full overflow-hidden">
@@ -472,8 +457,7 @@ const Navbar = () => {
                 <Link
                   href="/signin"
                   className="text-gray-300 text-lg font-semibold hover:text-white text-center py-2"
-                  onClick={() => setSidebarOpen(false)}
-                >
+                  onClick={() => setSidebarOpen(false)}>
                   Login
                 </Link>
               </>

@@ -1,55 +1,165 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
-import { AIFeedback, PresentationTask } from "./PresentationContent";
-import "./gradient-button.css";
-interface PrecisionDrillProps {
-  onTaskUpdate: (taskId: string, progress: number, completed?: boolean) => void;
-  onAIFeedback: (
-    taskId: string,
-    audioBlob: Blob,
-    transcript: string
-  ) => Promise<AIFeedback>;
-  task?: PresentationTask;
+import { aiRequest } from "@/lib/aiRequest";
+
+interface AIFeedback {
+  score: number;
+  feedback: string;
 }
 
-const scenarios = [
-  "Business Meeting",
-  "Team Presentation",
-  "Client Pitch",
-  "Conference Talk",
-  "Investor Update",
-  "Product Demo",
-  "Training Session",
-];
+type ScenariosTypes = {
+  slow: string[];
+  medium: string[];
+  fast: string[];
+};
 
-const PrecisionDrill: React.FC<PrecisionDrillProps> = ({
-  onTaskUpdate,
-  onAIFeedback,
-  task,
-}) => {
-  const [selectedScenario, setSelectedScenario] = useState<string>("");
+interface PropsType {
+  scenarios: ScenariosTypes | null;
+}
+
+const PrecisionDrill = ({ scenarios }: PropsType) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<AIFeedback | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
     null
   );
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout>(null);
+
+  const [currentSpeed, setCurrentSpeed] = useState<"slow" | "medium" | "fast">(
+    "slow"
+  );
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [allWords, setAllWords] = useState<string[]>([]);
+  const [currentProgress, setCurrentProgress] = useState(0);
+  const [totalWords, setTotalWords] = useState(0);
+
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const streamRef = useRef<MediaStream | null>(null); // Add ref for stream
+
+  // Combine all words from all speeds into one array
+  useEffect(() => {
+    if (scenarios) {
+      const allWordsCombined = [
+        ...scenarios.slow,
+        ...scenarios.medium,
+        ...scenarios.fast,
+      ];
+      setAllWords(allWordsCombined);
+      setTotalWords(allWordsCombined.length);
+    }
+  }, [scenarios]);
+
+  // Determine current speed based on word index
+  useEffect(() => {
+    if (!scenarios) return;
+
+    const slowLength = scenarios.slow.length;
+    const mediumLength = scenarios.medium.length;
+
+    if (currentWordIndex < slowLength) {
+      setCurrentSpeed("slow");
+    } else if (currentWordIndex < slowLength + mediumLength) {
+      setCurrentSpeed("medium");
+    } else {
+      setCurrentSpeed("fast");
+    }
+
+    // Update progress percentage
+    setCurrentProgress(Math.round((currentWordIndex / totalWords) * 100));
+  }, [currentWordIndex, scenarios, totalWords]);
+
+  // Start auto-scrolling when recording starts
+  const startAutoScroll = () => {
+    let scrollSpeed = 2000; // Start slow (2 seconds per word)
+
+    const scrollToNextWord = () => {
+      setCurrentWordIndex((prev) => {
+        const nextIndex = prev + 1;
+
+        // Check if all words are finished
+        if (nextIndex >= totalWords) {
+          // Stop everything immediately when all words are done
+          if (scrollIntervalRef.current) {
+            clearInterval(scrollIntervalRef.current);
+            scrollIntervalRef.current = null;
+          }
+
+          // Force stop recording
+          if (mediaRecorder && isRecording) {
+            mediaRecorder.stop();
+            setIsRecording(false);
+
+            // Stop all media tracks
+            if (streamRef.current) {
+              streamRef.current.getTracks().forEach((track) => track.stop());
+              streamRef.current = null;
+            }
+
+            // Stop timer
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+              timerRef.current = null;
+            }
+          }
+          return prev;
+        }
+
+        // Speed up transitions
+        if (nextIndex === scenarios?.slow.length) {
+          scrollSpeed = 1200; // Medium speed
+          if (scrollIntervalRef.current) {
+            clearInterval(scrollIntervalRef.current);
+            scrollIntervalRef.current = setInterval(
+              scrollToNextWord,
+              scrollSpeed
+            );
+          }
+        } else if (
+          nextIndex ===
+          (scenarios?.slow.length || 0) + (scenarios?.medium.length || 0)
+        ) {
+          scrollSpeed = 800; // Fast speed
+          if (scrollIntervalRef.current) {
+            clearInterval(scrollIntervalRef.current);
+            scrollIntervalRef.current = setInterval(
+              scrollToNextWord,
+              scrollSpeed
+            );
+          }
+        }
+
+        return nextIndex;
+      });
+    };
+
+    // Start scrolling
+    scrollIntervalRef.current = setInterval(scrollToNextWord, scrollSpeed);
+  };
+
+  // Stop auto-scrolling
+  const stopAutoScroll = () => {
+    if (scrollIntervalRef.current) {
+      clearInterval(scrollIntervalRef.current);
+      scrollIntervalRef.current = null;
+    }
+  };
 
   const startRecording = async () => {
-    if (!selectedScenario) {
-      alert("Please select a scenario first.");
+    if (!scenarios || allWords.length === 0) {
+      alert("Please wait for words to load.");
       return;
     }
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream; // Store stream in ref
       const recorder = new MediaRecorder(stream);
       const audioChunks: BlobPart[] = [];
 
@@ -59,17 +169,28 @@ const PrecisionDrill: React.FC<PrecisionDrillProps> = ({
 
       recorder.onstop = () => {
         const blob = new Blob(audioChunks, { type: "audio/wav" });
-        setAudioBlob(blob);
-        stream.getTracks().forEach((track) => track.stop());
+        const audioFile = new File([blob], "precision_drill_recording.wav", {
+          type: "audio/wav",
+        });
+        setAudioFile(audioFile);
 
-        // Update progress
-        onTaskUpdate("2", 50);
+        // Stop stream tracks
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
+        }
       };
 
       recorder.start();
       setMediaRecorder(recorder);
       setIsRecording(true);
       setRecordingTime(0);
+      setCurrentWordIndex(0);
+      setCurrentProgress(0);
+      setFeedback(null); // Reset previous feedback
+
+      // Start auto-scrolling
+      startAutoScroll();
 
       // Start timer
       timerRef.current = setInterval(() => {
@@ -86,25 +207,49 @@ const PrecisionDrill: React.FC<PrecisionDrillProps> = ({
       mediaRecorder.stop();
       setIsRecording(false);
       setMediaRecorder(null);
+      stopAutoScroll();
+
+      // Stop stream tracks
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
 
       // Stop timer
       if (timerRef.current) {
         clearInterval(timerRef.current);
+        timerRef.current = null;
       }
     }
   };
 
+  const handleRecordingClick = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
   const handleAICheck = async () => {
-    if (!audioBlob) {
+    if (!audioFile) {
       alert("Please record your speech first.");
       return;
     }
 
     setIsLoading(true);
     try {
-      const transcript = `Practice speech for ${selectedScenario} scenario...`; // Simulated transcript
-      const feedback = await onAIFeedback("2", audioBlob, transcript);
-      setFeedback(feedback);
+      const wordsWithQuotes = allWords.map((word) => `"${word}"`).join(", ");
+      const formData = new FormData();
+      formData.append("wordlist", wordsWithQuotes);
+      formData.append("file", audioFile);
+
+      const data = await aiRequest(
+        "/presentation/precision-drill/precision_drill",
+        "POST",
+        formData
+      );
+      setFeedback(data);
     } catch (error) {
       console.error("Error getting AI feedback:", error);
       alert("Failed to get AI feedback. Please try again.");
@@ -119,50 +264,78 @@ const PrecisionDrill: React.FC<PrecisionDrillProps> = ({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      // Clean up all intervals and media tracks
+      if (scrollIntervalRef.current) {
+        clearInterval(scrollIntervalRef.current);
+      }
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
   return (
     <div className="p-6 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-6 w-full">
-      <div className="flex items-center justify-between">
-        <h1 className="font-semibold text-2xl text-white">Precision Drill</h1>
-        {task && (
-          <div
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
-              task.completed
-                ? "bg-green-500/20 text-green-400"
-                : "bg-blue-500/20 text-blue-400"
-            }`}>
-            {task.completed ? "Completed" : `${task.progress}%`}
-          </div>
-        )}
-      </div>
+      <h1 className="font-semibold text-2xl text-white">Precision Drill</h1>
 
       <div className="rounded-xl p-6 bg-[#101231] space-y-8">
-        <div className="space-y-4">
-          <h2 className="text-white font-medium">Select a scenario:</h2>
-          <div className="flex gap-3 flex-wrap">
-            {scenarios.map((scenario) => (
-              <button
-                key={scenario}
-                onClick={() => setSelectedScenario(scenario)}
-                className={`px-8 py-4 rounded-2xl border transition-all ${
-                  selectedScenario === scenario
-                    ? "bg-gradient-brand border-transparent text-white"
-                    : "gradient-button "
-                }`}>
-                {scenario}
-              </button>
-            ))}
+        {/* Progress Display */}
+        <div className="flex items-center justify-between">
+          <div className="text-white font-medium">
+            Progress: {currentProgress}%
+          </div>
+          <div className="text-white font-medium">
+            Speed:{" "}
+            <span className="text-gradient-brand capitalize">
+              {currentSpeed}
+            </span>
           </div>
         </div>
 
+        {/* Word Display */}
+        <div className="px-4 py-8 bg-[#000000] border border-white/15 rounded-xl flex flex-col items-center justify-center gap-6 w-full min-h-[200px]">
+          <div className="text-center space-y-4 w-full">
+            {isRecording || audioFile ? (
+              <div className="space-y-2">
+                <div className="text-white text-lg font-semibold">
+                  {currentWordIndex < totalWords
+                    ? "Current Word:"
+                    : "Drill Complete!"}
+                </div>
+                <div className="text-4xl font-bold text-gradient capitalize transition-all duration-300">
+                  {currentWordIndex < totalWords
+                    ? allWords[currentWordIndex]
+                    : "🎉"}
+                </div>
+                <div className="text-white/60 text-sm">
+                  Word {Math.min(currentWordIndex + 1, totalWords)} of{" "}
+                  {totalWords}
+                </div>
+              </div>
+            ) : (
+              <div className="text-white/60 text-lg">
+                Click record to start the precision drill
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Recording Section */}
         <div className="px-4 py-8 bg-[#FFFFFF1F] border border-white/15 rounded-xl flex flex-col items-center justify-center gap-6 w-full">
           <div className="text-center space-y-2">
             <button
-              onClick={isRecording ? stopRecording : startRecording}
-              disabled={!selectedScenario}
+              onClick={handleRecordingClick}
+              disabled={allWords.length === 0}
               className={`rounded-full font-semibold text-white w-20 h-20 flex items-center justify-center transition-all ${
                 isRecording
                   ? "bg-red-500 animate-pulse"
-                  : audioBlob
+                  : audioFile
                   ? "bg-green-500"
                   : "bg-gradient-brand hover:brightness-110"
               } disabled:opacity-50`}>
@@ -181,33 +354,21 @@ const PrecisionDrill: React.FC<PrecisionDrillProps> = ({
           </div>
 
           <span className="font-medium text-white text-md text-center">
-            {!selectedScenario
-              ? "Select a scenario to begin"
+            {allWords.length === 0
+              ? "Loading words..."
               : isRecording
-              ? "Recording... Click to stop"
-              : audioBlob
-              ? "✓ Speech recorded successfully"
-              : "Click to start your continuous speech"}
+              ? "Recording... Words auto-scroll from slow to fast"
+              : audioFile
+              ? "✓ Precision drill completed successfully"
+              : "Click to start - words will auto-scroll from slow to fast"}
           </span>
         </div>
-
-        {selectedScenario && (
-          <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-            <h3 className="text-purple-400 font-semibold text-sm mb-2">
-              Prompt:
-            </h3>
-            <p className="text-white/80 text-sm">
-              Present a 2-minute overview of your current project as if you're
-              speaking to {selectedScenario.toLowerCase()}. Focus on clear
-              articulation and confident delivery.
-            </p>
-          </div>
-        )}
       </div>
 
+      {/* AI Check Button */}
       <button
         onClick={handleAICheck}
-        disabled={!audioBlob || isLoading}
+        disabled={!audioFile || isLoading || isRecording}
         className="p-4 inline-flex items-center justify-center gap-2 bg-gradient-brand rounded-2xl font-semibold text-base text-white hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed">
         {isLoading ? (
           <>
@@ -222,6 +383,7 @@ const PrecisionDrill: React.FC<PrecisionDrillProps> = ({
         )}
       </button>
 
+      {/* AI Feedback */}
       {feedback && (
         <FeedbackScore
           score={feedback.score}
