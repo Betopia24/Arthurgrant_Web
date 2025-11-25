@@ -5,16 +5,21 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
 import { aiRequest } from "@/lib/aiRequest";
+import { useAppDispatch } from "@/redux/hooks";
+import { setTaskComplete } from "@/redux/features/presentation/presentationSlice";
 
 interface AIFeedback {
   score: number;
   feedback: string;
+  status: string;
+  message: string;
 }
 
 interface PropsType {
   scenarios: string[];
 }
 const FlowChain = ({ scenarios }: PropsType) => {
+  const dispatch = useAppDispatch();
   const [selectedScenarios, setSelectedScenarios] = useState<string[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -138,6 +143,7 @@ const FlowChain = ({ scenarios }: PropsType) => {
         formData
       );
       setFeedback(data);
+      dispatch(setTaskComplete({ task: "task_4", feedback: data }));
     } catch (error) {
       console.error("Error getting AI feedback:", error);
       alert("Failed to get AI feedback. Please try again.");

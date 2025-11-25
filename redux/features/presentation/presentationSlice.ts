@@ -1,8 +1,15 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+type Feedback = {
+  score: number;
+  feedback: string;
+  status: string;
+  message: string;
+};
+
 interface TaskState {
   isComplete: boolean;
-  score: number | null;
+  feedback: Feedback | null;
 }
 
 interface PresentationState {
@@ -14,7 +21,7 @@ interface PresentationState {
 
 const taskDefault: TaskState = {
   isComplete: false,
-  score: null,
+  feedback: null,
 };
 
 const initialState: PresentationState = {
@@ -32,11 +39,11 @@ const presentationSlice = createSlice({
   reducers: {
     setTaskComplete: (
       state,
-      action: PayloadAction<{ task: TaskKey; score: number }>
+      action: PayloadAction<{ task: TaskKey; feedback: Feedback }>
     ) => {
-      const { task, score } = action.payload;
+      const { task, feedback } = action.payload;
       state[task].isComplete = true;
-      state[task].score = score;
+      state[task].feedback = feedback;
     },
 
     resetSpecificTask: (state, action: PayloadAction<{ task: TaskKey }>) => {

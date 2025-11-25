@@ -51,17 +51,13 @@ const persistMorphConfig = {
 
 // ✅ Wrap reducers
 const persistedAuthReducer = persistReducer(persistAuthConfig, authReducer);
-const persistedPresentationReducer = persistReducer(
-  persistAuthConfig,
-  presentationReducer
-);
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
       [baseApi.reducerPath]: baseApi.reducer,
       auth: persistedAuthReducer,
-      presentation: persistedPresentationReducer,
+      presentation: presentationReducer,
     },
     middleware: (getDefaultMiddlewares) =>
       getDefaultMiddlewares({
