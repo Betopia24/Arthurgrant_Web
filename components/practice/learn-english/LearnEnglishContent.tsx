@@ -159,32 +159,32 @@ const LearnEnglishContent = () => {
     const submissionData = {
       tasks: [
         {
-          taskName: "Task 1",
+          taskName: "Auditory Discrimination",
           isanswer: taskResults.task1?.isAnswer || false,
           marks: taskResults.task1?.marks || 0,
         },
         {
-          taskName: "Task 2",
+          taskName: "Phoneme Grapheme Mapping",
           isanswer: taskResults.task2?.isAnswer || false,
           marks: taskResults.task2?.marks || 0,
         },
         {
-          taskName: "Task 3",
+          taskName: "Word Flash",
           isanswer: taskResults.task3?.isAnswer || false,
           marks: taskResults.task3?.marks || 0,
         },
         {
-          taskName: "Task 4",
+          taskName: "Word Parts Workshop",
           isanswer: taskResults.task4?.isAnswer || false,
           marks: taskResults.task4?.marks || 0,
         },
         {
-          taskName: "Task 5",
+          taskName: "Phrase Maker",
           isanswer: taskResults.task5?.isAnswer || false,
           marks: taskResults.task5?.marks || 0,
         },
         {
-          taskName: "Task 6",
+          taskName: "Sentence Builder",
           isanswer: taskResults.task6?.isAnswer || false,
           marks: taskResults.task6?.marks || 0,
         },
