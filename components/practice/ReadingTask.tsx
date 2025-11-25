@@ -137,23 +137,23 @@ const ReadingTask = () => {
       tasks: [
         {
           taskName: "Task 1",
-          isanswer: taskResults.task1?.isAnswer || false,
-          mark: taskResults.task1?.mark || 0,
+          isAnswer: taskResults.task1?.isAnswer || false,
+          marks: taskResults.task1?.mark || 0,
         },
         {
           taskName: "Task 2",
-          isanswer: taskResults.task2?.isAnswer || false,
-          mark: taskResults.task2?.mark || 0,
+          isAnswer: taskResults.task2?.isAnswer || false,
+          marks: taskResults.task2?.mark || 0,
         },
         {
           taskName: "Task 3",
-          isanswer: taskResults.task3?.isAnswer || false,
-          mark: taskResults.task3?.mark || 0,
+          isAnswer: taskResults.task3?.isAnswer || false,
+          marks: taskResults.task3?.mark || 0,
         },
         {
           taskName: "Task 4",
-          isanswer: taskResults.task4?.isAnswer || false,
-          mark: taskResults.task4?.mark || 0,
+          isAnswer: taskResults.task4?.isAnswer || false,
+          marks: taskResults.task4?.mark || 0,
         },
       ],
       timeSpent: finalTimeSpent,
@@ -166,22 +166,24 @@ const ReadingTask = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            authtoken: `${accessToken}`,
+            Authorization: `${accessToken}`,
           },
           body: JSON.stringify(submissionData),
         }
       );
       const data = await res.json();
-      toast.success("Answers submitted successfully!");
 
-      console.log(JSON.stringify(data, null, 2));
-      console.log("===============================");
+      if (data?.success) {
+        toast.success("Answers submitted successfully!");
+      }
+
       setIsSubmitted(true);
-    } catch (error) {
-      console.error("===== SUBMISSION ERROR =====");
-      console.error(error);
-      console.error("============================");
-      toast.error("Failed to submit answers");
+    } catch (error: any) {
+      console.log(error?.data?.errorMessages[0], '1');
+      console.log(error?.errorMessages,'2');
+      toast.error(error?.errorMessages[0] || "Failed to submit answers");
+      toast.error(error?.data?.errorMessages[0] || "Failed to submit answers");
+
     } finally {
       setIsSubmitting(false);
     }

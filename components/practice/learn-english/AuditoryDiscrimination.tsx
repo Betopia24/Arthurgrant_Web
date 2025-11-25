@@ -167,9 +167,7 @@ const AuditoryDiscrimination = ({
                   onClick={() => playAudio(currentPair.audio_file1)}
                   disabled={taskResult !== null}
                   className={`rounded-full font-semibold text-white w-16 h-16 flex items-center justify-center transition-all bg-gradient-brand hover:brightness-110 ${
-                    taskResult !== null
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
+                    taskResult !== null ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                 >
                   <FaMicrophone className="w-6 h-6" />
@@ -182,9 +180,7 @@ const AuditoryDiscrimination = ({
                   onClick={() => playAudio(currentPair.audio_file2)}
                   disabled={taskResult !== null}
                   className={`rounded-full font-semibold text-white w-16 h-16 flex items-center justify-center transition-all bg-gradient-brand hover:brightness-110 ${
-                    taskResult !== null
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
+                    taskResult !== null ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                 >
                   <FaMicrophone className="w-6 h-6" />
@@ -200,7 +196,9 @@ const AuditoryDiscrimination = ({
                 disabled={taskResult !== null}
                 className={`gradient-button w-full ${
                   selectedAnswer === "same" ? "ring-2 ring-yellow-400" : ""
-                } ${taskResult !== null ? "opacity-50 cursor-not-allowed" : ""}`}
+                } ${
+                  taskResult !== null ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
                 Same
               </button>
@@ -208,10 +206,10 @@ const AuditoryDiscrimination = ({
                 onClick={() => setSelectedAnswer("different")}
                 disabled={taskResult !== null}
                 className={`gradient-button w-full ${
-                  selectedAnswer === "different"
-                    ? "ring-2 ring-yellow-400"
-                    : ""
-                } ${taskResult !== null ? "opacity-50 cursor-not-allowed" : ""}`}
+                  selectedAnswer === "different" ? "ring-2 ring-yellow-400" : ""
+                } ${
+                  taskResult !== null ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
                 Different
               </button>
