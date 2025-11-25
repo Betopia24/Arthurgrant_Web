@@ -5,15 +5,16 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
 import { aiRequest } from "@/lib/aiRequest";
-import { SkeletonCard } from "../TaskCardSkeleton";
 
 interface AIFeedback {
   score: number;
   feedback: string;
 }
 
-const FlowChain = () => {
-  const [scenarios, setScenarios] = useState<string[]>([]);
+interface PropsType {
+  scenarios: string[];
+}
+const FlowChain = ({ scenarios }: PropsType) => {
   const [selectedScenarios, setSelectedScenarios] = useState<string[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,28 +25,9 @@ const FlowChain = () => {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [isLoadingScenarios, setIsLoadingScenarios] = useState(true); // Add loading state for scenarios
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-
-  useEffect(() => {
-    const fetchScenarios = async () => {
-      try {
-        setIsLoadingScenarios(true);
-        const data = await aiRequest(
-          "/presentation/flow-chain/get_flow_chain",
-          "GET"
-        );
-        setScenarios(data);
-      } catch (error) {
-        console.error("Error fetching scenarios:", error);
-      } finally {
-        setIsLoadingScenarios(false);
-      }
-    };
-    fetchScenarios();
-  }, []);
 
   const toggleScenario = (scenario: string) => {
     setSelectedScenarios((prev) => {
@@ -182,11 +164,6 @@ const FlowChain = () => {
     };
   }, []);
 
-  // Show skeleton while loading scenarios
-  if (isLoadingScenarios) {
-    return <SkeletonCard />;
-  }
-
   return (
     <div className="p-6 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-6 w-full">
       <h1 className="font-semibold text-2xl text-white">Flow Chain</h1>
@@ -202,9 +179,9 @@ const FlowChain = () => {
                 No scenarios available
               </div>
             ) : (
-              scenarios.map((scenario) => (
+              scenarios.map((scenario, index) => (
                 <button
-                  key={scenario}
+                  key={index}
                   onClick={() => toggleScenario(scenario)}
                   disabled={
                     !selectedScenarios.includes(scenario) &&

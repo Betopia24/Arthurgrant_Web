@@ -5,7 +5,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
 import { aiRequest } from "@/lib/aiRequest";
-import { SkeletonCard } from "../TaskCardSkeleton";
 
 interface AIFeedback {
   score: number;
@@ -18,8 +17,11 @@ type ScenariosTypes = {
   fast: string[];
 };
 
-const PrecisionDrill = () => {
-  const [scenarios, setScenarios] = useState<ScenariosTypes | null>(null);
+interface PropsType {
+  scenarios: ScenariosTypes | null;
+}
+
+const PrecisionDrill = ({ scenarios }: PropsType) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<AIFeedback | null>(null);
@@ -41,27 +43,18 @@ const PrecisionDrill = () => {
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null); // Add ref for stream
 
+  // Combine all words from all speeds into one array
   useEffect(() => {
-    const fetchScenarios = async () => {
-      try {
-        const data = await aiRequest(
-          "/presentation/precision-drill/get_precision_drill",
-          "GET"
-        );
-        setScenarios(data);
-
-        // Combine all words from all speeds into one array
-        if (data) {
-          const allWordsCombined = [...data.slow, ...data.medium, ...data.fast];
-          setAllWords(allWordsCombined);
-          setTotalWords(allWordsCombined.length);
-        }
-      } catch (error) {
-        console.error("Error fetching scenarios words:", error);
-      }
-    };
-    fetchScenarios();
-  }, []);
+    if (scenarios) {
+      const allWordsCombined = [
+        ...scenarios.slow,
+        ...scenarios.medium,
+        ...scenarios.fast,
+      ];
+      setAllWords(allWordsCombined);
+      setTotalWords(allWordsCombined.length);
+    }
+  }, [scenarios]);
 
   // Determine current speed based on word index
   useEffect(() => {
@@ -286,10 +279,6 @@ const PrecisionDrill = () => {
       }
     };
   }, []);
-
-  if (!scenarios) {
-    return <SkeletonCard />;
-  }
 
   return (
     <div className="p-6 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-6 w-full">

@@ -5,7 +5,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
 import { aiRequest } from "@/lib/aiRequest";
-import { SkeletonCard } from "../TaskCardSkeleton";
 
 interface AIFeedback {
   score: number;
@@ -17,8 +16,10 @@ interface ContextDataType {
   scenario: string;
 }
 
-const ContextSpin = () => {
-  const [contextData, setContextData] = useState<ContextDataType | null>(null);
+interface PropsType {
+  contextData: ContextDataType | null;
+}
+const ContextSpin = ({ contextData }: PropsType) => {
   const [selectedWords, setSelectedWords] = useState<string[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,21 +33,6 @@ const ContextSpin = () => {
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-
-  useEffect(() => {
-    const fetchContext = async () => {
-      try {
-        const data = await aiRequest(
-          "/presentation/context-spin/get_context_spin",
-          "GET"
-        );
-        setContextData(data);
-      } catch (error) {
-        console.error("Error fetching context data:", error);
-      }
-    };
-    fetchContext();
-  }, []);
 
   const toggleWord = (word: string) => {
     setSelectedWords((prev) => {
@@ -182,10 +168,6 @@ const ContextSpin = () => {
     };
   }, []);
 
-  if (!contextData) {
-    return <SkeletonCard />;
-  }
-
   return (
     <div className="p-6 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-6 w-full">
       <h1 className="font-semibold text-2xl text-white">Context Spin</h1>
@@ -194,7 +176,7 @@ const ContextSpin = () => {
         {/* Scenario Display */}
         <div className="px-4 py-8 bg-[#000000] border border-white/15 rounded-xl overflow-hidden">
           <p className="text-white text-lg leading-relaxed">
-            {contextData.scenario &&
+            {contextData?.scenario &&
               contextData.scenario.charAt(0).toUpperCase() +
                 contextData.scenario.slice(1)}
           </p>
@@ -206,9 +188,9 @@ const ContextSpin = () => {
             Select words to include:
           </h2>
           <div className="flex gap-3 flex-wrap">
-            {contextData.words.map((word) => (
+            {contextData?.words.map((word, index) => (
               <button
-                key={word}
+                key={index}
                 onClick={() => toggleWord(word)}
                 className={`px-8 py-4 rounded-2xl transition-all ${
                   selectedWords.includes(word)
