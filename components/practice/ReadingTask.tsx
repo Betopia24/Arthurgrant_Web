@@ -175,7 +175,9 @@ const ReadingTask = () => {
       }
     } catch (error: any) {
       toast.error(
-        error?.data?.errorMessages?.[0]?.message || error?.data?.message || 'Something went wrong'
+        error?.data?.errorMessages?.[0]?.message ||
+          error?.data?.message ||
+          "Something went wrong"
       );
     } finally {
       setIsSubmitting(false);
