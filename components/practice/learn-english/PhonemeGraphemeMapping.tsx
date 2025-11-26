@@ -163,7 +163,7 @@ const PhonemeGraphemeMapping = ({
 
         <TaskLoadingLock
           variant="locked"
-          title=" Complete Task 1 to unlock this task"
+          title="Complete Task 1 to unlock this task"
         />
       ) : (
         <>
@@ -175,7 +175,10 @@ const PhonemeGraphemeMapping = ({
           {isFetching ? (
             <div className="rounded-xl p-5 md:p-8 bg-[#101231] flex items-center justify-center min-h-[400px]">
               {/* <p className="text-gray-400 text-lg">Loading exercises...</p> */}
-              <TaskLoadingLock variant="loading" title="loading..." />
+              <TaskLoadingLock
+                variant="loading"
+                title="Phoneme Grapheme Mapping Loading.."
+              />
             </div>
           ) : (
             <>

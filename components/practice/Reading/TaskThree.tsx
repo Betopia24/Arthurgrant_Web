@@ -4,6 +4,7 @@ import { FaLock, FaCheckCircle, FaArrowRight } from "react-icons/fa";
 import TaskHeader from "@/components/shared/TaskHeader";
 import { useAuthStore } from "@/stores/authStore";
 import toast from "react-hot-toast";
+import TaskLoadingLockError from "../TaskLoadingLock";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -144,30 +145,26 @@ const Task3DragMatch = ({
     // Check if this picture already has a word - if yes, put the old word back
     const currentPicture = pictureCards.find((p) => p.id === picId);
     if (currentPicture && currentPicture.word) {
-      
       const oldWordCard = wordCardsInitial.find(
         (w) => w.word === currentPicture.word
       );
       if (oldWordCard) {
-      
         setWordCards((prev) => [...prev, oldWordCard]);
       }
     }
-
 
     setPictureCards((prev) =>
       prev.map((pic) =>
         pic.id === picId
           ? {
               ...pic,
-              matched: pic.id === wordId, 
+              matched: pic.id === wordId,
               word: wordCard.word,
             }
           : pic
       )
     );
 
-    
     setWordCards((prev) => prev.filter((w) => w.id !== wordId));
   };
 
@@ -227,9 +224,7 @@ const Task3DragMatch = ({
       />
 
       {isLoading && !isLocked ? (
-        <div className="flex items-center justify-center py-12">
-          <p className="text-gray-400 text-lg">Loading word match...</p>
-        </div>
+        <TaskLoadingLockError variant="loading" title="Drag & Match Words Loading.." />
       ) : (
         <>
           <div className="grid grid-cols-2 gap-4 w-full">

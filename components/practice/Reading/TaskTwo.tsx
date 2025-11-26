@@ -4,6 +4,7 @@ import { FaLock, FaCheckCircle, FaArrowRight } from "react-icons/fa";
 import TaskHeader from "@/components/shared/TaskHeader";
 import { useAuthStore } from "@/stores/authStore";
 import toast from "react-hot-toast";
+import TaskLoadingLockError from "../TaskLoadingLock";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -53,7 +54,7 @@ const Task2SightWordPractice = ({
 
         setSentence(data.sentence || "");
         setSightWords(data.sight_words || []);
-      } catch (error:any) {
+      } catch (error: any) {
         toast.error(
           error?.data?.errorMessages?.[0]?.message || error?.data?.message
         );
@@ -130,9 +131,7 @@ const Task2SightWordPractice = ({
       />
 
       {isLoading && !isLocked ? (
-        <div className="flex items-center justify-center py-12">
-          <p className="text-gray-400 text-lg">Loading sight words...</p>
-        </div>
+        <TaskLoadingLockError variant="loading" title="Sight Word Loading.." />
       ) : (
         <>
           <div className="bg-[#363851] p-4 rounded-xl">

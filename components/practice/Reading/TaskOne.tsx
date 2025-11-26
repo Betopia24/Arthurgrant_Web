@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import TaskHeader from "@/components/shared/TaskHeader";
 import toast from "react-hot-toast";
 import { AnyCnameRecord } from "dns";
+import TaskLoadingLockError from "../TaskLoadingLock";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -100,9 +101,10 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
       />
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <p className="text-gray-400 text-lg">Loading flashcards...</p>
-        </div>
+        <TaskLoadingLockError
+          variant="loading"
+          title="Phoneme Flashcards Loading.."
+        />
       ) : (
         <>
           <div className="flex gap-6">
