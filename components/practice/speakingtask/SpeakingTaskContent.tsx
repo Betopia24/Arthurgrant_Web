@@ -18,6 +18,7 @@ import Task4Content from "./Task4Content";
 import { aiRequest } from "@/lib/aiRequest";
 import { useAuthStore } from "@/stores/authStore";
 import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMessage";
+import TaskLoadingLockError from "../TaskLoadingLock";
 
 // Speech Recognition setup
 const SpeechRecognitionAPI =
@@ -772,90 +773,142 @@ const SpeakingTaskContent = () => {
 
           <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
             {/* Task 1 */}
-            <TaskCard
-              taskNumber={1}
-              currentTask={currentTask}
-              title="Pronunciation Practice"
-              description="Word Level Training"
-              content={
-                <Task1Content
-                  word={task1State.word}
-                  isSpeaking={isSpeaking}
-                  listening={task1State.listening}
-                  done={task1State.done}
-                  attempts={task1State.attempts}
-                  onPlay={handleTask1Play}
-                  onMic={handleTask1Mic}
-                  onRefresh={task1Refresh}
-                  isSpeechRecognitionAvailable={isSpeechRecognitionAvailable}
-                />
-              }
-            />
+            {loading.wordsPool ? (
+              <TaskLoadingLockError
+                variant="loading"
+                title="Pronunciation Words Loading..."
+              />
+            ) : errors.wordsPool ? (
+              <TaskLoadingLockError
+                variant="error"
+                title="Failed to Load Pronunciation Words"
+                onRetry={fetchWordsPool}
+              />
+            ) : (
+              <TaskCard
+                taskNumber={1}
+                currentTask={currentTask}
+                title="Pronunciation Practice"
+                description="Word Level Training"
+                content={
+                  <Task1Content
+                    word={task1State.word}
+                    isSpeaking={isSpeaking}
+                    listening={task1State.listening}
+                    done={task1State.done}
+                    attempts={task1State.attempts}
+                    onPlay={handleTask1Play}
+                    onMic={handleTask1Mic}
+                    onRefresh={task1Refresh}
+                    isSpeechRecognitionAvailable={isSpeechRecognitionAvailable}
+                  />
+                }
+              />
+            )}
 
             {/* Task 2 */}
-            <TaskCard
-              taskNumber={2}
-              currentTask={currentTask}
-              title="Phrase Repeat"
-              description="Follow the Pronunciation"
-              content={
-                <Task2Content
-                  phrase={task2State.phrase}
-                  isSpeaking={isSpeaking}
-                  listening={task2State.listening}
-                  done={task2State.done}
-                  fluency={task2State.fluency}
-                  onPlay={handleTask2Play}
-                  onMic={handleTask2Mic}
-                  onRefresh={task2Refresh}
-                  isSpeechRecognitionAvailable={isSpeechRecognitionAvailable}
-                />
-              }
-            />
+            {loading.phrasesPool ? (
+              <TaskLoadingLockError
+                variant="loading"
+                title="Phrases Loading..."
+              />
+            ) : errors.phrasesPool ? (
+              <TaskLoadingLockError
+                variant="error"
+                title="Failed to Load Phrases"
+                onRetry={fetchPhrasesPool}
+              />
+            ) : (
+              <TaskCard
+                taskNumber={2}
+                currentTask={currentTask}
+                title="Phrase Repeat"
+                description="Follow the Pronunciation"
+                content={
+                  <Task2Content
+                    phrase={task2State.phrase}
+                    isSpeaking={isSpeaking}
+                    listening={task2State.listening}
+                    done={task2State.done}
+                    fluency={task2State.fluency}
+                    onPlay={handleTask2Play}
+                    onMic={handleTask2Mic}
+                    onRefresh={task2Refresh}
+                    isSpeechRecognitionAvailable={isSpeechRecognitionAvailable}
+                  />
+                }
+              />
+            )}
 
             {/* Task 3 */}
-            <TaskCard
-              taskNumber={3}
-              currentTask={currentTask}
-              title="Listen & Speak"
-              description="Sentence Repetition"
-              content={
-                <Task3Content
-                  sentence={task3State.sentence}
-                  isSpeaking={isSpeaking}
-                  listening={task3State.listening}
-                  done={task3State.done}
-                  attempts={task3State.attempts}
-                  onPlay={handleTask3Play}
-                  onSlow={handleTask3Slow}
-                  onMic={handleTask3Mic}
-                  onRefresh={task3Refresh}
-                  isSpeechRecognitionAvailable={isSpeechRecognitionAvailable}
-                />
-              }
-            />
+            {loading.sentencesPool ? (
+              <TaskLoadingLockError
+                variant="loading"
+                title="Sentences Loading..."
+              />
+            ) : errors.sentencesPool ? (
+              <TaskLoadingLockError
+                variant="error"
+                title="Failed to Load Sentences"
+                onRetry={fetchSentencesPool}
+              />
+            ) : (
+              <TaskCard
+                taskNumber={3}
+                currentTask={currentTask}
+                title="Listen & Speak"
+                description="Sentence Repetition"
+                content={
+                  <Task3Content
+                    sentence={task3State.sentence}
+                    isSpeaking={isSpeaking}
+                    listening={task3State.listening}
+                    done={task3State.done}
+                    attempts={task3State.attempts}
+                    onPlay={handleTask3Play}
+                    onSlow={handleTask3Slow}
+                    onMic={handleTask3Mic}
+                    onRefresh={task3Refresh}
+                    isSpeechRecognitionAvailable={isSpeechRecognitionAvailable}
+                  />
+                }
+              />
+            )}
 
             {/* Task 4 */}
-            <TaskCard
-              taskNumber={4}
-              currentTask={currentTask}
-              title="Vocabulary Challenge"
-              description="Daily Word Practice"
-              content={
-                <Task4Content
-                  words={task4State.words}
-                  correct={task4State.correct}
-                  listening={task4State.listening}
-                  done={task4State.done}
-                  progress={task4Progress}
-                  onPlayWord={handleTask4PlayWord}
-                  onMic={handleTask4Mic}
-                  onRefresh={task4Refresh}
-                  isSpeaking={isSpeaking}
-                  isSpeechRecognitionAvailable={isSpeechRecognitionAvailable}
-                />
-              }
-            />
+            {loading.vocabPool ? (
+              <TaskLoadingLockError
+                variant="loading"
+                title="Vocabulary Loading..."
+              />
+            ) : errors.vocabPool ? (
+              <TaskLoadingLockError
+                variant="error"
+                title="Failed to Load Vocabulary"
+                onRetry={fetchVocabPool}
+              />
+            ) : (
+              <TaskCard
+                taskNumber={4}
+                currentTask={currentTask}
+                title="Vocabulary Challenge"
+                description="Daily Word Practice"
+                content={
+                  <Task4Content
+                    words={task4State.words}
+                    correct={task4State.correct}
+                    listening={task4State.listening}
+                    done={task4State.done}
+                    progress={task4Progress}
+                    onPlayWord={handleTask4PlayWord}
+                    onMic={handleTask4Mic}
+                    onRefresh={task4Refresh}
+                    isSpeaking={isSpeaking}
+                    isSpeechRecognitionAvailable={isSpeechRecognitionAvailable}
+                  />
+                }
+              />
+            )}
           </div>
 
           {/* Completion Message */}
