@@ -163,7 +163,6 @@ const LearnEnglishContent = () => {
     );
 
     const submissionData = {
-      sessionName: "Adult",
       tasks: [
         {
           taskName: "Auditory Discrimination",
@@ -205,7 +204,7 @@ const LearnEnglishContent = () => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_AI_API}/adult/submit_adult_tasks`,
+        `${process.env.NEXT_PUBLIC_AI_API}/adult-task/submit`,
         {
           method: "POST",
           headers: {
@@ -219,7 +218,10 @@ const LearnEnglishContent = () => {
       console.log("===== SUBMISSION RESPONSE =====");
       console.log(JSON.stringify(data, null, 2));
       console.log("===============================");
-      setIsSubmitted(true);
+      if (data?.success === true) {
+        toast.success("Answers submitted successfully!");
+        setIsSubmitted(true);
+      }
     } catch (error: any) {
       toast.error(
         error?.data?.errorMessages?.[0]?.message || error?.data?.message
