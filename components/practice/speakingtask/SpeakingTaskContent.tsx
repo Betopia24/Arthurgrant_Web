@@ -19,6 +19,8 @@ import { aiRequest } from "@/lib/aiRequest";
 import { useAuthStore } from "@/stores/authStore";
 import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMessage";
 import TaskLoadingLockError from "../TaskLoadingLock";
+import { apiRequest } from "@/lib/apiRequest";
+import toast from "react-hot-toast";
 
 // Speech Recognition setup
 const SpeechRecognitionAPI =
@@ -30,6 +32,7 @@ type LoadingState = {
   phrasesPool: boolean;
   sentencesPool: boolean;
   vocabPool: boolean;
+  submit: boolean;
 };
 
 type ErrorState = {
@@ -37,6 +40,7 @@ type ErrorState = {
   phrasesPool: string | null;
   sentencesPool: string | null;
   vocabPool: string | null;
+  submit: string | null;
 };
 
 const SpeakingTaskContent = () => {
@@ -55,6 +59,7 @@ const SpeakingTaskContent = () => {
     phrasesPool: true,
     sentencesPool: true,
     vocabPool: true,
+    submit: false,
   });
 
   const [errors, setErrors] = useState<ErrorState>({
@@ -62,6 +67,7 @@ const SpeakingTaskContent = () => {
     phrasesPool: null,
     sentencesPool: null,
     vocabPool: null,
+    submit: null,
   });
 
   const fetchWordsPool = async () => {
@@ -745,6 +751,58 @@ const SpeakingTaskContent = () => {
   const allTasksCompleted =
     task1State.done && task2State.done && task3State.done && task4State.done;
 
+  const handleSubmit = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, submit: true }));
+      setErrors((prev) => ({ ...prev, submit: null }));
+
+      // Calculate scores based on task completion
+      const task1Score = task1State.done ? 100 : 0;
+      const task2Score = task2State.done ? task2State.fluency || 0 : 0;
+      const task3Score = task3State.done ? 100 : 0;
+      const task4Score = task4State.done
+        ? Math.round((task4State.correct.size / task4State.words.length) * 100)
+        : 0;
+
+      const body = {
+        tasks: [
+          {
+            taskName: "Pronunciation Practice",
+            score: task1Score,
+            isCorrect: task1State.done, // true when done
+          },
+          {
+            taskName: "Phrase Repeat",
+            score: task2Score,
+            isCorrect: task2Score >= 65, // true when fluency >= 65
+          },
+          {
+            taskName: "Listen & Speak",
+            score: task3Score,
+            isCorrect: task3State.done, // true when done
+          },
+          {
+            taskName: "Vocabulary Challenge",
+            score: task4Score,
+            isCorrect: task4State.done, // true when done
+          },
+        ],
+      };
+
+      const res = await apiRequest("/speaking/submit-session", "POST", body);
+      console.log("check Speaking submit", res);
+      toast.success(res.message || "Speaking submitted successfully");
+    } catch (error: any) {
+      console.error(error);
+      setErrors((prev) => ({
+        ...prev,
+        submit: "Failed to submit Speaking. Please try again.",
+      }));
+      toast.error("Failed to submit Speaking. Please try again.");
+    } finally {
+      setLoading((prev) => ({ ...prev, submit: false }));
+    }
+  };
   return (
     <div className="min-h-screen bg-section-dark">
       <PracticeHero
@@ -927,6 +985,16 @@ const SpeakingTaskContent = () => {
             />
           </div>
 
+          <button
+            onClick={handleSubmit}
+            disabled={loading.submit || !allTasksCompleted}
+            className={`px-12 py-4 font-semibold text-lg w-full rounded-xl ${
+              !allTasksCompleted || loading.submit
+                ? "bg-[#828882] opacity-50 cursor-not-allowed"
+                : "bg-gradient-to-r from-yellow-400 to-pink-500 text-white cursor-pointer hover:opacity-90 transition-opacity"
+            }`}>
+            {loading.submit ? "Submitting speaking..." : " Submit All Answers"}
+          </button>
           {/* Completion Message */}
           {allTasksCompleted && <CompletePageFooterMessage text="Done" />}
         </div>
