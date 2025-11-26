@@ -12,6 +12,8 @@ import "./gradient-button.css";
 import { aiRequest } from "@/lib/aiRequest";
 import { useAppSelector } from "@/redux/hooks";
 import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMessage";
+import { apiRequest } from "@/lib/apiRequest";
+import toast from "react-hot-toast";
 
 type ScenariosTypes = {
   slow: string[];
@@ -28,6 +30,7 @@ type LoadingState = {
   scenarios: boolean;
   contextData: boolean;
   flowChainData: boolean;
+  submit: boolean;
 };
 
 type ErrorState = {
@@ -35,6 +38,7 @@ type ErrorState = {
   scenarios: string | null;
   contextData: string | null;
   flowChainData: string | null;
+  submit: string | null;
 };
 
 const PresentationContent = () => {
@@ -51,6 +55,7 @@ const PresentationContent = () => {
     scenarios: false,
     contextData: false,
     flowChainData: false,
+    submit: false,
   });
 
   const [errors, setErrors] = useState<ErrorState>({
@@ -58,6 +63,7 @@ const PresentationContent = () => {
     scenarios: null,
     contextData: null,
     flowChainData: null,
+    submit: null,
   });
 
   const allCompleted =
@@ -173,6 +179,38 @@ const PresentationContent = () => {
     }
   }, [task_3.isComplete]);
 
+  const handleSubmit = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, submit: true }));
+      setErrors((prev) => ({ ...prev, submit: null }));
+
+      const body = {
+        tasks: [
+          task_1.feedback,
+          task_2.feedback,
+          task_3.feedback,
+          task_4.feedback,
+        ],
+      };
+      const res = await apiRequest("/presentation/submit", "POST", body);
+      console.log("check presentation submit", res);
+      toast.success(res.message || "Presentation submitted successfully");
+    } catch (error: any) {
+      console.error(error);
+      setErrors((prev) => ({
+        ...prev,
+        submit: "Failed to submit presentation. Please try again.",
+      }));
+      toast.error(
+        error.error ||
+          error.data.message ||
+          "Failed to submit presentation. Please try again."
+      );
+    } finally {
+      setLoading((prev) => ({ ...prev, submit: false }));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-section-dark">
       <PracticeHero
@@ -236,20 +274,18 @@ const PresentationContent = () => {
             />
           </div>
 
-          {allCompleted && (
-            <button
-              className={`px-12 py-4 font-semibold text-lg rounded-xl ${
-                !allCompleted
-                  ? "bg-[#828882] opacity-50 cursor-not-allowed"
-                  : "bg-gradient-to-r from-yellow-400 to-pink-500 text-white cursor-pointer hover:opacity-90 transition-opacity"
-              }`}>
-              {allCompleted
-                ? "Submitting..."
-                : allCompleted
-                ? "Submitted!"
-                : "Submit All Answers"}
-            </button>
-          )}
+          <button
+            onClick={handleSubmit}
+            disabled={loading.submit || !allCompleted}
+            className={`px-12 py-4 font-semibold text-lg rounded-xl ${
+              !allCompleted || loading.submit
+                ? "bg-[#828882] opacity-50 cursor-not-allowed"
+                : "bg-gradient-to-r from-yellow-400 to-pink-500 text-white cursor-pointer hover:opacity-90 transition-opacity"
+            }`}>
+            {loading.submit
+              ? "Submitting presentation..."
+              : " Submit All Answers"}
+          </button>
 
           {allCompleted && <CompletePageFooterMessage text="Done" />}
         </div>
