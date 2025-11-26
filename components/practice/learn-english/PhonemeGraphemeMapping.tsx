@@ -121,10 +121,6 @@ const PhonemeGraphemeMapping = ({
 
       const isCorrect = userAnswer.toLowerCase() === correctAnswer;
 
-      console.log("User Answer:", userAnswer);
-      console.log("Correct Answer:", correctAnswer);
-      console.log("Is Correct:", isCorrect);
-
       // Update correct answers count
       if (isCorrect) {
         setCorrectAnswers((prev) => prev + 1);
