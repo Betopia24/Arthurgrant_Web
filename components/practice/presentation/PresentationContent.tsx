@@ -10,7 +10,6 @@ import PracticeHero from "../PracticeHero2";
 import Heading from "@/components/shared/Heading";
 import "./gradient-button.css";
 import { aiRequest } from "@/lib/aiRequest";
-import TaskLoadingLockError from "../TaskLoadingLock";
 import { useAppSelector } from "@/redux/hooks";
 import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMessage";
 
@@ -48,10 +47,10 @@ const PresentationContent = () => {
   const [flowChainData, setFlowChainData] = useState<string[]>([]);
 
   const [loading, setLoading] = useState<LoadingState>({
-    powerWords: true,
-    scenarios: true,
-    contextData: true,
-    flowChainData: true,
+    powerWords: false,
+    scenarios: false,
+    contextData: false,
+    flowChainData: false,
   });
 
   const [errors, setErrors] = useState<ErrorState>({
@@ -81,7 +80,7 @@ const PresentationContent = () => {
       console.error("Error fetching power words:", error);
       setErrors((prev) => ({
         ...prev,
-        powerWords: "Failed to load power words",
+        powerWords: "Failed to load power words. Please try again.",
       }));
     } finally {
       setLoading((prev) => ({ ...prev, powerWords: false }));
@@ -100,7 +99,10 @@ const PresentationContent = () => {
       setScenarios(data);
     } catch (error) {
       console.error("Error fetching scenarios:", error);
-      setErrors((prev) => ({ ...prev, scenarios: "Failed to load scenarios" }));
+      setErrors((prev) => ({
+        ...prev,
+        scenarios: "Failed to load scenarios. Please try again.",
+      }));
     } finally {
       setLoading((prev) => ({ ...prev, scenarios: false }));
     }
@@ -120,7 +122,7 @@ const PresentationContent = () => {
       console.error("Error fetching context data:", error);
       setErrors((prev) => ({
         ...prev,
-        contextData: "Failed to load context data",
+        contextData: "Failed to load context data. Please try again.",
       }));
     } finally {
       setLoading((prev) => ({ ...prev, contextData: false }));
@@ -141,7 +143,7 @@ const PresentationContent = () => {
       console.error("Error fetching flow chain data:", error);
       setErrors((prev) => ({
         ...prev,
-        flowChainData: "Failed to load flow chain",
+        flowChainData: "Failed to load flow chain. Please try again.",
       }));
     } finally {
       setLoading((prev) => ({ ...prev, flowChainData: false }));
@@ -149,14 +151,27 @@ const PresentationContent = () => {
   };
 
   useEffect(() => {
-    // Fetch all data in parallel
-    Promise.all([
-      fetchPowerWords(),
-      fetchScenarios(),
-      fetchContext(),
-      fetchFlowChainData(),
-    ]);
+    // Fetch initial data
+    fetchPowerWords();
   }, []);
+
+  useEffect(() => {
+    if (task_1.isComplete) {
+      fetchScenarios();
+    }
+  }, [task_1.isComplete]);
+
+  useEffect(() => {
+    if (task_2.isComplete) {
+      fetchContext();
+    }
+  }, [task_2.isComplete]);
+
+  useEffect(() => {
+    if (task_3.isComplete) {
+      fetchFlowChainData();
+    }
+  }, [task_3.isComplete]);
 
   return (
     <div className="min-h-screen bg-section-dark">
@@ -190,68 +205,35 @@ const PresentationContent = () => {
           {/* Tasks Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Power Words Pulse */}
-            {loading.powerWords ? (
-              <TaskLoadingLockError
-                variant="loading"
-                title="Power Words Loading..."
-              />
-            ) : errors.powerWords ? (
-              <TaskLoadingLockError
-                variant="error"
-                title="Failed to Load Power Words"
-                onRetry={fetchPowerWords}
-              />
-            ) : (
-              <PowerWordsPulse powerWords={powerWords} />
-            )}
+            <PowerWordsPulse
+              powerWords={powerWords}
+              error={errors.powerWords}
+              loading={loading.powerWords}
+            />
 
             {/* Precision Drill */}
-            {loading.scenarios ? (
-              <TaskLoadingLockError
-                variant="loading"
-                title="Precision Drill Loading..."
-              />
-            ) : errors.scenarios ? (
-              <TaskLoadingLockError
-                variant="error"
-                title="Failed to Load Precision Drill"
-                onRetry={fetchScenarios}
-              />
-            ) : (
-              <PrecisionDrill scenarios={scenarios!} />
-            )}
+            <PrecisionDrill
+              scenarios={scenarios}
+              error={errors.scenarios}
+              loading={loading.scenarios}
+              isTask1Complete={task_1.isComplete}
+            />
 
             {/* Context Spin */}
-            {loading.contextData ? (
-              <TaskLoadingLockError
-                variant="loading"
-                title="Context Spin Loading..."
-              />
-            ) : errors.contextData ? (
-              <TaskLoadingLockError
-                variant="error"
-                title="Failed to Load Context Spin"
-                onRetry={fetchContext}
-              />
-            ) : (
-              <ContextSpin contextData={contextData!} />
-            )}
+            <ContextSpin
+              contextData={contextData}
+              error={errors.contextData}
+              loading={loading.contextData}
+              isTask2Complete={task_2.isComplete}
+            />
 
             {/* Flow Chain */}
-            {loading.flowChainData ? (
-              <TaskLoadingLockError
-                variant="loading"
-                title="Flow Chain Loading..."
-              />
-            ) : errors.flowChainData ? (
-              <TaskLoadingLockError
-                variant="error"
-                title="Failed to Load Flow Chain"
-                onRetry={fetchFlowChainData}
-              />
-            ) : (
-              <FlowChain scenarios={flowChainData} />
-            )}
+            <FlowChain
+              scenarios={flowChainData}
+              error={errors.flowChainData}
+              loading={loading.flowChainData}
+              isTask3Complete={task_3.isComplete}
+            />
           </div>
 
           {allCompleted && (

@@ -7,6 +7,7 @@ import FeedbackScore from "./FeedbackScore";
 import { aiRequest } from "@/lib/aiRequest";
 import { useAppDispatch } from "@/redux/hooks";
 import { setTaskComplete } from "@/redux/features/presentation/presentationSlice";
+import TaskLoadingLockError from "../TaskLoadingLock";
 
 interface AIFeedback {
   score: number;
@@ -17,8 +18,16 @@ interface AIFeedback {
 
 interface PropsType {
   scenarios: string[];
+  loading: boolean;
+  error: string | null;
+  isTask3Complete: boolean;
 }
-const FlowChain = ({ scenarios }: PropsType) => {
+const FlowChain = ({
+  scenarios,
+  error,
+  loading,
+  isTask3Complete,
+}: PropsType) => {
   const dispatch = useAppDispatch();
   const [selectedScenarios, setSelectedScenarios] = useState<string[]>([]);
   const [isRecording, setIsRecording] = useState(false);
@@ -174,84 +183,103 @@ const FlowChain = ({ scenarios }: PropsType) => {
     <div className="p-6 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-6 w-full">
       <h1 className="font-semibold text-2xl text-white">Flow Chain</h1>
 
-      <div className="rounded-xl p-6 bg-[#101231] space-y-8">
-        <div className="space-y-4">
-          <h2 className="text-white font-medium">
-            Select scenarios to connect (1-3):
-          </h2>
-          <div className="flex gap-3 flex-wrap">
-            {scenarios.length === 0 ? (
-              <div className="text-white/60 text-center w-full py-4">
-                No scenarios available
-              </div>
-            ) : (
-              scenarios.map((scenario, index) => (
-                <button
-                  key={index}
-                  onClick={() => toggleScenario(scenario)}
-                  disabled={
-                    !selectedScenarios.includes(scenario) &&
-                    selectedScenarios.length >= 3
-                  }
-                  className={`px-8 py-4 rounded-2xl transition-all ${
-                    selectedScenarios.includes(scenario)
-                      ? "bg-gradient-brand border-transparent text-white"
-                      : "gradient-button"
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}>
-                  {scenario}
-                  {selectedScenarios.includes(scenario) && (
-                    <span className="ml-1">✓</span>
-                  )}
-                </button>
-              ))
-            )}
-          </div>
-          <p className="text-white/60 text-sm">
-            {selectedScenarios.length}/3 scenarios selected
-          </p>
-        </div>
-
-        <div className="px-4 py-8 bg-[#FFFFFF1F] border border-white/15 rounded-xl flex flex-col items-center justify-center gap-6 w-full">
-          <div className="text-center space-y-2">
-            <button
-              onClick={handleRecordingClick}
-              disabled={
-                selectedScenarios.length === 0 || scenarios.length === 0
-              }
-              className={`rounded-full font-semibold text-white w-20 h-20 flex items-center justify-center transition-all ${
-                isRecording
-                  ? "bg-red-500 animate-pulse"
-                  : audioBlob
-                  ? "bg-green-500"
-                  : "bg-gradient-brand hover:brightness-110"
-              } disabled:opacity-50`}>
-              {isRecording ? (
-                <FaMicrophoneSlash className="w-8 h-8" />
+      {!isTask3Complete ? (
+        <TaskLoadingLockError
+          title="Please complete previous task"
+          variant="locked"
+        />
+      ) : loading ? (
+        <TaskLoadingLockError title="Flow chain loading..." variant="loading" />
+      ) : error ? (
+        <TaskLoadingLockError
+          title={error} // Use the actual error message
+          variant="error"
+        />
+      ) : !scenarios ? (
+        <TaskLoadingLockError
+          title="No Flow chain data available"
+          variant="error"
+        />
+      ) : (
+        <div className="rounded-xl p-6 bg-[#101231] space-y-8">
+          <div className="space-y-4">
+            <h2 className="text-white font-medium">
+              Select scenarios to connect (1-3):
+            </h2>
+            <div className="flex gap-3 flex-wrap">
+              {scenarios.length === 0 ? (
+                <div className="text-white/60 text-center w-full py-4">
+                  No scenarios available
+                </div>
               ) : (
-                <FaMicrophone className="w-8 h-8" />
+                scenarios.map((scenario, index) => (
+                  <button
+                    key={index}
+                    onClick={() => toggleScenario(scenario)}
+                    disabled={
+                      !selectedScenarios.includes(scenario) &&
+                      selectedScenarios.length >= 3
+                    }
+                    className={`px-8 py-4 rounded-2xl transition-all ${
+                      selectedScenarios.includes(scenario)
+                        ? "bg-gradient-brand border-transparent text-white"
+                        : "gradient-button"
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}>
+                    {scenario}
+                    {selectedScenarios.includes(scenario) && (
+                      <span className="ml-1">✓</span>
+                    )}
+                  </button>
+                ))
               )}
-            </button>
-
-            {isRecording && (
-              <div className="text-red-400 font-semibold animate-pulse">
-                {formatTime(recordingTime)}
-              </div>
-            )}
+            </div>
+            <p className="text-white/60 text-sm">
+              {selectedScenarios.length}/3 scenarios selected
+            </p>
           </div>
 
-          <span className="font-medium text-white text-md text-center">
-            {scenarios.length === 0
-              ? "No scenarios available"
-              : selectedScenarios.length === 0
-              ? "Select 1-3 scenarios to begin"
-              : isRecording
-              ? "Recording... Click to stop"
-              : audioBlob
-              ? "✓ Speech recorded successfully"
-              : "Click to start your continuous speech"}
-          </span>
+          <div className="px-4 py-8 bg-[#FFFFFF1F] border border-white/15 rounded-xl flex flex-col items-center justify-center gap-6 w-full">
+            <div className="text-center space-y-2">
+              <button
+                onClick={handleRecordingClick}
+                disabled={
+                  selectedScenarios.length === 0 || scenarios.length === 0
+                }
+                className={`rounded-full font-semibold text-white w-20 h-20 flex items-center justify-center transition-all ${
+                  isRecording
+                    ? "bg-red-500 animate-pulse"
+                    : audioBlob
+                    ? "bg-green-500"
+                    : "bg-gradient-brand hover:brightness-110"
+                } disabled:opacity-50`}>
+                {isRecording ? (
+                  <FaMicrophoneSlash className="w-8 h-8" />
+                ) : (
+                  <FaMicrophone className="w-8 h-8" />
+                )}
+              </button>
+
+              {isRecording && (
+                <div className="text-red-400 font-semibold animate-pulse">
+                  {formatTime(recordingTime)}
+                </div>
+              )}
+            </div>
+
+            <span className="font-medium text-white text-md text-center">
+              {scenarios.length === 0
+                ? "No scenarios available"
+                : selectedScenarios.length === 0
+                ? "Select 1-3 scenarios to begin"
+                : isRecording
+                ? "Recording... Click to stop"
+                : audioBlob
+                ? "✓ Speech recorded successfully"
+                : "Click to start your continuous speech"}
+            </span>
+          </div>
         </div>
-      </div>
+      )}
 
       <button
         onClick={handleAICheck}
