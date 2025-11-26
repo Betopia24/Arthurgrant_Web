@@ -166,7 +166,7 @@ const SentenceBuilder = ({
       }`}
     >
       {isLocked ? (
-        <TaskLoadingLock variant="locked" title=" Sentence Builder Loading.." />
+        <TaskLoadingLock variant="locked" title="Complete Task 5 to Unlock this Task " />
       ) : (
         <>
           <h1 className="font-semibold text-2xl text-white">
@@ -174,9 +174,10 @@ const SentenceBuilder = ({
           </h1>
 
           {isFetching ? (
-            <div className="rounded-xl p-5 md:p-8 bg-[#101231] flex items-center justify-center min-h-[400px]">
-              <p className="text-gray-400 text-lg">Loading exercises...</p>
-            </div>
+            <TaskLoadingLock
+              variant="loading"
+              title=" Sentence Builder Loading.."
+            />
           ) : (
             <>
               {/* Main content */}

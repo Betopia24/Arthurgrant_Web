@@ -184,14 +184,20 @@ const PhraseMaker = ({
     >
       {isLocked ? (
         <>
-          <TaskLoadingLock variant="locked" title="Phrase Maker Loading..." />
+          <TaskLoadingLock
+            variant="locked"
+            title="Complete Task 4 to Unlock Phrase Maker"
+          />
         </>
       ) : (
         <>
           <h1 className="font-semibold text-2xl text-white">Phrase Maker</h1>
 
           {isFetching ? (
-            <TaskLoadingLock variant="loading" title="loading..." />
+            <TaskLoadingLock
+              variant="loading"
+              title="Phrase Maker loading..."
+            />
           ) : (
             <>
               {/* Main content */}
