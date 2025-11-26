@@ -4,6 +4,7 @@ import { FaLock, FaCheckCircle, FaArrowRight } from "react-icons/fa";
 import TaskHeader from "@/components/shared/TaskHeader";
 import { useAuthStore } from "@/stores/authStore";
 import toast from "react-hot-toast";
+import TaskLoadingLockError from "../TaskLoadingLock";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -145,9 +146,10 @@ const Task4ReadingComprehension = ({
       />
 
       {isLoading && !isLocked ? (
-        <div className="flex items-center justify-center py-12">
-          <p className="text-gray-400 text-lg">Loading passage...</p>
-        </div>
+        <TaskLoadingLockError
+          variant="loading"
+          title="Reading Comprehension Loading ..."
+        />
       ) : (
         <>
           <div className="flex flex-col lg:flex-row gap-6 w-full">
