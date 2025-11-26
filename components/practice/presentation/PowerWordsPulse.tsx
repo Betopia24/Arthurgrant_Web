@@ -6,8 +6,12 @@ import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
 import { aiRequest } from "@/lib/aiRequest";
 import { useAppDispatch } from "@/redux/hooks";
-import { setTaskComplete } from "@/redux/features/presentation/presentationSlice";
+import {
+  resetSpecificTask,
+  setTaskComplete,
+} from "@/redux/features/presentation/presentationSlice";
 import TaskLoadingLockError from "../TaskLoadingLock";
+import toast from "react-hot-toast";
 
 interface AIFeedback {
   score: number;
@@ -152,8 +156,11 @@ const PowerWordsPulse = ({ powerWords, error, loading }: PropsType) => {
       );
       setFeedback(data);
       dispatch(setTaskComplete({ task: "task_1", feedback: data }));
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting for AI feedback:", error);
+      toast.error("Failed to get AI feedback. Please try again.");
+      setFeedback(null);
+      dispatch(resetSpecificTask({ task: "task_1" }));
     } finally {
       setIsLoading(false);
     }

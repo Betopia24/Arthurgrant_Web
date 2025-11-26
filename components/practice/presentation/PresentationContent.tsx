@@ -201,11 +201,7 @@ const PresentationContent = () => {
         ...prev,
         submit: "Failed to submit presentation. Please try again.",
       }));
-      toast.error(
-        error.error ||
-          error.data.message ||
-          "Failed to submit presentation. Please try again."
-      );
+      toast.error("Failed to submit presentation. Please try again.");
     } finally {
       setLoading((prev) => ({ ...prev, submit: false }));
     }

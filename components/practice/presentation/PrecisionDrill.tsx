@@ -6,8 +6,12 @@ import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
 import { aiRequest } from "@/lib/aiRequest";
 import { useAppDispatch } from "@/redux/hooks";
-import { setTaskComplete } from "@/redux/features/presentation/presentationSlice";
+import {
+  resetSpecificTask,
+  setTaskComplete,
+} from "@/redux/features/presentation/presentationSlice";
 import TaskLoadingLockError from "../TaskLoadingLock";
+import toast from "react-hot-toast";
 
 interface AIFeedback {
   score: number;
@@ -265,9 +269,11 @@ const PrecisionDrill = ({
       );
       setFeedback(data);
       dispatch(setTaskComplete({ task: "task_2", feedback: data }));
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error getting AI feedback:", error);
-      alert("Failed to get AI feedback. Please try again.");
+      toast.error("Failed to get AI feedback. Please try again.");
+      setFeedback(null);
+      dispatch(resetSpecificTask({ task: "task_2" }));
     } finally {
       setIsLoading(false);
     }

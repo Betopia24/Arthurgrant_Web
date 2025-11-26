@@ -5,9 +5,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
 import { aiRequest } from "@/lib/aiRequest";
-import { setTaskComplete } from "@/redux/features/presentation/presentationSlice";
+import {
+  resetSpecificTask,
+  setTaskComplete,
+} from "@/redux/features/presentation/presentationSlice";
 import { useAppDispatch } from "@/redux/hooks";
 import TaskLoadingLockError from "../TaskLoadingLock";
+import toast from "react-hot-toast";
 
 interface AIFeedback {
   score: number;
@@ -153,9 +157,12 @@ const ContextSpin = ({
       );
       setFeedback(data);
       dispatch(setTaskComplete({ task: "task_3", feedback: data }));
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error getting AI feedback:", error);
-      alert("Failed to get AI feedback. Please try again.");
+
+      toast.error("Failed to get AI feedback. Please try again.");
+      setFeedback(null);
+      dispatch(resetSpecificTask({ task: "task_3" }));
     } finally {
       setIsLoading(false);
     }
