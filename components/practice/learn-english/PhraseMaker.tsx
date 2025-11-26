@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 import { useAuthStore } from "@/stores/authStore";
+import toast from "react-hot-toast";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -20,10 +21,7 @@ interface Phrase {
   phrase_options: string[];
 }
 
-const PhraseMaker = ({
-  taskResult,
-  onTaskComplete,
-}: PhraseMakerProps) => {
+const PhraseMaker = ({ taskResult, onTaskComplete }: PhraseMakerProps) => {
   const { accessToken } = useAuthStore();
 
   const [phrases, setPhrases] = useState<Phrase[]>([]);
@@ -61,15 +59,17 @@ const PhraseMaker = ({
           }
         );
         const data = await res.json();
-        console.log("Phrase Maker API Response:", data);
+
         setPhrases(data.phrases || []);
 
         // Initialize first phrase
         if (data.phrases && data.phrases.length > 0) {
           setAvailableWords(shuffleArray(data.phrases[0].phrase_options));
         }
-      } catch (error) {
-        console.error("Failed to load phrases", error);
+      } catch (error: any) {
+        toast.error(
+          error?.data?.errorMessages?.[0]?.message || error?.data?.message
+        );
       } finally {
         setIsFetching(false);
       }

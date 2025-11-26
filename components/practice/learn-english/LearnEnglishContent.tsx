@@ -276,16 +276,16 @@ const LearnEnglishContent = () => {
             onTaskComplete={handleTask3Complete}
             />
             <WordPartsWorkshop
-            // taskResult={taskResults.task4}
-            // onTaskComplete={handleTask4Complete}
+            taskResult={taskResults.task4}
+            onTaskComplete={handleTask4Complete}
             />
             <PhraseMaker
             taskResult={taskResults.task5}
             onTaskComplete={handleTask5Complete}
             />
             <SentenceBuilder
-            // taskResult={taskResults.task6}
-            // onTaskComplete={handleTask6Complete}
+            taskResult={taskResults.task6}
+            onTaskComplete={handleTask6Complete}
             />
           </div>
 
