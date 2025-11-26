@@ -133,7 +133,7 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
           <div className="bg-[#363851] p-8 rounded-xl flex flex-col items-center justify-center gap-4 w-full">
             <h2 className="text-white font-semibold text-lg">
               Now spell the word:{" "}
-              <span className="text-yellow-400">{targetWord}</span>
+              {/* <span className="text-yellow-400">{targetWord}</span> */}
             </h2>
             <div className="px-6 py-2 border border-gray-500 bg-[#4F5167] rounded-xl text-3xl font-bold text-gradient flex flex-wrap gap-2 justify-center min-h-[60px] items-center">
               {assembledWord ? (

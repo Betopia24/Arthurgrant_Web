@@ -134,14 +134,14 @@ const Task2SightWordPractice = ({
         <TaskLoadingLockError variant="loading" title="Sight Word Loading.." />
       ) : (
         <>
-          <div className="bg-[#363851] p-4 rounded-xl">
+          {/* <div className="bg-[#363851] p-4 rounded-xl">
             <p className="text-gray-300 text-center">
               Find these sight words:{" "}
               <span className="text-yellow-400 font-semibold">
                 {sightWords.join(", ")}
-              </span>
+              </span> 
             </p>
-          </div>
+          </div> */}
 
           <div className="flex flex-wrap items-center justify-center gap-2">
             {sentence.split(" ").map((word, idx) => {
