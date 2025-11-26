@@ -120,7 +120,7 @@ const Navbar = () => {
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex gap-6 xl:gap-8 relative">
-            {navLinks.map((link) => {
+            {filteredNavLinks.map((link) => {
               const isDropdown = !!link.dropdown;
               const isActive = isLinkActive(link);
 
@@ -133,14 +133,16 @@ const Navbar = () => {
                   }
                   onMouseLeave={() =>
                     isDropdown ? setHoveredDropdown(null) : null
-                  }>
+                  }
+                >
                   {isDropdown ? (
                     // For dropdown items, use button or span instead of Link
                     <button
                       className={clsx(
                         "flex items-center gap-1 text-base lg:text-lg xl:text-lg font-semibold transition-colors hover:text-white whitespace-nowrap",
                         isActive ? "text-gradient" : "text-gray-300"
-                      )}>
+                      )}
+                    >
                       {link.label}
                       <ChevronDown
                         className={clsx(
@@ -156,7 +158,8 @@ const Navbar = () => {
                       className={clsx(
                         "flex items-center gap-1 text-base lg:text-lg xl:text-lg font-semibold transition-colors hover:text-white whitespace-nowrap",
                         isActive ? "text-gradient" : "text-gray-300"
-                      )}>
+                      )}
+                    >
                       {link.label}
                     </Link>
                   )}
@@ -180,7 +183,8 @@ const Navbar = () => {
                               isItemActive
                                 ? "text-gradient"
                                 : "text-gray-300 hover:text-white"
-                            )}>
+                            )}
+                          >
                             {item.label}
                           </Link>
                         );
@@ -212,7 +216,8 @@ const Navbar = () => {
               <>
                 <Link
                   href="/signin"
-                  className="text-gray-300 text-base lg:text-lg font-semibold hover:text-white whitespace-nowrap">
+                  className="text-gray-300 text-base lg:text-lg font-semibold hover:text-white whitespace-nowrap"
+                >
                   Login
                 </Link>
 
@@ -220,7 +225,8 @@ const Navbar = () => {
                 <div
                   className="relative"
                   onMouseEnter={() => setHoveredDropdown("language")}
-                  onMouseLeave={() => setHoveredDropdown(null)}>
+                  onMouseLeave={() => setHoveredDropdown(null)}
+                >
                   <button className="relative inline-flex items-center gap-2 px-4 lg:px-5 py-2 lg:py-3 text-base lg:text-lg font-semibold text-white bg-transparent rounded-2xl">
                     <Globe className="w-4 h-4 lg:w-5 lg:h-5 z-10" />
                     <span className="z-10 whitespace-nowrap">
@@ -260,7 +266,8 @@ const Navbar = () => {
                         <button
                           key={language.code}
                           onClick={() => handleLanguageSelect(language.code)}
-                          className="flex items-center justify-between px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 text-sm font-semibold tracking-wide rounded-lg text-left">
+                          className="flex items-center justify-between px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 text-sm font-semibold tracking-wide rounded-lg text-left"
+                        >
                           <div>
                             <div className="font-semibold text-xs lg:text-sm">
                               {language.name}
@@ -285,7 +292,8 @@ const Navbar = () => {
           <button
             className="lg:hidden text-white"
             onClick={() => setSidebarOpen(true)}
-            aria-label="Open Menu">
+            aria-label="Open Menu"
+          >
             <Menu className="w-6 h-6" />
           </button>
         </div>
@@ -295,7 +303,8 @@ const Navbar = () => {
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 transition-opacity"
-          onClick={() => setSidebarOpen(false)}></div>
+          onClick={() => setSidebarOpen(false)}
+        ></div>
       )}
 
       {/* Mobile Sidebar Panel */}
@@ -303,7 +312,8 @@ const Navbar = () => {
         className={clsx(
           "fixed top-0 right-0 h-full z-50 w-4/5 max-w-xs bg-gradient-to-br from-brand-dark to-brand-darker transform transition-transform duration-300 overflow-y-auto",
           sidebarOpen ? "translate-x-0" : "translate-x-full"
-        )}>
+        )}
+      >
         <div className="flex flex-col min-h-full p-6">
           {/* Top: Branding + Close */}
           <div className="flex items-center justify-between mb-8">
@@ -320,7 +330,8 @@ const Navbar = () => {
             <button
               onClick={() => setSidebarOpen(false)}
               className="text-white"
-              aria-label="Close Menu">
+              aria-label="Close Menu"
+            >
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -339,7 +350,8 @@ const Navbar = () => {
                         "flex justify-between items-center text-lg font-semibold text-gray-300 hover:text-white py-2 transition-colors",
                         isActive && "text-gradient"
                       )}
-                      onClick={() => setMobileDropdownOpen((prev) => !prev)}>
+                      onClick={() => setMobileDropdownOpen((prev) => !prev)}
+                    >
                       {link.label}
                       <ChevronDown
                         className={clsx(
@@ -356,7 +368,8 @@ const Navbar = () => {
                         mobileDropdownOpen
                           ? "max-h-60 opacity-100"
                           : "max-h-0 opacity-0"
-                      )}>
+                      )}
+                    >
                       <div className="flex flex-col pl-4 mt-1 border-l-2 border-gray-700">
                         {link.dropdown.map((item) => {
                           const isItemActive = isDropdownItemActive(item.href);
@@ -373,7 +386,8 @@ const Navbar = () => {
                               onClick={() => {
                                 setSidebarOpen(false);
                                 setMobileDropdownOpen(false);
-                              }}>
+                              }}
+                            >
                               {item.label}
                             </Link>
                           );
@@ -392,7 +406,8 @@ const Navbar = () => {
                     "text-lg font-semibold hover:text-white py-2 transition-colors",
                     isActive ? "text-gradient" : "text-gray-300"
                   )}
-                  onClick={() => setSidebarOpen(false)}>
+                  onClick={() => setSidebarOpen(false)}
+                >
                   {link.label}
                 </Link>
               );
@@ -417,7 +432,8 @@ const Navbar = () => {
                     preferredLang === language.code
                       ? "bg-white/10 text-white border-blue-500"
                       : "text-gray-300 border-gray-600 hover:bg-white/5 hover:text-white"
-                  )}>
+                  )}
+                >
                   <div className="font-semibold">{language.name}</div>
                   <div className="text-xs text-gray-400">
                     {language.nativeName}
@@ -433,7 +449,8 @@ const Navbar = () => {
               <Link
                 href="/profile"
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/10 transition"
-                onClick={() => setSidebarOpen(false)}>
+                onClick={() => setSidebarOpen(false)}
+              >
                 <div className="relative w-10 h-10">
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to p-0.5">
                     <div className="bg-black rounded-full w-full h-full overflow-hidden">
@@ -457,7 +474,8 @@ const Navbar = () => {
                 <Link
                   href="/signin"
                   className="text-gray-300 text-lg font-semibold hover:text-white text-center py-2"
-                  onClick={() => setSidebarOpen(false)}>
+                  onClick={() => setSidebarOpen(false)}
+                >
                   Login
                 </Link>
               </>
