@@ -124,6 +124,13 @@ const LearnEnglishContent = () => {
     }
   };
 
+  // Check if tasks are locked
+  const isTask2Locked = !taskCompleted.task1;
+  const isTask3Locked = !taskCompleted.task2;
+  const isTask4Locked = !taskCompleted.task3;
+  const isTask5Locked = !taskCompleted.task4;
+  const isTask6Locked = !taskCompleted.task5;
+
   // Check if all tasks are completed
   const allTasksCompleted =
     taskCompleted.task1 &&
@@ -263,6 +270,7 @@ const LearnEnglishContent = () => {
             <PhonemeGraphemeMapping
               taskResult={taskResults.task2}
               onTaskComplete={handleTask2Complete}
+              isLocked={isTask2Locked}
             />
             <WordFlash
               taskResult={taskResults.task3}
@@ -275,10 +283,12 @@ const LearnEnglishContent = () => {
             <PhraseMaker
               taskResult={taskResults.task5}
               onTaskComplete={handleTask5Complete}
+              isLocked={isTask5Locked}
             />
             <SentenceBuilder
               taskResult={taskResults.task6}
               onTaskComplete={handleTask6Complete}
+              isLocked={isTask5Locked}
             />
           </div>
 
