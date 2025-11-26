@@ -5,10 +5,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
 import { aiRequest } from "@/lib/aiRequest";
+import { useAppDispatch } from "@/redux/hooks";
+import { setTaskComplete } from "@/redux/features/presentation/presentationSlice";
 
 interface AIFeedback {
   score: number;
   feedback: string;
+  status: string;
+  message: string;
 }
 
 type ScenariosTypes = {
@@ -22,6 +26,7 @@ interface PropsType {
 }
 
 const PrecisionDrill = ({ scenarios }: PropsType) => {
+  const dispatch = useAppDispatch();
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<AIFeedback | null>(null);
@@ -250,6 +255,7 @@ const PrecisionDrill = ({ scenarios }: PropsType) => {
         formData
       );
       setFeedback(data);
+      dispatch(setTaskComplete({ task: "task_2", feedback: data }));
     } catch (error) {
       console.error("Error getting AI feedback:", error);
       alert("Failed to get AI feedback. Please try again.");

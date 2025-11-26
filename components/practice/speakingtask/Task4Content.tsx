@@ -55,7 +55,7 @@ const Task4Content: React.FC<Task4ContentProps> = ({
                 ) : (
                   <FaMicrophone className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
                 )}
-                <span className="text-sm md:text-base font-medium text-center">
+                <span className="text-sm md:text-base font-medium text-center capitalize">
                   {word}
                 </span>
               </button>

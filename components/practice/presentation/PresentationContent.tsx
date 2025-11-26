@@ -10,7 +10,9 @@ import PracticeHero from "../PracticeHero2";
 import Heading from "@/components/shared/Heading";
 import "./gradient-button.css";
 import { aiRequest } from "@/lib/aiRequest";
-import TaskLoadingLock from "../TaskLoadingLock";
+import TaskLoadingLockError from "../TaskLoadingLock";
+import { useAppSelector } from "@/redux/hooks";
+import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMessage";
 
 type ScenariosTypes = {
   slow: string[];
@@ -37,6 +39,9 @@ type ErrorState = {
 };
 
 const PresentationContent = () => {
+  const { task_1, task_2, task_3, task_4 } = useAppSelector(
+    (state) => state.presentation
+  );
   const [powerWords, setPowerWords] = useState<string[]>([]);
   const [scenarios, setScenarios] = useState<ScenariosTypes | null>(null);
   const [contextData, setContextData] = useState<ContextDataType | null>(null);
@@ -55,6 +60,12 @@ const PresentationContent = () => {
     contextData: null,
     flowChainData: null,
   });
+
+  const allCompleted =
+    task_1?.isComplete &&
+    task_2?.isComplete &&
+    task_3?.isComplete &&
+    task_4?.isComplete;
 
   const fetchPowerWords = async () => {
     try {
@@ -180,12 +191,12 @@ const PresentationContent = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Power Words Pulse */}
             {loading.powerWords ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="loading"
                 title="Power Words Loading..."
               />
             ) : errors.powerWords ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="error"
                 title="Failed to Load Power Words"
                 onRetry={fetchPowerWords}
@@ -196,12 +207,12 @@ const PresentationContent = () => {
 
             {/* Precision Drill */}
             {loading.scenarios ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="loading"
                 title="Precision Drill Loading..."
               />
             ) : errors.scenarios ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="error"
                 title="Failed to Load Precision Drill"
                 onRetry={fetchScenarios}
@@ -212,12 +223,12 @@ const PresentationContent = () => {
 
             {/* Context Spin */}
             {loading.contextData ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="loading"
                 title="Context Spin Loading..."
               />
             ) : errors.contextData ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="error"
                 title="Failed to Load Context Spin"
                 onRetry={fetchContext}
@@ -228,12 +239,12 @@ const PresentationContent = () => {
 
             {/* Flow Chain */}
             {loading.flowChainData ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="loading"
                 title="Flow Chain Loading..."
               />
             ) : errors.flowChainData ? (
-              <TaskLoadingLock
+              <TaskLoadingLockError
                 variant="error"
                 title="Failed to Load Flow Chain"
                 onRetry={fetchFlowChainData}
@@ -242,6 +253,23 @@ const PresentationContent = () => {
               <FlowChain scenarios={flowChainData} />
             )}
           </div>
+
+          {allCompleted && (
+            <button
+              className={`px-12 py-4 font-semibold text-lg rounded-xl ${
+                !allCompleted
+                  ? "bg-[#828882] opacity-50 cursor-not-allowed"
+                  : "bg-gradient-to-r from-yellow-400 to-pink-500 text-white cursor-pointer hover:opacity-90 transition-opacity"
+              }`}>
+              {allCompleted
+                ? "Submitting..."
+                : allCompleted
+                ? "Submitted!"
+                : "Submit All Answers"}
+            </button>
+          )}
+
+          {allCompleted && <CompletePageFooterMessage text="Done" />}
         </div>
       </div>
     </div>
