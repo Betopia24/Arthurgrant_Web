@@ -33,7 +33,7 @@ const Task1Content: React.FC<Task1ContentProps> = ({
   return (
     <>
       <div className="bg-[#101231] p-5 md:p-6 rounded-xl flex flex-col items-center justify-center gap-5 md:gap-6">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-gradient">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-gradient capitalize">
           {word}
         </h1>
 

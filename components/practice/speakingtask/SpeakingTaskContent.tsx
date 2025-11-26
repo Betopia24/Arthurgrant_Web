@@ -15,85 +15,156 @@ import Task1Content from "./Task1Content";
 import Task2Content from "./Task2Content";
 import Task3Content from "./Task3Content";
 import Task4Content from "./Task4Content";
+import { aiRequest } from "@/lib/aiRequest";
+import { useAuthStore } from "@/stores/authStore";
+import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMessage";
 
 // Speech Recognition setup
 const SpeechRecognitionAPI =
   typeof window !== "undefined" &&
   (window.SpeechRecognition || window.webkitSpeechRecognition);
 
-/**
- * SpeakingTask - Main parent component managing state and core logic
- */
+type LoadingState = {
+  wordsPool: boolean;
+  phrasesPool: boolean;
+  sentencesPool: boolean;
+  vocabPool: boolean;
+};
+
+type ErrorState = {
+  wordsPool: string | null;
+  phrasesPool: string | null;
+  sentencesPool: string | null;
+  vocabPool: string | null;
+};
+
 const SpeakingTaskContent = () => {
-  // Data pools
-  const wordsPool = useMemo(
-    () => [
-      "Dog",
-      "Apple",
-      "House",
-      "Car",
-      "Book",
-      "Tree",
-      "River",
-      "Moon",
-      "Chair",
-      "Phone",
-      "Computer",
-      "Water",
-      "Music",
-      "Friend",
-      "Family",
-    ],
-    []
-  );
+  const { user } = useAuthStore();
+  const ageRange = user?.age;
+  const firstAge = ageRange?.split("-")[0];
 
-  const phrasesPool = useMemo(
-    () => [
-      "Good morning",
-      "How are you",
-      "See you later",
-      "Thank you very much",
-      "Have a nice day",
-      "What's your name",
-      "I love learning",
-      "Beautiful weather today",
-      "How is everything",
-      "Nice to meet you",
-    ],
-    []
-  );
+  // State initialization with proper types
+  const [wordsPool, setWordsPool] = useState<string[]>([]);
+  const [phrasesPool, setPhrasesPool] = useState<string[]>([]);
+  const [sentencesPool, setSentencesPool] = useState<string[]>([]);
+  const [vocabPool, setVocabPool] = useState<string[][]>([]);
 
-  const sentencesPool = useMemo(
-    () => [
-      "The sun is so hot today.",
-      "I like to read books every weekend.",
-      "She bought a new red bicycle.",
-      "They will travel to the city tomorrow.",
-      "He made a delicious chocolate cake.",
-      "We are going to the park this afternoon.",
-      "The children play in the garden every day.",
-      "My favorite color is blue and green.",
-      "Learning new languages is very interesting.",
-      "The restaurant serves amazing Italian food.",
-    ],
-    []
-  );
+  const [loading, setLoading] = useState<LoadingState>({
+    wordsPool: true,
+    phrasesPool: true,
+    sentencesPool: true,
+    vocabPool: true,
+  });
 
-  const vocabPool = useMemo(
-    () => [
-      ["cat", "dog", "bird", "fish"],
-      ["apple", "banana", "orange", "grape"],
-      ["car", "bus", "train", "bike"],
-      ["sun", "moon", "star", "cloud"],
-      ["red", "blue", "green", "yellow"],
-      ["happy", "sad", "angry", "excited"],
-      ["run", "walk", "jump", "swim"],
-      ["big", "small", "tall", "short"],
-      ["one", "two", "three", "four"],
-      ["morning", "afternoon", "evening", "night"],
-    ],
-    []
-  );
+  const [errors, setErrors] = useState<ErrorState>({
+    wordsPool: null,
+    phrasesPool: null,
+    sentencesPool: null,
+    vocabPool: null,
+  });
+
+  const fetchWordsPool = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, wordsPool: true }));
+      setErrors((prev) => ({ ...prev, wordsPool: null }));
+
+      const data = await aiRequest(
+        `/speaking/pronunciation/get_pronunciation?age=${firstAge}`,
+        "GET"
+      );
+      setWordsPool(data.words || []);
+    } catch (error) {
+      console.error("Error fetching Words Pool:", error);
+      setErrors((prev) => ({
+        ...prev,
+        wordsPool: "Failed to load Words Pool",
+      }));
+    } finally {
+      setLoading((prev) => ({ ...prev, wordsPool: false }));
+    }
+  };
+
+  const fetchPhrasesPool = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, phrasesPool: true }));
+      setErrors((prev) => ({ ...prev, phrasesPool: null }));
+
+      const data = await aiRequest(
+        `/speaking/phrase-repeat/get_phrase_repeat?age=${firstAge}`,
+        "GET"
+      );
+      setPhrasesPool(data.phrases || []);
+    } catch (error) {
+      console.error("Error fetching Phrases Pool:", error);
+      setErrors((prev) => ({
+        ...prev,
+        phrasesPool: "Failed to load Phrases Pool",
+      }));
+    } finally {
+      setLoading((prev) => ({ ...prev, phrasesPool: false }));
+    }
+  };
+
+  const fetchSentencesPool = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, sentencesPool: true }));
+      setErrors((prev) => ({ ...prev, sentencesPool: null }));
+
+      const data = await aiRequest(
+        `/speaking/listen-speak/get_listen_speak?age=${firstAge}`,
+        "GET"
+      );
+      setSentencesPool(data.sentences || []);
+    } catch (error) {
+      console.error("Error fetching Sentences Pool:", error);
+      setErrors((prev) => ({
+        ...prev,
+        sentencesPool: "Failed to load Sentences Pool",
+      }));
+    } finally {
+      setLoading((prev) => ({ ...prev, sentencesPool: false }));
+    }
+  };
+
+  const fetchVocabPool = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, vocabPool: true }));
+      setErrors((prev) => ({ ...prev, vocabPool: null }));
+
+      const data = await aiRequest(
+        `/speaking/vocabulary-challenge/get_vocabulary?age=${firstAge}`,
+        "GET"
+      );
+      // Ensure we get a proper array of string arrays
+      const vocabData = data.words || [];
+      // If it's a single array, wrap it in another array
+      const formattedVocab =
+        Array.isArray(vocabData) &&
+        vocabData.length > 0 &&
+        typeof vocabData[0] === "string"
+          ? [vocabData]
+          : vocabData;
+      setVocabPool(formattedVocab);
+    } catch (error) {
+      console.error("Error fetching Vocabulary Pool:", error);
+      setErrors((prev) => ({
+        ...prev,
+        vocabPool: "Failed to load Vocabulary Pool",
+      }));
+    } finally {
+      setLoading((prev) => ({ ...prev, vocabPool: false }));
+    }
+  };
+
+  useEffect(() => {
+    // Fetch all data in parallel
+    Promise.all([
+      fetchWordsPool(),
+      fetchPhrasesPool(),
+      fetchSentencesPool(),
+      fetchVocabPool(),
+    ]);
+  }, []);
 
   // Refs
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -105,34 +176,78 @@ const SpeakingTaskContent = () => {
   const [overallProgress, setOverallProgress] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
-  // Task states
+  // Task states with proper initialization
   const [task1State, setTask1State] = useState({
-    word: wordsPool[Math.floor(Math.random() * wordsPool.length)],
+    word: "",
     done: false,
     listening: false,
     attempts: 0,
   });
 
   const [task2State, setTask2State] = useState({
-    phrase: phrasesPool[Math.floor(Math.random() * phrasesPool.length)],
+    phrase: "",
     fluency: null as number | null,
     done: false,
     listening: false,
   });
 
   const [task3State, setTask3State] = useState({
-    sentence: sentencesPool[Math.floor(Math.random() * sentencesPool.length)],
+    sentence: "",
     done: false,
     listening: false,
     attempts: 0,
   });
 
   const [task4State, setTask4State] = useState({
-    words: vocabPool[Math.floor(Math.random() * vocabPool.length)],
+    words: [] as string[],
     correct: new Set<string>(),
     done: false,
     listening: false,
   });
+
+  // Initialize task data when pools are loaded
+  useEffect(() => {
+    if (wordsPool.length > 0 && !task1State.word) {
+      setTask1State((prev) => ({
+        ...prev,
+        word: wordsPool[Math.floor(Math.random() * wordsPool.length)],
+      }));
+    }
+  }, [wordsPool, task1State.word]);
+
+  useEffect(() => {
+    if (phrasesPool.length > 0 && !task2State.phrase) {
+      setTask2State((prev) => ({
+        ...prev,
+        phrase: phrasesPool[Math.floor(Math.random() * phrasesPool.length)],
+      }));
+    }
+  }, [phrasesPool, task2State.phrase]);
+
+  useEffect(() => {
+    if (sentencesPool.length > 0 && !task3State.sentence) {
+      setTask3State((prev) => ({
+        ...prev,
+        sentence:
+          sentencesPool[Math.floor(Math.random() * sentencesPool.length)],
+      }));
+    }
+  }, [sentencesPool, task3State.sentence]);
+
+  useEffect(() => {
+    if (vocabPool.length > 0 && task4State.words.length === 0) {
+      const randomWordSet =
+        vocabPool[Math.floor(Math.random() * vocabPool.length)];
+      // Ensure we get a proper string array and take maximum 4 words
+      const wordsArray = Array.isArray(randomWordSet)
+        ? randomWordSet.slice(0, 4)
+        : [];
+      setTask4State((prev) => ({
+        ...prev,
+        words: wordsArray,
+      }));
+    }
+  }, [vocabPool, task4State.words.length]);
 
   // Initialize speech APIs
   useEffect(() => {
@@ -172,8 +287,8 @@ const SpeakingTaskContent = () => {
   // Speech utilities
   const speakText = useCallback(
     (text: string, options: { rate?: number; pitch?: number } = {}) => {
-      if (!speechSynthRef.current) {
-        console.warn("Speech synthesis not available");
+      if (!speechSynthRef.current || !text) {
+        console.warn("Speech synthesis not available or no text provided");
         return;
       }
 
@@ -335,11 +450,14 @@ const SpeakingTaskContent = () => {
 
   // Task handlers
   const handleTask1Play = useCallback(() => {
+    if (!task1State.word) return;
     stopSpeaking();
     speakText(task1State.word, { rate: 0.8 });
   }, [stopSpeaking, speakText, task1State.word]);
 
   const handleTask1Mic = async () => {
+    if (!task1State.word) return;
+
     setTask1State((prev) => ({ ...prev, listening: true }));
     stopSpeaking();
 
@@ -375,11 +493,14 @@ const SpeakingTaskContent = () => {
   };
 
   const handleTask2Play = useCallback(() => {
+    if (!task2State.phrase) return;
     stopSpeaking();
     speakText(task2State.phrase, { rate: 0.9 });
   }, [stopSpeaking, speakText, task2State.phrase]);
 
   const handleTask2Mic = async () => {
+    if (!task2State.phrase) return;
+
     setTask2State((prev) => ({ ...prev, listening: true }));
     stopSpeaking();
 
@@ -411,16 +532,20 @@ const SpeakingTaskContent = () => {
   };
 
   const handleTask3Play = useCallback(() => {
+    if (!task3State.sentence) return;
     stopSpeaking();
     speakText(task3State.sentence, { rate: 1 });
   }, [stopSpeaking, speakText, task3State.sentence]);
 
   const handleTask3Slow = useCallback(() => {
+    if (!task3State.sentence) return;
     stopSpeaking();
     speakText(task3State.sentence, { rate: 0.7 });
   }, [stopSpeaking, speakText, task3State.sentence]);
 
   const handleTask3Mic = async () => {
+    if (!task3State.sentence) return;
+
     setTask3State((prev) => ({ ...prev, listening: true }));
     stopSpeaking();
 
@@ -462,6 +587,8 @@ const SpeakingTaskContent = () => {
   );
 
   const handleTask4Mic = async () => {
+    if (task4State.words.length === 0) return;
+
     setTask4State((prev) => ({ ...prev, listening: true }));
     stopSpeaking();
 
@@ -507,6 +634,8 @@ const SpeakingTaskContent = () => {
 
   // Refresh functions
   const task1Refresh = useCallback(() => {
+    if (wordsPool.length === 0) return;
+
     const usedWords = new Set([task1State.word]);
     let newWord;
     let attempts = 0;
@@ -524,6 +653,8 @@ const SpeakingTaskContent = () => {
   }, [task1State.word, wordsPool]);
 
   const task2Refresh = useCallback(() => {
+    if (phrasesPool.length === 0) return;
+
     const usedPhrases = new Set([task2State.phrase]);
     let newPhrase;
     let attempts = 0;
@@ -541,6 +672,8 @@ const SpeakingTaskContent = () => {
   }, [task2State.phrase, phrasesPool]);
 
   const task3Refresh = useCallback(() => {
+    if (sentencesPool.length === 0) return;
+
     const usedSentences = new Set([task3State.sentence]);
     let newSentence;
     let attempts = 0;
@@ -562,21 +695,32 @@ const SpeakingTaskContent = () => {
   }, [task3State.sentence, sentencesPool]);
 
   const task4Refresh = useCallback(() => {
-    const usedSets = new Set([task4State.words.join(",")]);
-    let newSet;
-    let attempts = 0;
-    do {
-      newSet = vocabPool[Math.floor(Math.random() * vocabPool.length)];
-      attempts++;
-    } while (usedSets.has(newSet.join(",")) && attempts < vocabPool.length * 2);
+    if (vocabPool.length === 0) return;
+
+    // Get all available words from vocabPool and flatten them into a single array
+    const allAvailableWords = vocabPool.flat();
+
+    // Remove duplicates
+    const uniqueWords = [...new Set(allAvailableWords)];
+
+    if (uniqueWords.length < 4) {
+      console.warn("Not enough unique words available for Task 4");
+      return;
+    }
+
+    // Shuffle the unique words array to get random order
+    const shuffledWords = [...uniqueWords].sort(() => Math.random() - 0.5);
+
+    // Take first 4 words from shuffled array
+    const newWords = shuffledWords.slice(0, 4);
 
     setTask4State({
-      words: newSet,
+      words: newWords,
       correct: new Set(),
       done: false,
       listening: false,
     });
-  }, [task4State.words, vocabPool]);
+  }, [vocabPool]);
 
   // Progress calculation
   useEffect(() => {
@@ -591,9 +735,11 @@ const SpeakingTaskContent = () => {
   }, [task1State.done, task2State.done, task3State.done, task4State.done]);
 
   // Derived values
-  const task4Progress = Math.round(
-    (task4State.correct.size / task4State.words.length) * 100
-  );
+  const task4Progress =
+    task4State.words.length > 0
+      ? Math.round((task4State.correct.size / task4State.words.length) * 100)
+      : 0;
+
   const isSpeechRecognitionAvailable = !!recognitionRef.current;
   const allTasksCompleted =
     task1State.done && task2State.done && task3State.done && task4State.done;
@@ -713,19 +859,7 @@ const SpeakingTaskContent = () => {
           </div>
 
           {/* Completion Message */}
-          {allTasksCompleted && (
-            <div
-              className="w-full flex items-center justify-center gap-3 border-2 border-green-500 rounded-xl p-6 bg-[#1a2a1a] animate-fade-in"
-              role="alert"
-              aria-live="polite">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-500 text-white">
-                <FaCircleCheck className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-lg text-green-500 font-semibold text-center">
-                Congratulations! You've completed all speaking tasks for today!
-              </span>
-            </div>
-          )}
+          {allTasksCompleted && <CompletePageFooterMessage text="Done" />}
         </div>
       </div>
     </div>
