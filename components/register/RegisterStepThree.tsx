@@ -21,7 +21,7 @@ const RegisterStepThree: React.FC<RegisterStepThreeProps> = ({
     data.selectedAgeGroup
   );
 
-  const ageGroups: string[] = ["6-9", "10-13", "14-17", "18 or Older"];
+  const ageGroups: string[] = ["6-9", "10-13", "14-17", "18-40"];
 
   const handleAgeGroupChange = (e: ChangeEvent<HTMLSelectElement>): void => {
     const newAgeGroup = e.target.value;
@@ -79,8 +79,7 @@ const RegisterStepThree: React.FC<RegisterStepThreeProps> = ({
               <select
                 value={selectedAgeGroup}
                 onChange={handleAgeGroupChange}
-                className="w-full bg-[#24263A] border border-gray-500 text-white px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#F176B7] mt-2"
-              >
+                className="w-full bg-[#24263A] border border-gray-500 text-white px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#F176B7] mt-2">
                 <option value="" disabled>
                   Select an age group
                 </option>
@@ -97,15 +96,13 @@ const RegisterStepThree: React.FC<RegisterStepThreeProps> = ({
         <div className="flex gap-3">
           <button
             onClick={prevStep}
-            className="w-1/3 py-2 rounded-xl bg-gray-600 text-white font-semibold hover:opacity-90 transition flex justify-center items-center cursor-pointer"
-          >
+            className="w-1/3 py-2 rounded-xl bg-gray-600 text-white font-semibold hover:opacity-90 transition flex justify-center items-center cursor-pointer">
             Back
           </button>
           <button
             onClick={handleNext}
             disabled={!selectedAgeGroup}
-            className="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#FFBC6F] via-[#F176B7] to-[#3797CD] text-white font-semibold hover:opacity-90 transition flex justify-center items-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+            className="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#FFBC6F] via-[#F176B7] to-[#3797CD] text-white font-semibold hover:opacity-90 transition flex justify-center items-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
             Next
           </button>
         </div>
