@@ -2,7 +2,17 @@ import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import React, { useState } from "react";
 import { FaMicrophone } from "react-icons/fa";
 
-const WordPartsWorkshop = () => {
+
+interface TaskResult {
+  isAnswer: boolean;
+  marks: number;
+}
+
+interface WordPartsWorkshopProps {
+  taskResult: TaskResult | null;
+  onTaskComplete: (result: TaskResult | null) => void;
+}
+const WordPartsWorkshop = ({ taskResult, onTaskComplete }: WordPartsWorkshopProps) => {
   const [isLoading, setIsLoading] = useState(false);
   return (
     <div className="p-5 md:p-8 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-6 w-full">

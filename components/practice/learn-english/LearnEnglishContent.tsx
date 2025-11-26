@@ -12,6 +12,7 @@ import SentenceBuilder from "./SentenceBuilder";
 import WordFlash from "./WordFlash";
 import WordPartsWorkshop from "./WordPartsWorkshop";
 import "./gradient-button.css";
+import toast from "react-hot-toast";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -57,8 +58,6 @@ const LearnEnglishContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  
-
   // Update time spent every second
   useEffect(() => {
     const interval = setInterval(() => {
@@ -67,10 +66,6 @@ const LearnEnglishContent = () => {
 
     return () => clearInterval(interval);
   }, []);
-
-
-
-
 
   // Task completion handlers
   const handleTask1Complete = (result: TaskResult | null) => {
@@ -129,6 +124,13 @@ const LearnEnglishContent = () => {
     }
   };
 
+  // Check if tasks are locked
+  const isTask2Locked = !taskCompleted.task1;
+  const isTask3Locked = !taskCompleted.task2;
+  const isTask4Locked = !taskCompleted.task3;
+  const isTask5Locked = !taskCompleted.task4;
+  const isTask6Locked = !taskCompleted.task5;
+
   // Check if all tasks are completed
   const allTasksCompleted =
     taskCompleted.task1 &&
@@ -147,8 +149,6 @@ const LearnEnglishContent = () => {
       .padStart(2, "0")}`;
   };
 
-
-
   // Handle final submission
   const handleSubmitAllAnswers = async () => {
     console.log("Submit button clicked!");
@@ -162,8 +162,8 @@ const LearnEnglishContent = () => {
       (Date.now() - startTimeRef.current) / 1000
     );
 
-    
     const submissionData = {
+      sessionName: "Adult",
       tasks: [
         {
           taskName: "Auditory Discrimination",
@@ -220,10 +220,10 @@ const LearnEnglishContent = () => {
       console.log(JSON.stringify(data, null, 2));
       console.log("===============================");
       setIsSubmitted(true);
-    } catch (error) {
-      console.error("===== SUBMISSION ERROR =====");
-      console.error(error);
-      console.error("============================");
+    } catch (error: any) {
+      toast.error(
+        error?.data?.errorMessages?.[0]?.message || error?.data?.message
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -268,24 +268,27 @@ const LearnEnglishContent = () => {
               onTaskComplete={handleTask1Complete}
             />
             <PhonemeGraphemeMapping
-            taskResult={taskResults.task2}
-            onTaskComplete={handleTask2Complete}
+              taskResult={taskResults.task2}
+              onTaskComplete={handleTask2Complete}
+              isLocked={isTask2Locked}
             />
             <WordFlash
-            // taskResult={taskResults.task3}
-            // onTaskComplete={handleTask3Complete}
+              taskResult={taskResults.task3}
+              onTaskComplete={handleTask3Complete}
             />
             <WordPartsWorkshop
-            // taskResult={taskResults.task4}
-            // onTaskComplete={handleTask4Complete}
+              taskResult={taskResults.task4}
+              onTaskComplete={handleTask4Complete}
             />
             <PhraseMaker
-            // taskResult={taskResults.task5}
-            // onTaskComplete={handleTask5Complete}
+              taskResult={taskResults.task5}
+              onTaskComplete={handleTask5Complete}
+              isLocked={isTask5Locked}
             />
             <SentenceBuilder
-            // taskResult={taskResults.task6}
-            // onTaskComplete={handleTask6Complete}
+              taskResult={taskResults.task6}
+              onTaskComplete={handleTask6Complete}
+              isLocked={isTask5Locked}
             />
           </div>
 

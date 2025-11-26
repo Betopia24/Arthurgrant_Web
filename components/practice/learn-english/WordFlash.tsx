@@ -2,7 +2,36 @@ import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import React, { useState } from "react";
 import { FaMicrophone } from "react-icons/fa";
 
-const WordFlash = () => {
+interface TaskResult {
+  isAnswer: boolean;
+  marks: number;
+}
+
+interface WordFlashProps {
+  taskResult: TaskResult | null;
+  onTaskComplete: (result: TaskResult | null) => void;
+}
+
+
+const WordFlash = ({
+  taskResult,
+  onTaskComplete,
+}: WordFlashProps) => {
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
   const [isLoading, setIsLoading] = useState(false);
   return (
     <div className="p-5 md:p-8 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-6 w-full">

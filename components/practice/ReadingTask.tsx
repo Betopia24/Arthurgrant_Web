@@ -59,7 +59,7 @@ const ReadingTask = () => {
 
   // Task completion handlers
   const handleTask1Complete = (result: TaskResult | null) => {
-    console.log("Task 1 completed with result:", result);
+    
     setTaskResults((prev) => ({ ...prev, task1: result }));
     if (result !== null) {
       setTaskCompleted((prev) => ({ ...prev, task1: true }));
@@ -67,7 +67,7 @@ const ReadingTask = () => {
   };
 
   const handleTask2Complete = (result: TaskResult | null) => {
-    console.log("Task 2 completed with result:", result);
+    
     setTaskResults((prev) => ({ ...prev, task2: result }));
     if (result !== null) {
       setTaskCompleted((prev) => ({ ...prev, task2: true }));
@@ -75,7 +75,7 @@ const ReadingTask = () => {
   };
 
   const handleTask3Complete = (result: TaskResult | null) => {
-    console.log("Task 3 completed with result:", result);
+    
     setTaskResults((prev) => ({ ...prev, task3: result }));
     if (result !== null) {
       setTaskCompleted((prev) => ({ ...prev, task3: true }));
@@ -83,7 +83,7 @@ const ReadingTask = () => {
   };
 
   const handleTask4Complete = (result: TaskResult | null) => {
-    console.log("Task 4 completed with result:", result);
+   
     setTaskResults((prev) => ({ ...prev, task4: result }));
     if (result !== null) {
       setTaskCompleted((prev) => ({ ...prev, task4: true }));
