@@ -184,10 +184,7 @@ const PhraseMaker = ({
     >
       {isLocked ? (
         <>
-          <TaskLoadingLock
-            variant="locked"
-            title=" Complete Task 4 to unlock this task"
-          />
+          <TaskLoadingLock variant="locked" title="Phrase Maker Loading..." />
         </>
       ) : (
         <>

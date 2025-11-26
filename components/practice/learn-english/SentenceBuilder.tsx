@@ -166,10 +166,7 @@ const SentenceBuilder = ({
       }`}
     >
       {isLocked ? (
-        <TaskLoadingLock
-          variant="locked"
-          title=" Complete Task 1 to unlock this task"
-        />
+        <TaskLoadingLock variant="locked" title=" Sentence Builder Loading.." />
       ) : (
         <>
           <h1 className="font-semibold text-2xl text-white">

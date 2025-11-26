@@ -6,6 +6,7 @@ import { FaMicrophone } from "react-icons/fa";
 import { FaCheckCircle } from "react-icons/fa";
 import { useAuthStore } from "@/stores/authStore";
 import "./gradient-button.css";
+import TaskLoadingLockError from "../TaskLoadingLock";
 
 interface WordPair {
   word1: string;
@@ -133,7 +134,7 @@ const AuditoryDiscrimination = ({
           Auditory Discrimination
         </h1>
         <div className="rounded-xl p-5 md:p-8 bg-[#101231] flex items-center justify-center min-h-[400px]">
-          <p className="text-gray-400 text-lg">Loading word pairs...</p>
+         <TaskLoadingLockError variant="loading" title="Auditory Discrimination Loading..."/>
         </div>
       </div>
     );
