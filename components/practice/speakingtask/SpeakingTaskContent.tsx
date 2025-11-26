@@ -773,24 +773,24 @@ const SpeakingTaskContent = () => {
 
           <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
             {/* Task 1 */}
-            {loading.wordsPool ? (
-              <TaskLoadingLockError
-                variant="loading"
-                title="Pronunciation Words Loading..."
-              />
-            ) : errors.wordsPool ? (
-              <TaskLoadingLockError
-                variant="error"
-                title="Failed to Load Pronunciation Words"
-                onRetry={fetchWordsPool}
-              />
-            ) : (
-              <TaskCard
-                taskNumber={1}
-                currentTask={currentTask}
-                title="Pronunciation Practice"
-                description="Word Level Training"
-                content={
+            <TaskCard
+              taskNumber={1}
+              currentTask={currentTask}
+              title="Pronunciation Practice"
+              description="Word Level Training"
+              content={
+                loading.wordsPool ? (
+                  <TaskLoadingLockError
+                    variant="loading"
+                    title="Pronunciation Words Loading..."
+                  />
+                ) : errors.wordsPool ? (
+                  <TaskLoadingLockError
+                    variant="error"
+                    title="Failed to Load Pronunciation Words"
+                    onRetry={fetchWordsPool}
+                  />
+                ) : (
                   <Task1Content
                     word={task1State.word}
                     isSpeaking={isSpeaking}
@@ -802,29 +802,35 @@ const SpeakingTaskContent = () => {
                     onRefresh={task1Refresh}
                     isSpeechRecognitionAvailable={isSpeechRecognitionAvailable}
                   />
-                }
-              />
-            )}
+                )
+              }
+            />
 
             {/* Task 2 */}
-            {loading.phrasesPool ? (
-              <TaskLoadingLockError
-                variant="loading"
-                title="Phrases Loading..."
-              />
-            ) : errors.phrasesPool ? (
-              <TaskLoadingLockError
-                variant="error"
-                title="Failed to Load Phrases"
-                onRetry={fetchPhrasesPool}
-              />
-            ) : (
-              <TaskCard
-                taskNumber={2}
-                currentTask={currentTask}
-                title="Phrase Repeat"
-                description="Follow the Pronunciation"
-                content={
+
+            <TaskCard
+              taskNumber={2}
+              currentTask={currentTask}
+              title="Phrase Repeat"
+              description="Follow the Pronunciation"
+              content={
+                !task1State.done ? (
+                  <TaskLoadingLockError
+                    variant="locked"
+                    title="Please complete previous task"
+                  />
+                ) : loading.phrasesPool ? (
+                  <TaskLoadingLockError
+                    variant="loading"
+                    title="Phrases Loading..."
+                  />
+                ) : errors.phrasesPool ? (
+                  <TaskLoadingLockError
+                    variant="error"
+                    title="Failed to Load Phrases"
+                    onRetry={fetchPhrasesPool}
+                  />
+                ) : (
                   <Task2Content
                     phrase={task2State.phrase}
                     isSpeaking={isSpeaking}
@@ -836,29 +842,34 @@ const SpeakingTaskContent = () => {
                     onRefresh={task2Refresh}
                     isSpeechRecognitionAvailable={isSpeechRecognitionAvailable}
                   />
-                }
-              />
-            )}
+                )
+              }
+            />
 
             {/* Task 3 */}
-            {loading.sentencesPool ? (
-              <TaskLoadingLockError
-                variant="loading"
-                title="Sentences Loading..."
-              />
-            ) : errors.sentencesPool ? (
-              <TaskLoadingLockError
-                variant="error"
-                title="Failed to Load Sentences"
-                onRetry={fetchSentencesPool}
-              />
-            ) : (
-              <TaskCard
-                taskNumber={3}
-                currentTask={currentTask}
-                title="Listen & Speak"
-                description="Sentence Repetition"
-                content={
+            <TaskCard
+              taskNumber={3}
+              currentTask={currentTask}
+              title="Listen & Speak"
+              description="Sentence Repetition"
+              content={
+                !task2State.done ? (
+                  <TaskLoadingLockError
+                    variant="locked"
+                    title="Please complete previous task"
+                  />
+                ) : loading.sentencesPool ? (
+                  <TaskLoadingLockError
+                    variant="loading"
+                    title="Sentences Loading..."
+                  />
+                ) : errors.sentencesPool ? (
+                  <TaskLoadingLockError
+                    variant="error"
+                    title="Failed to Load Sentences"
+                    onRetry={fetchSentencesPool}
+                  />
+                ) : (
                   <Task3Content
                     sentence={task3State.sentence}
                     isSpeaking={isSpeaking}
@@ -871,29 +882,34 @@ const SpeakingTaskContent = () => {
                     onRefresh={task3Refresh}
                     isSpeechRecognitionAvailable={isSpeechRecognitionAvailable}
                   />
-                }
-              />
-            )}
+                )
+              }
+            />
 
             {/* Task 4 */}
-            {loading.vocabPool ? (
-              <TaskLoadingLockError
-                variant="loading"
-                title="Vocabulary Loading..."
-              />
-            ) : errors.vocabPool ? (
-              <TaskLoadingLockError
-                variant="error"
-                title="Failed to Load Vocabulary"
-                onRetry={fetchVocabPool}
-              />
-            ) : (
-              <TaskCard
-                taskNumber={4}
-                currentTask={currentTask}
-                title="Vocabulary Challenge"
-                description="Daily Word Practice"
-                content={
+            <TaskCard
+              taskNumber={4}
+              currentTask={currentTask}
+              title="Vocabulary Challenge"
+              description="Daily Word Practice"
+              content={
+                !task3State.done ? (
+                  <TaskLoadingLockError
+                    variant="locked"
+                    title="Please complete previous task"
+                  />
+                ) : loading.vocabPool ? (
+                  <TaskLoadingLockError
+                    variant="loading"
+                    title="Vocabulary Loading..."
+                  />
+                ) : errors.vocabPool ? (
+                  <TaskLoadingLockError
+                    variant="error"
+                    title="Failed to Load Vocabulary"
+                    onRetry={fetchVocabPool}
+                  />
+                ) : (
                   <Task4Content
                     words={task4State.words}
                     correct={task4State.correct}
@@ -906,9 +922,9 @@ const SpeakingTaskContent = () => {
                     isSpeaking={isSpeaking}
                     isSpeechRecognitionAvailable={isSpeechRecognitionAvailable}
                   />
-                }
-              />
-            )}
+                )
+              }
+            />
           </div>
 
           {/* Completion Message */}

@@ -70,14 +70,6 @@ const TaskLoadingLockError: React.FC<CommonCardProps> = ({
       {/* Content */}
       {children}
 
-      {/* Status Message */}
-      {variant === "locked" && (
-        <div className="flex items-center justify-center gap-2 text-white/60 text-sm mt-2">
-          <Lock className="w-4 h-4" />
-          Complete previous tasks to unlock
-        </div>
-      )}
-
       {/* Error Retry Message */}
       {variant === "error" && (
         <div className="flex items-center justify-center gap-2 text-red-300 text-sm mt-2">

@@ -5,8 +5,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
 import { aiRequest } from "@/lib/aiRequest";
-import { setTaskComplete } from "@/redux/features/presentation/presentationSlice";
+import {
+  resetSpecificTask,
+  setTaskComplete,
+} from "@/redux/features/presentation/presentationSlice";
 import { useAppDispatch } from "@/redux/hooks";
+import TaskLoadingLockError from "../TaskLoadingLock";
+import toast from "react-hot-toast";
 
 interface AIFeedback {
   score: number;
@@ -21,8 +26,16 @@ interface ContextDataType {
 
 interface PropsType {
   contextData: ContextDataType | null;
+  loading: boolean;
+  error: string | null;
+  isTask2Complete: boolean;
 }
-const ContextSpin = ({ contextData }: PropsType) => {
+const ContextSpin = ({
+  contextData,
+  error,
+  loading,
+  isTask2Complete,
+}: PropsType) => {
   const dispatch = useAppDispatch();
   const [selectedWords, setSelectedWords] = useState<string[]>([]);
   const [isRecording, setIsRecording] = useState(false);
@@ -144,9 +157,12 @@ const ContextSpin = ({ contextData }: PropsType) => {
       );
       setFeedback(data);
       dispatch(setTaskComplete({ task: "task_3", feedback: data }));
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error getting AI feedback:", error);
-      alert("Failed to get AI feedback. Please try again.");
+
+      toast.error("Failed to get AI feedback. Please try again.");
+      setFeedback(null);
+      dispatch(resetSpecificTask({ task: "task_3" }));
     } finally {
       setIsLoading(false);
     }
@@ -177,78 +193,97 @@ const ContextSpin = ({ contextData }: PropsType) => {
     <div className="p-6 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-6 w-full">
       <h1 className="font-semibold text-2xl text-white">Context Spin</h1>
 
-      <div className="rounded-xl p-6 bg-[#101231] space-y-8">
-        {/* Scenario Display */}
-        <div className="px-4 py-8 bg-[#000000] border border-white/15 rounded-xl overflow-hidden">
-          <p className="text-white text-lg leading-relaxed">
-            {contextData?.scenario &&
-              contextData.scenario.charAt(0).toUpperCase() +
-                contextData.scenario.slice(1)}
-          </p>
-        </div>
+      {!isTask2Complete ? (
+        <TaskLoadingLockError
+          title="Please complete previous task"
+          variant="locked"
+        />
+      ) : loading ? (
+        <TaskLoadingLockError title="Context loading..." variant="loading" />
+      ) : error ? (
+        <TaskLoadingLockError
+          title={error} // Use the actual error message
+          variant="error"
+        />
+      ) : !contextData ? (
+        <TaskLoadingLockError
+          title="No context data available"
+          variant="error"
+        />
+      ) : (
+        <div className="rounded-xl p-6 bg-[#101231] space-y-8">
+          {/* Scenario Display */}
+          <div className="px-4 py-8 bg-[#000000] border border-white/15 rounded-xl overflow-hidden">
+            <p className="text-white text-lg leading-relaxed">
+              {contextData?.scenario &&
+                contextData.scenario.charAt(0).toUpperCase() +
+                  contextData.scenario.slice(1)}
+            </p>
+          </div>
 
-        {/* Word Selection */}
-        <div className="space-y-4">
-          <h2 className="text-white font-medium text-lg">
-            Select words to include:
-          </h2>
-          <div className="flex gap-3 flex-wrap">
-            {contextData?.words.map((word, index) => (
+          {/* Word Selection */}
+          <div className="space-y-4">
+            <h2 className="text-white font-medium text-lg">
+              Select words to include:
+            </h2>
+            <div className="flex gap-3 flex-wrap">
+              {contextData?.words.map((word, index) => (
+                <button
+                  key={index}
+                  onClick={() => toggleWord(word)}
+                  className={`px-8 py-4 rounded-2xl transition-all ${
+                    selectedWords.includes(word)
+                      ? "bg-gradient-brand border-transparent text-white"
+                      : "gradient-button"
+                  }`}>
+                  {word}
+                  {selectedWords.includes(word) && (
+                    <span className="ml-1">✓</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Recording Section */}
+          <div className="px-4 py-8 bg-[#FFFFFF1F] border border-white/15 rounded-xl flex flex-col items-center justify-center gap-6 w-full">
+            <div className="text-center space-y-2">
               <button
-                key={index}
-                onClick={() => toggleWord(word)}
-                className={`px-8 py-4 rounded-2xl transition-all ${
-                  selectedWords.includes(word)
-                    ? "bg-gradient-brand border-transparent text-white"
-                    : "gradient-button"
-                }`}>
-                {word}
-                {selectedWords.includes(word) && (
-                  <span className="ml-1">✓</span>
+                onClick={handleRecordingClick}
+                disabled={!isReadyToRecord}
+                className={`rounded-full font-semibold text-white w-20 h-20 flex items-center justify-center transition-all ${
+                  isRecording
+                    ? "bg-red-500 animate-pulse"
+                    : audioBlob
+                    ? "bg-green-500"
+                    : "bg-gradient-brand hover:brightness-110"
+                } disabled:opacity-50`}>
+                {isRecording ? (
+                  <FaMicrophoneSlash className="w-8 h-8" />
+                ) : (
+                  <FaMicrophone className="w-8 h-8" />
                 )}
               </button>
-            ))}
-          </div>
-        </div>
 
-        {/* Recording Section */}
-        <div className="px-4 py-8 bg-[#FFFFFF1F] border border-white/15 rounded-xl flex flex-col items-center justify-center gap-6 w-full">
-          <div className="text-center space-y-2">
-            <button
-              onClick={handleRecordingClick}
-              disabled={!isReadyToRecord}
-              className={`rounded-full font-semibold text-white w-20 h-20 flex items-center justify-center transition-all ${
-                isRecording
-                  ? "bg-red-500 animate-pulse"
-                  : audioBlob
-                  ? "bg-green-500"
-                  : "bg-gradient-brand hover:brightness-110"
-              } disabled:opacity-50`}>
-              {isRecording ? (
-                <FaMicrophoneSlash className="w-8 h-8" />
-              ) : (
-                <FaMicrophone className="w-8 h-8" />
+              {isRecording && (
+                <div className="text-red-400 font-semibold animate-pulse">
+                  {formatTime(recordingTime)}
+                </div>
               )}
-            </button>
+            </div>
 
-            {isRecording && (
-              <div className="text-red-400 font-semibold animate-pulse">
-                {formatTime(recordingTime)}
-              </div>
-            )}
+            <span className="font-medium text-white text-md text-center">
+              {!isReadyToRecord
+                ? "Select words to begin recording"
+                : isRecording
+                ? "Recording... Click to stop"
+                : audioBlob
+                ? "✓ Response recorded successfully"
+                : "Click to start your 20-30s response"}
+            </span>
           </div>
-
-          <span className="font-medium text-white text-md text-center">
-            {!isReadyToRecord
-              ? "Select words to begin recording"
-              : isRecording
-              ? "Recording... Click to stop"
-              : audioBlob
-              ? "✓ Response recorded successfully"
-              : "Click to start your 20-30s response"}
-          </span>
         </div>
-      </div>
+      )}
 
       {/* AI Check Button */}
       <button

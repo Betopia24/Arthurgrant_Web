@@ -6,7 +6,12 @@ import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import FeedbackScore from "./FeedbackScore";
 import { aiRequest } from "@/lib/aiRequest";
 import { useAppDispatch } from "@/redux/hooks";
-import { setTaskComplete } from "@/redux/features/presentation/presentationSlice";
+import {
+  resetSpecificTask,
+  setTaskComplete,
+} from "@/redux/features/presentation/presentationSlice";
+import TaskLoadingLockError from "../TaskLoadingLock";
+import toast from "react-hot-toast";
 
 interface AIFeedback {
   score: number;
@@ -23,9 +28,17 @@ type ScenariosTypes = {
 
 interface PropsType {
   scenarios: ScenariosTypes | null;
+  loading: boolean;
+  error: string | null;
+  isTask1Complete: boolean;
 }
 
-const PrecisionDrill = ({ scenarios }: PropsType) => {
+const PrecisionDrill = ({
+  scenarios,
+  error,
+  loading,
+  isTask1Complete,
+}: PropsType) => {
   const dispatch = useAppDispatch();
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -256,9 +269,11 @@ const PrecisionDrill = ({ scenarios }: PropsType) => {
       );
       setFeedback(data);
       dispatch(setTaskComplete({ task: "task_2", feedback: data }));
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error getting AI feedback:", error);
-      alert("Failed to get AI feedback. Please try again.");
+      toast.error("Failed to get AI feedback. Please try again.");
+      setFeedback(null);
+      dispatch(resetSpecificTask({ task: "task_2" }));
     } finally {
       setIsLoading(false);
     }
@@ -290,86 +305,99 @@ const PrecisionDrill = ({ scenarios }: PropsType) => {
     <div className="p-6 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-6 w-full">
       <h1 className="font-semibold text-2xl text-white">Precision Drill</h1>
 
-      <div className="rounded-xl p-6 bg-[#101231] space-y-8">
-        {/* Progress Display */}
-        <div className="flex items-center justify-between">
-          <div className="text-white font-medium">
-            Progress: {currentProgress}%
+      {!isTask1Complete ? (
+        <TaskLoadingLockError
+          title="Please complete previous task"
+          variant="locked"
+        />
+      ) : loading ? (
+        <TaskLoadingLockError title="Precision loading..." variant="loading" />
+      ) : error ? (
+        <TaskLoadingLockError title={error} variant="error" />
+      ) : !scenarios ? (
+        <TaskLoadingLockError title="No Precision available" variant="error" />
+      ) : (
+        <div className="rounded-xl p-6 bg-[#101231] space-y-8">
+          {/* Progress Display */}
+          <div className="flex items-center justify-between">
+            <div className="text-white font-medium">
+              Progress: {currentProgress}%
+            </div>
+            <div className="text-white font-medium">
+              Speed:{" "}
+              <span className="text-gradient-brand capitalize">
+                {currentSpeed}
+              </span>
+            </div>
           </div>
-          <div className="text-white font-medium">
-            Speed:{" "}
-            <span className="text-gradient-brand capitalize">
-              {currentSpeed}
+
+          {/* Word Display */}
+          <div className="px-4 py-8 bg-[#000000] border border-white/15 rounded-xl flex flex-col items-center justify-center gap-6 w-full min-h-[200px]">
+            <div className="text-center space-y-4 w-full">
+              {isRecording || audioFile ? (
+                <div className="space-y-2">
+                  <div className="text-white text-lg font-semibold">
+                    {currentWordIndex < totalWords
+                      ? "Current Word:"
+                      : "Drill Complete!"}
+                  </div>
+                  <div className="text-4xl font-bold text-gradient capitalize transition-all duration-300">
+                    {currentWordIndex < totalWords
+                      ? allWords[currentWordIndex]
+                      : "🎉"}
+                  </div>
+                  <div className="text-white/60 text-sm">
+                    Word {Math.min(currentWordIndex + 1, totalWords)} of{" "}
+                    {totalWords}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-white/60 text-lg">
+                  Click record to start the precision drill
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Recording Section */}
+          <div className="px-4 py-8 bg-[#FFFFFF1F] border border-white/15 rounded-xl flex flex-col items-center justify-center gap-6 w-full">
+            <div className="text-center space-y-2">
+              <button
+                onClick={handleRecordingClick}
+                disabled={allWords.length === 0}
+                className={`rounded-full font-semibold text-white w-20 h-20 flex items-center justify-center transition-all ${
+                  isRecording
+                    ? "bg-red-500 animate-pulse"
+                    : audioFile
+                    ? "bg-green-500"
+                    : "bg-gradient-brand hover:brightness-110"
+                } disabled:opacity-50`}>
+                {isRecording ? (
+                  <FaMicrophoneSlash className="w-8 h-8" />
+                ) : (
+                  <FaMicrophone className="w-8 h-8" />
+                )}
+              </button>
+
+              {isRecording && (
+                <div className="text-red-400 font-semibold animate-pulse">
+                  {formatTime(recordingTime)}
+                </div>
+              )}
+            </div>
+
+            <span className="font-medium text-white text-md text-center">
+              {allWords.length === 0
+                ? "Loading words..."
+                : isRecording
+                ? "Recording... Words auto-scroll from slow to fast"
+                : audioFile
+                ? "✓ Precision drill completed successfully"
+                : "Click to start - words will auto-scroll from slow to fast"}
             </span>
           </div>
         </div>
-
-        {/* Word Display */}
-        <div className="px-4 py-8 bg-[#000000] border border-white/15 rounded-xl flex flex-col items-center justify-center gap-6 w-full min-h-[200px]">
-          <div className="text-center space-y-4 w-full">
-            {isRecording || audioFile ? (
-              <div className="space-y-2">
-                <div className="text-white text-lg font-semibold">
-                  {currentWordIndex < totalWords
-                    ? "Current Word:"
-                    : "Drill Complete!"}
-                </div>
-                <div className="text-4xl font-bold text-gradient capitalize transition-all duration-300">
-                  {currentWordIndex < totalWords
-                    ? allWords[currentWordIndex]
-                    : "🎉"}
-                </div>
-                <div className="text-white/60 text-sm">
-                  Word {Math.min(currentWordIndex + 1, totalWords)} of{" "}
-                  {totalWords}
-                </div>
-              </div>
-            ) : (
-              <div className="text-white/60 text-lg">
-                Click record to start the precision drill
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Recording Section */}
-        <div className="px-4 py-8 bg-[#FFFFFF1F] border border-white/15 rounded-xl flex flex-col items-center justify-center gap-6 w-full">
-          <div className="text-center space-y-2">
-            <button
-              onClick={handleRecordingClick}
-              disabled={allWords.length === 0}
-              className={`rounded-full font-semibold text-white w-20 h-20 flex items-center justify-center transition-all ${
-                isRecording
-                  ? "bg-red-500 animate-pulse"
-                  : audioFile
-                  ? "bg-green-500"
-                  : "bg-gradient-brand hover:brightness-110"
-              } disabled:opacity-50`}>
-              {isRecording ? (
-                <FaMicrophoneSlash className="w-8 h-8" />
-              ) : (
-                <FaMicrophone className="w-8 h-8" />
-              )}
-            </button>
-
-            {isRecording && (
-              <div className="text-red-400 font-semibold animate-pulse">
-                {formatTime(recordingTime)}
-              </div>
-            )}
-          </div>
-
-          <span className="font-medium text-white text-md text-center">
-            {allWords.length === 0
-              ? "Loading words..."
-              : isRecording
-              ? "Recording... Words auto-scroll from slow to fast"
-              : audioFile
-              ? "✓ Precision drill completed successfully"
-              : "Click to start - words will auto-scroll from slow to fast"}
-          </span>
-        </div>
-      </div>
+      )}
 
       {/* AI Check Button */}
       <button

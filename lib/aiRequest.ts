@@ -32,12 +32,13 @@ export const aiRequest = async (
     });
 
     if (!res.ok) {
-      throw new Error(`Request failed: ${res.status}`);
+      const errorText = await res.text();
+      throw new Error(errorText || `Request failed: ${res.status}`);
     }
 
     return await res.json();
   } catch (err) {
     console.error("AI Request Error:", err);
-    return null;
+    throw err;
   }
 };

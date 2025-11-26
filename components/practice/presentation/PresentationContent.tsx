@@ -10,9 +10,10 @@ import PracticeHero from "../PracticeHero2";
 import Heading from "@/components/shared/Heading";
 import "./gradient-button.css";
 import { aiRequest } from "@/lib/aiRequest";
-import TaskLoadingLockError from "../TaskLoadingLock";
 import { useAppSelector } from "@/redux/hooks";
 import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMessage";
+import { apiRequest } from "@/lib/apiRequest";
+import toast from "react-hot-toast";
 
 type ScenariosTypes = {
   slow: string[];
@@ -29,6 +30,7 @@ type LoadingState = {
   scenarios: boolean;
   contextData: boolean;
   flowChainData: boolean;
+  submit: boolean;
 };
 
 type ErrorState = {
@@ -36,6 +38,7 @@ type ErrorState = {
   scenarios: string | null;
   contextData: string | null;
   flowChainData: string | null;
+  submit: string | null;
 };
 
 const PresentationContent = () => {
@@ -48,10 +51,11 @@ const PresentationContent = () => {
   const [flowChainData, setFlowChainData] = useState<string[]>([]);
 
   const [loading, setLoading] = useState<LoadingState>({
-    powerWords: true,
-    scenarios: true,
-    contextData: true,
-    flowChainData: true,
+    powerWords: false,
+    scenarios: false,
+    contextData: false,
+    flowChainData: false,
+    submit: false,
   });
 
   const [errors, setErrors] = useState<ErrorState>({
@@ -59,6 +63,7 @@ const PresentationContent = () => {
     scenarios: null,
     contextData: null,
     flowChainData: null,
+    submit: null,
   });
 
   const allCompleted =
@@ -81,7 +86,7 @@ const PresentationContent = () => {
       console.error("Error fetching power words:", error);
       setErrors((prev) => ({
         ...prev,
-        powerWords: "Failed to load power words",
+        powerWords: "Failed to load power words. Please try again.",
       }));
     } finally {
       setLoading((prev) => ({ ...prev, powerWords: false }));
@@ -100,7 +105,10 @@ const PresentationContent = () => {
       setScenarios(data);
     } catch (error) {
       console.error("Error fetching scenarios:", error);
-      setErrors((prev) => ({ ...prev, scenarios: "Failed to load scenarios" }));
+      setErrors((prev) => ({
+        ...prev,
+        scenarios: "Failed to load scenarios. Please try again.",
+      }));
     } finally {
       setLoading((prev) => ({ ...prev, scenarios: false }));
     }
@@ -120,7 +128,7 @@ const PresentationContent = () => {
       console.error("Error fetching context data:", error);
       setErrors((prev) => ({
         ...prev,
-        contextData: "Failed to load context data",
+        contextData: "Failed to load context data. Please try again.",
       }));
     } finally {
       setLoading((prev) => ({ ...prev, contextData: false }));
@@ -141,7 +149,7 @@ const PresentationContent = () => {
       console.error("Error fetching flow chain data:", error);
       setErrors((prev) => ({
         ...prev,
-        flowChainData: "Failed to load flow chain",
+        flowChainData: "Failed to load flow chain. Please try again.",
       }));
     } finally {
       setLoading((prev) => ({ ...prev, flowChainData: false }));
@@ -149,14 +157,55 @@ const PresentationContent = () => {
   };
 
   useEffect(() => {
-    // Fetch all data in parallel
-    Promise.all([
-      fetchPowerWords(),
-      fetchScenarios(),
-      fetchContext(),
-      fetchFlowChainData(),
-    ]);
+    // Fetch initial data
+    fetchPowerWords();
   }, []);
+
+  useEffect(() => {
+    if (task_1.isComplete) {
+      fetchScenarios();
+    }
+  }, [task_1.isComplete]);
+
+  useEffect(() => {
+    if (task_2.isComplete) {
+      fetchContext();
+    }
+  }, [task_2.isComplete]);
+
+  useEffect(() => {
+    if (task_3.isComplete) {
+      fetchFlowChainData();
+    }
+  }, [task_3.isComplete]);
+
+  const handleSubmit = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, submit: true }));
+      setErrors((prev) => ({ ...prev, submit: null }));
+
+      const body = {
+        tasks: [
+          task_1.feedback,
+          task_2.feedback,
+          task_3.feedback,
+          task_4.feedback,
+        ],
+      };
+      const res = await apiRequest("/presentation/submit", "POST", body);
+      console.log("check presentation submit", res);
+      toast.success(res.message || "Presentation submitted successfully");
+    } catch (error: any) {
+      console.error(error);
+      setErrors((prev) => ({
+        ...prev,
+        submit: "Failed to submit presentation. Please try again.",
+      }));
+      toast.error("Failed to submit presentation. Please try again.");
+    } finally {
+      setLoading((prev) => ({ ...prev, submit: false }));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-section-dark">
@@ -190,84 +239,49 @@ const PresentationContent = () => {
           {/* Tasks Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Power Words Pulse */}
-            {loading.powerWords ? (
-              <TaskLoadingLockError
-                variant="loading"
-                title="Power Words Loading..."
-              />
-            ) : errors.powerWords ? (
-              <TaskLoadingLockError
-                variant="error"
-                title="Failed to Load Power Words"
-                onRetry={fetchPowerWords}
-              />
-            ) : (
-              <PowerWordsPulse powerWords={powerWords} />
-            )}
+            <PowerWordsPulse
+              powerWords={powerWords}
+              error={errors.powerWords}
+              loading={loading.powerWords}
+            />
 
             {/* Precision Drill */}
-            {loading.scenarios ? (
-              <TaskLoadingLockError
-                variant="loading"
-                title="Precision Drill Loading..."
-              />
-            ) : errors.scenarios ? (
-              <TaskLoadingLockError
-                variant="error"
-                title="Failed to Load Precision Drill"
-                onRetry={fetchScenarios}
-              />
-            ) : (
-              <PrecisionDrill scenarios={scenarios!} />
-            )}
+            <PrecisionDrill
+              scenarios={scenarios}
+              error={errors.scenarios}
+              loading={loading.scenarios}
+              isTask1Complete={task_1.isComplete}
+            />
 
             {/* Context Spin */}
-            {loading.contextData ? (
-              <TaskLoadingLockError
-                variant="loading"
-                title="Context Spin Loading..."
-              />
-            ) : errors.contextData ? (
-              <TaskLoadingLockError
-                variant="error"
-                title="Failed to Load Context Spin"
-                onRetry={fetchContext}
-              />
-            ) : (
-              <ContextSpin contextData={contextData!} />
-            )}
+            <ContextSpin
+              contextData={contextData}
+              error={errors.contextData}
+              loading={loading.contextData}
+              isTask2Complete={task_2.isComplete}
+            />
 
             {/* Flow Chain */}
-            {loading.flowChainData ? (
-              <TaskLoadingLockError
-                variant="loading"
-                title="Flow Chain Loading..."
-              />
-            ) : errors.flowChainData ? (
-              <TaskLoadingLockError
-                variant="error"
-                title="Failed to Load Flow Chain"
-                onRetry={fetchFlowChainData}
-              />
-            ) : (
-              <FlowChain scenarios={flowChainData} />
-            )}
+            <FlowChain
+              scenarios={flowChainData}
+              error={errors.flowChainData}
+              loading={loading.flowChainData}
+              isTask3Complete={task_3.isComplete}
+            />
           </div>
 
-          {allCompleted && (
-            <button
-              className={`px-12 py-4 font-semibold text-lg rounded-xl ${
-                !allCompleted
-                  ? "bg-[#828882] opacity-50 cursor-not-allowed"
-                  : "bg-gradient-to-r from-yellow-400 to-pink-500 text-white cursor-pointer hover:opacity-90 transition-opacity"
-              }`}>
-              {allCompleted
-                ? "Submitting..."
-                : allCompleted
-                ? "Submitted!"
-                : "Submit All Answers"}
-            </button>
-          )}
+          <button
+            onClick={handleSubmit}
+            disabled={loading.submit || !allCompleted}
+            className={`px-12 py-4 font-semibold text-lg rounded-xl ${
+              !allCompleted || loading.submit
+                ? "bg-[#828882] opacity-50 cursor-not-allowed"
+                : "bg-gradient-to-r from-yellow-400 to-pink-500 text-white cursor-pointer hover:opacity-90 transition-opacity"
+            }`}>
+            {loading.submit
+              ? "Submitting presentation..."
+              : " Submit All Answers"}
+          </button>
 
           {allCompleted && <CompletePageFooterMessage text="Done" />}
         </div>
