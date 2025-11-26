@@ -1,18 +1,17 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { FaCheckCircle } from "react-icons/fa";
+import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMessage";
+import Heading from "@/components/shared/Heading";
 import { useAuthStore } from "@/stores/authStore";
+import { useEffect, useRef, useState } from "react";
+import PracticeHero from "../PracticeHero2";
 import AuditoryDiscrimination from "./AuditoryDiscrimination";
 import PhonemeGraphemeMapping from "./PhonemeGraphemeMapping";
-import WordFlash from "./WordFlash";
-import WordPartsWorkshop from "./WordPartsWorkshop";
 import PhraseMaker from "./PhraseMaker";
 import SentenceBuilder from "./SentenceBuilder";
+import WordFlash from "./WordFlash";
+import WordPartsWorkshop from "./WordPartsWorkshop";
 import "./gradient-button.css";
-import PracticeHero from "../PracticeHero2";
-import Heading from "@/components/shared/Heading";
-import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMessage";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -58,6 +57,8 @@ const LearnEnglishContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  
+
   // Update time spent every second
   useEffect(() => {
     const interval = setInterval(() => {
@@ -66,6 +67,10 @@ const LearnEnglishContent = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+
+
+
 
   // Task completion handlers
   const handleTask1Complete = (result: TaskResult | null) => {
@@ -142,6 +147,8 @@ const LearnEnglishContent = () => {
       .padStart(2, "0")}`;
   };
 
+
+
   // Handle final submission
   const handleSubmitAllAnswers = async () => {
     console.log("Submit button clicked!");
@@ -155,37 +162,37 @@ const LearnEnglishContent = () => {
       (Date.now() - startTimeRef.current) / 1000
     );
 
-    // Prepare data in the format backend expects
+    
     const submissionData = {
       tasks: [
         {
           taskName: "Auditory Discrimination",
-          isanswer: taskResults.task1?.isAnswer || false,
+          isAnswer: taskResults.task1?.isAnswer || false,
           marks: taskResults.task1?.marks || 0,
         },
         {
           taskName: "Phoneme Grapheme Mapping",
-          isanswer: taskResults.task2?.isAnswer || false,
+          isAnswer: taskResults.task2?.isAnswer || false,
           marks: taskResults.task2?.marks || 0,
         },
         {
           taskName: "Word Flash",
-          isanswer: taskResults.task3?.isAnswer || false,
+          isAnswer: taskResults.task3?.isAnswer || false,
           marks: taskResults.task3?.marks || 0,
         },
         {
           taskName: "Word Parts Workshop",
-          isanswer: taskResults.task4?.isAnswer || false,
+          isAnswer: taskResults.task4?.isAnswer || false,
           marks: taskResults.task4?.marks || 0,
         },
         {
           taskName: "Phrase Maker",
-          isanswer: taskResults.task5?.isAnswer || false,
+          isAnswer: taskResults.task5?.isAnswer || false,
           marks: taskResults.task5?.marks || 0,
         },
         {
           taskName: "Sentence Builder",
-          isanswer: taskResults.task6?.isAnswer || false,
+          isAnswer: taskResults.task6?.isAnswer || false,
           marks: taskResults.task6?.marks || 0,
         },
       ],
@@ -261,8 +268,8 @@ const LearnEnglishContent = () => {
               onTaskComplete={handleTask1Complete}
             />
             <PhonemeGraphemeMapping
-            // taskResult={taskResults.task2}
-            // onTaskComplete={handleTask2Complete}
+            taskResult={taskResults.task2}
+            onTaskComplete={handleTask2Complete}
             />
             <WordFlash
             // taskResult={taskResults.task3}
