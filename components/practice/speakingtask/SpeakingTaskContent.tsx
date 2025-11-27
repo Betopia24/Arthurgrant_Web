@@ -813,7 +813,7 @@ const SpeakingTaskContent = () => {
         greetText="Hi Raju!"
         streakValue="9"
         sessionTime="12:34"
-        progressValue="2/4"
+        progressValue={`${currentTask}/4`}
         goalValue="75%"
         sessionProgressWidth="60%"
         progressWidth="40%"
