@@ -277,9 +277,9 @@ const LearnEnglishContent = () => {
               onTaskComplete={handleTask1Complete}
             />
             <PhonemeGraphemeMapping
+              isLocked={isTask2Locked}
               taskResult={taskResults.task2}
               onTaskComplete={handleTask2Complete}
-              isLocked={isTask2Locked}
             />
             <WordFlash
               isLocked={isTask3Locked}
@@ -292,14 +292,14 @@ const LearnEnglishContent = () => {
               onTaskComplete={handleTask4Complete}
             />
             <PhraseMaker
+              isLocked={isTask5Locked}
               taskResult={taskResults.task5}
               onTaskComplete={handleTask5Complete}
-              isLocked={isTask5Locked}
             />
             <SentenceBuilder
+              isLocked={isTask6Locked}
               taskResult={taskResults.task6}
               onTaskComplete={handleTask6Complete}
-              isLocked={isTask5Locked}
             />
           </div>
 
