@@ -296,7 +296,7 @@ const PresentationContent = () => {
               : " Submit All Answers"}
           </button>
 
-          {allCompleted && <CompletePageFooterMessage text="Done" />}
+          {/* {allCompleted && <CompletePageFooterMessage text="Done" />} */}
         </div>
       </div>
     </div>

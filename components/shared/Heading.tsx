@@ -20,13 +20,13 @@ const Heading: React.FC<HeadingProps> = ({
       ? "text-left"
       : "text-right";
 
-  // Container alignment - always center the container but control text alignment
-  const containerClass = "mx-auto";
+  // Center container if align=center
+  const containerClass = align === "center" ? "mx-auto" : "";
 
   return (
     <div className={`flex flex-col w-full gap-2`}>
       {/* Heading container */}
-      <div className={`max-w-4xl w-full ${containerClass}`}>
+      <div className={`max-w-4xl ${containerClass}`}>
         <h1
           className={`text-3xl sm:text-4xl lg:text-5xl font-semibold leading-none ${textAlignClass}`}>
           {specialText && heading.includes(specialText) ? (
@@ -43,9 +43,7 @@ const Heading: React.FC<HeadingProps> = ({
         {/* Subheading */}
         {subheading && (
           <p
-            className={`mt-3 text-base sm:text-lg md:text-xl font-semibold text-gray-300 max-w-3xl w-full ${textAlignClass} ${
-              align === "center" ? "mx-auto" : ""
-            }`}>
+            className={`mt-3 text-base sm:text-lg md:text-xl font-semibold text-gray-300 max-w-3xl ${textAlignClass}`}>
             {subheading}
           </p>
         )}
