@@ -3,6 +3,7 @@
 import React from "react";
 import Heading from "../shared/Heading";
 import { FaFire, FaClock, FaChartLine, FaBullseye } from "react-icons/fa";
+import { useAuthStore } from "@/stores/authStore";
 
 type PracticeHeroProps = {
   heading: string;
@@ -39,6 +40,7 @@ const PracticeHero = ({
   progressWidth,
   goalWidth,
 }: PracticeHeroProps) => {
+  const { user } = useAuthStore();
   return (
     <div className="pt-36 pb-16 md:py-44 bg-gradient-to-br from-brand-dark via-brand-darker to-brand-darker">
       <div className="app-container flex flex-col items-center gap-12">
@@ -70,7 +72,10 @@ const PracticeHero = ({
             <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-8 border-b-8 border-r-8 border-t-transparent border-b-transparent border-r-gray-900"></div>
 
             <h1 className="text-lg sm:text-xl lg:text-3xl font-semibold mb-2">
-              <span className="text-gradient">{greetText}</span> Welcome Back
+              <span className="text-gradient">{`Hi ${
+                user?.firstName || "User"
+              }!`}</span>{" "}
+              Welcome Back
             </h1>
 
             <p className="text-gray-300 text-sm sm:text-base lg:text-lg">
