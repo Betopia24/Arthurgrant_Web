@@ -1,8 +1,7 @@
 .gradient-button {
      position: relative;
-     padding: 16px 48px;
+     padding: 16px 32px;
      font-size: 16px;
-     font-weight: 600;
      background: transparent;
      border: none;
      cursor: pointer;

@@ -69,6 +69,8 @@ function SignInPage() {
         // Store the access token
         login(loginResponse.data.accessToken);
 
+        
+
         // Get user profile
         const profileResponse = await authApi.getProfile();
 
