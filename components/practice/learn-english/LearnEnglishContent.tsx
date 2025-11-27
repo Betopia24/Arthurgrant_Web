@@ -280,6 +280,7 @@ const LearnEnglishContent = () => {
               onTaskComplete={handleTask3Complete}
             />
             <WordPartsWorkshop
+              isLocked={isTask4Locked}
               taskResult={taskResults.task4}
               onTaskComplete={handleTask4Complete}
             />
