@@ -60,7 +60,12 @@ const FlowChain = ({
 
   const startRecording = async () => {
     if (selectedScenarios.length === 0) {
-      alert("Please select at least one scenario to begin.");
+      toast("Please select at least one scenario to begin.", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
       return;
     }
 
@@ -103,7 +108,13 @@ const FlowChain = ({
       }, 1000);
     } catch (error) {
       console.error("Error starting recording:", error);
-      alert("Please allow microphone access to use this feature.");
+
+      toast("Please allow microphone access to use this feature.", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
     }
   };
 
@@ -137,7 +148,12 @@ const FlowChain = ({
 
   const handleAICheck = async () => {
     if (!audioFile || selectedScenarios.length === 0) {
-      alert("Please record your speech and select scenarios first.");
+      toast("Please record your speech and select scenarios first.", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
       return;
     }
 

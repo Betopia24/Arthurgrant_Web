@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Heading from "../shared/Heading";
 import { FaFire, FaClock, FaChartLine, FaBullseye } from "react-icons/fa";
 import { useAuthStore } from "@/stores/authStore";
+import useGetSessionTime from "@/hooks/useGetSessionTime";
+import { authApi } from "@/lib/api";
 
 type PracticeHeroProps = {
   heading: string;
@@ -23,6 +25,15 @@ type PracticeHeroProps = {
   goalWidth: string; // e.g. "70%"
 };
 
+interface UserProgressType {
+  dayStreak: number;
+  totalWords: number;
+  totalLessons: number;
+  overallAccuracy: number;
+  dailyGoal: number;
+  lastActivityDate: string;
+}
+
 const PracticeHero = ({
   heading,
   subheading,
@@ -41,6 +52,38 @@ const PracticeHero = ({
   goalWidth,
 }: PracticeHeroProps) => {
   const { user } = useAuthStore();
+  const sessionTimes = useGetSessionTime();
+  const [data, setData] = useState<UserProgressType | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const profileResponse = await authApi.getProfile();
+
+        if (isMounted) {
+          setData(profileResponse.data.userProgress);
+          console.log("check response:", profileResponse.data.userProgress);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false; // cleanup
+    };
+  }, []);
+
   return (
     <div className="pt-36 pb-16 md:py-44 bg-gradient-to-br from-brand-dark via-brand-darker to-brand-darker">
       <div className="app-container flex flex-col items-center gap-12">
@@ -87,7 +130,7 @@ const PracticeHero = ({
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full mt-4">
           {/* Streak */}
           <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between gap-3">
@@ -96,9 +139,15 @@ const PracticeHero = ({
               </div>
               <span className="text-base font-semibold">Streak</span>
             </div>
-            <div className="mt-3 text-3xl font-bold text-center text-white">
-              {streakValue}
-            </div>
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full animate-pulse bg-gray-700"></div>
+              </div>
+            ) : (
+              <div className="mt-3 text-3xl font-bold text-center text-white">
+                {data?.dayStreak || "N/A"}
+              </div>
+            )}
             <div className="text-center text-base sm:text-lg font-semibold">
               Days Streak!
             </div>
@@ -116,7 +165,7 @@ const PracticeHero = ({
               <span className="text-base font-semibold">Session Timer</span>
             </div>
             <div className="mt-3 text-3xl font-bold text-center text-white">
-              {sessionTime}
+              {sessionTimes}
             </div>
             <div className="text-center text-base sm:text-lg font-semibold">
               Remaining
@@ -124,7 +173,7 @@ const PracticeHero = ({
           </div>
 
           {/* Progress */}
-          <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg md:col-span-3 lg:col-span-1">
+          <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between gap-3">
               <div className="p-3 rounded-full bg-gradient-to-r from-sky-300 to-sky-600 flex items-center justify-center">
                 <FaChartLine className="text-white text-xl" />
@@ -140,25 +189,28 @@ const PracticeHero = ({
           </div>
 
           {/* Today's Goal */}
-          {/* <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
+          <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between gap-3">
               <div className="p-3 rounded-full bg-gradient-to-r from-green-300 to-green-600 flex items-center justify-center">
                 <FaBullseye className="text-white text-xl" />
               </div>
               <span className="text-base font-semibold">Today's Goal</span>
             </div>
-            <div className="mt-3 text-3xl font-bold text-center text-white">
-              {goalValue}
-            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full animate-pulse bg-gray-700"></div>
+              </div>
+            ) : (
+              <div className="mt-3 text-3xl font-bold text-center text-white">
+                {data?.dailyGoal ? `${data.dailyGoal}%` : "N/A"}
+              </div>
+            )}
+
             <div className="text-center text-base sm:text-lg font-semibold">
               Accuracy
             </div>
-            <div className="mt-3 w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-green-400 to-green-600"
-                style={{ width: goalWidth }}></div>
-            </div>
-          </div> */}
+          </div>
         </div>
       </div>
     </div>

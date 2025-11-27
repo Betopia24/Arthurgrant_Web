@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import PowerWordsPulse from "./PowerWordsPulse";
 import PrecisionDrill from "./PrecisionDrill";
@@ -65,6 +65,19 @@ const PresentationContent = () => {
     flowChainData: null,
     submit: null,
   });
+
+  const currentTask = useMemo(() => {
+    if (!task_1?.isComplete) return 1;
+    if (!task_2?.isComplete) return 2;
+    if (!task_3?.isComplete) return 3;
+    if (!task_4?.isComplete) return 4;
+    return 4; // All tasks completed
+  }, [
+    task_1?.isComplete,
+    task_2?.isComplete,
+    task_3?.isComplete,
+    task_4?.isComplete,
+  ]);
 
   const allCompleted =
     task_1?.isComplete &&
@@ -217,7 +230,7 @@ const PresentationContent = () => {
         greetText="Hi Raju!"
         streakValue="6"
         sessionTime="12:34"
-        progressValue="2/4"
+        progressValue={`${currentTask}/4`}
         goalValue="75%"
         sessionProgressWidth="60%"
         progressWidth="40%"

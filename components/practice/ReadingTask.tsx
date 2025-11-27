@@ -181,7 +181,7 @@ const ReadingTask = () => {
   };
 
   return (
-    <div className="py-20 bg-section-dark">
+    <div className="bg-section-dark">
       <PracticeHero
         heading="Today's Reading Practice"
         subheading="Master your pronunciation with AI-powered feedback and interactive exercises designed for your success."
@@ -235,8 +235,7 @@ const ReadingTask = () => {
 
         <div
           ref={submitButtonRef}
-          className="w-full flex flex-col items-center justify-center gap-4"
-        >
+          className="w-full flex flex-col items-center justify-center gap-4">
           <button
             onClick={handleSubmitAllAnswers}
             type="submit"
@@ -245,8 +244,7 @@ const ReadingTask = () => {
               !allTasksCompleted || isSubmitting || isSubmitted
                 ? "bg-[#828882] opacity-50 cursor-not-allowed"
                 : "bg-gradient-to-r from-yellow-400 to-pink-500 text-white cursor-pointer hover:opacity-90 transition-opacity"
-            }`}
-          >
+            }`}>
             {isSubmitting
               ? "Submitting..."
               : isSubmitted

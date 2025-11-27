@@ -1,8 +1,9 @@
 import { aiRequest } from "@/lib/aiRequest";
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import React, { useEffect, useState, useCallback } from "react";
-import { FaMicrophone } from "react-icons/fa";
+import { FaCheckCircle, FaMicrophone } from "react-icons/fa";
 import TaskLoadingLockError from "../TaskLoadingLock";
+import toast from "react-hot-toast";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -30,6 +31,8 @@ const WordFlash = ({
   const [showResult, setShowResult] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
   const [hasShownWord, setHasShownWord] = useState(false);
+  const [countdown, setCountdown] = useState<number>(0);
+  const [correctAnswers, setCorrectAnswers] = useState<number>(0);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -58,6 +61,8 @@ const WordFlash = ({
         recognitionInstance.onerror = (event: any) => {
           console.error("Speech recognition error:", event.error);
           setIsRecording(false);
+          setIsWordVisible(false);
+          setCountdown(0);
         };
 
         setRecognition(recognitionInstance);
@@ -83,25 +88,78 @@ const WordFlash = ({
     fetchWords();
   }, []);
 
-  // Show word for 3 seconds when next/prev is clicked
-  const showWordTemporarily = useCallback(() => {
-    setIsWordVisible(true);
-    setHasShownWord(true);
+  // Start recording and show word for 3 seconds
+  const startRecordingAndShowWord = useCallback(() => {
+    if (!words[currentWordIndex]) {
+      toast("No word available", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
+      return;
+    }
+
+    // Reset states
     setUserTranscript("");
     setShowResult(false);
+    setHasShownWord(true);
 
-    const timer = setTimeout(() => {
-      setIsWordVisible(false);
-    }, 3000); // Word disappears after 3 seconds
+    // Start recording first
+    if (recognition) {
+      setIsRecording(true);
+      recognition.start();
+    } else {
+      console.warn("Speech recognition not supported");
+      // Fallback: simulate recording for demo purposes
+      setIsRecording(true);
+    }
 
-    return () => clearTimeout(timer);
-  }, []);
+    // Show word after a small delay (100ms) to ensure recording starts first
+    setTimeout(() => {
+      setIsWordVisible(true);
+      setCountdown(3);
+
+      // Countdown timer
+      const countdownInterval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      // Hide word and stop recording after 3 seconds
+      const timer = setTimeout(() => {
+        setIsWordVisible(false);
+        setIsRecording(false);
+
+        if (recognition) {
+          recognition.stop();
+        }
+
+        clearInterval(countdownInterval);
+        setCountdown(0);
+      }, 3000);
+
+      return () => {
+        clearTimeout(timer);
+        clearInterval(countdownInterval);
+      };
+    }, 100);
+  }, [recognition, words, currentWordIndex]);
 
   // Handle next word
   const handleNext = useCallback(async () => {
+    if (isRecording) return; // Prevent navigation during recording
+
     if (currentWordIndex < words.length - 1) {
       setCurrentWordIndex((prev) => prev + 1);
       setHasShownWord(false);
+      setUserTranscript("");
+      setShowResult(false);
     } else {
       // If it's the last word, fetch new words
       try {
@@ -111,65 +169,46 @@ const WordFlash = ({
         setWords(newWords);
         setCurrentWordIndex(0);
         setHasShownWord(false);
+        setUserTranscript("");
+        setShowResult(false);
       } catch (error) {
         console.error("Failed to fetch new words:", error);
       } finally {
         setIsLoading(false);
       }
     }
-  }, [currentWordIndex, words.length]);
+  }, [currentWordIndex, words.length, isRecording]);
 
   // Handle previous word
   const handlePrevious = useCallback(() => {
+    if (isRecording) return; // Prevent navigation during recording
+
     if (currentWordIndex > 0) {
       setCurrentWordIndex((prev) => prev - 1);
       setHasShownWord(false);
-    }
-  }, [currentWordIndex]);
-
-  // Show word when next/prev is clicked
-  useEffect(() => {
-    if (words.length > 0 && currentWordIndex < words.length && !hasShownWord) {
-      showWordTemporarily();
-    }
-  }, [currentWordIndex, words, hasShownWord, showWordTemporarily]);
-
-  const startRecording = useCallback(() => {
-    if (!hasShownWord) {
-      alert("Please view the word first by clicking next/previous");
-      return;
-    }
-
-    if (recognition) {
       setUserTranscript("");
-      setIsRecording(true);
-      recognition.start();
-    } else {
-      console.warn("Speech recognition not supported");
-      // Fallback: simulate recording for demo purposes
-      setIsRecording(true);
-      setTimeout(() => {
-        setIsRecording(false);
-        setUserTranscript(words[currentWordIndex] || "demo");
-      }, 2000);
+      setShowResult(false);
     }
-  }, [recognition, words, currentWordIndex, hasShownWord]);
-
-  const stopRecording = useCallback(() => {
-    if (recognition) {
-      recognition.stop();
-    }
-    setIsRecording(false);
-  }, [recognition]);
+  }, [currentWordIndex, isRecording]);
 
   const analyzeWithAI = async () => {
-    if (!userTranscript.trim()) {
-      alert("Please record your speech first");
+    if (!hasShownWord) {
+      toast("Please record first by clicking the microphone", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
       return;
     }
 
-    if (!hasShownWord) {
-      alert("Please view the word first by clicking next/previous");
+    if (!userTranscript.trim()) {
+      toast("No speech recorded. Please try again.", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
       return;
     }
 
@@ -177,22 +216,36 @@ const WordFlash = ({
     try {
       const currentWord = words[currentWordIndex];
 
-      // Simulate AI analysis - replace with actual API call
-      // For demo, we'll just check if transcript contains the word
       const isCorrect = userTranscript
         .toLowerCase()
         .includes(currentWord.toLowerCase());
 
-      const result: TaskResult = {
-        isAnswer: isCorrect,
-        marks: isCorrect ? 1 : 0,
-      };
+      // Update correct answers count
+      if (isCorrect) {
+        setCorrectAnswers((prev) => prev + 1);
+      }
 
-      onTaskComplete(result);
       setShowResult(true);
+
+      // If this is the last word, complete the task
+      if (currentWordIndex === words.length - 1) {
+        const marks = Math.round((correctAnswers / words.length) * 100);
+
+        const result: TaskResult = {
+          isAnswer: true,
+          marks: isCorrect ? marks + Math.round(100 / words.length) : marks,
+        };
+        onTaskComplete(result);
+      }
     } catch (error) {
       console.error("AI analysis failed:", error);
-      alert("Analysis failed. Please try again.");
+
+      toast("Analysis failed. Please try again.", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
     } finally {
       setIsAiLoading(false);
     }
@@ -201,6 +254,10 @@ const WordFlash = ({
   const currentWord = words[currentWordIndex] || "";
   const isLastWord = currentWordIndex === words.length - 1;
   const isFirstWord = currentWordIndex === 0;
+
+  // Check if all steps are completed for AI button
+  const isAllStepsCompleted =
+    hasShownWord && userTranscript.trim() && !isRecording;
 
   return (
     <div className="p-4 sm:p-5 md:p-6 lg:p-8 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-4 sm:gap-5 md:gap-6 w-full max-w-full mx-auto">
@@ -220,26 +277,31 @@ const WordFlash = ({
         <div className="rounded-xl p-4 sm:p-5 md:p-6 lg:p-8 bg-[#101231] space-y-6 sm:space-y-8">
           <div className="text-center sm:text-left">
             <h3 className="text-white font-semibold text-lg sm:text-xl mb-2">
-              Read the word aloud before it vanishes
+              Click microphone to start recording and view word
             </h3>
             <p className="text-white text-sm sm:text-base opacity-90">
-              Click Next/Previous to see the word for 3 seconds, then record
-              your speech and check with AI.
+              Word will show for 3 seconds while recording, then automatically
+              stop.
             </p>
           </div>
 
           {/* Word Display */}
           <div className="min-h-[100px] sm:min-h-[120px] flex items-center justify-center">
             {isWordVisible ? (
-              <h1 className="text-white text-2xl sm:text-3xl md:text-4xl font-bold text-center animate-pulse capitalize px-4 break-words">
-                "{currentWord}"
-              </h1>
+              <div className="text-center">
+                <h1 className="text-white text-2xl sm:text-3xl md:text-4xl font-bold text-center animate-pulse capitalize px-4 break-words mb-4">
+                  "{currentWord}"
+                </h1>
+                <div className="text-red-400 font-bold text-lg animate-pulse">
+                  Recording... {countdown}s
+                </div>
+              </div>
             ) : (
               <div className="text-center px-4">
                 <div className="text-gray-500 text-lg sm:text-xl md:text-2xl font-semibold mb-4 break-words">
-                  {hasShownWord
-                    ? "Word disappeared - speak now!"
-                    : "Click Next/Previous to view word"}
+                  {hasShownWord && userTranscript
+                    ? "Recording completed!"
+                    : "Click microphone to start"}
                 </div>
               </div>
             )}
@@ -250,34 +312,29 @@ const WordFlash = ({
             {/* Microphone Button */}
             <div className="flex items-center justify-center gap-6 sm:gap-8 md:gap-10">
               <button
-                onClick={isRecording ? stopRecording : startRecording}
-                disabled={!hasShownWord || isWordVisible}
+                onClick={startRecordingAndShowWord}
+                disabled={
+                  isRecording || !words[currentWordIndex] || taskResult !== null
+                }
                 className={`rounded-full font-semibold text-white w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 flex items-center justify-center transition-all ${
                   isRecording
                     ? "bg-red-500 animate-pulse"
-                    : hasShownWord
+                    : words[currentWordIndex] && taskResult === null
                     ? "bg-gradient-brand hover:brightness-110"
                     : "bg-gray-500"
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
                 title={
-                  !hasShownWord
-                    ? "View the word first"
-                    : isWordVisible
-                    ? "Wait for word to disappear"
-                    : "Click to record"
+                  isRecording
+                    ? "Recording in progress..."
+                    : words[currentWordIndex] && taskResult === null
+                    ? "Click to start recording and view word"
+                    : taskResult !== null
+                    ? "Task completed"
+                    : "No word available"
                 }>
                 <FaMicrophone className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" />
               </button>
             </div>
-
-            {/* Recording Status */}
-            {isRecording && (
-              <div className="text-center">
-                <div className="text-red-400 font-semibold animate-pulse text-sm sm:text-base">
-                  Recording... Speak now!
-                </div>
-              </div>
-            )}
 
             {/* Transcript Display */}
             {userTranscript && !isRecording && (
@@ -290,16 +347,20 @@ const WordFlash = ({
             )}
 
             {/* Result Display */}
-            {showResult && taskResult && (
+            {showResult && (
               <div
                 className={`text-center p-3 sm:p-4 rounded-lg font-semibold text-base sm:text-lg mx-2 ${
-                  taskResult.isAnswer
+                  userTranscript
+                    .toLowerCase()
+                    .includes(currentWord.toLowerCase())
                     ? "bg-green-500/20 text-green-400"
                     : "bg-red-500/20 text-red-400"
                 }`}>
-                {taskResult.isAnswer
+                {userTranscript
+                  .toLowerCase()
+                  .includes(currentWord.toLowerCase())
                   ? "✓ Correct! Well done!"
-                  : "✗ Incorrect - try the next word!"}
+                  : `✗ Incorrect - The word was "${currentWord}"`}
               </div>
             )}
           </div>
@@ -308,7 +369,11 @@ const WordFlash = ({
           <div className="flex items-center justify-between flex-wrap gap-4">
             <button
               onClick={handlePrevious}
-              disabled={isFirstWord && currentWordIndex === 0}
+              disabled={
+                (isFirstWord && currentWordIndex === 0) ||
+                isRecording ||
+                taskResult !== null
+              }
               className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 sm:px-5 md:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium text-white flex items-center gap-1 sm:gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors order-1 flex-1 sm:flex-none justify-center min-w-[120px]">
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" /> Previous
             </button>
@@ -321,6 +386,7 @@ const WordFlash = ({
 
             <button
               onClick={handleNext}
+              disabled={isRecording || taskResult !== null}
               className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 sm:px-5 md:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium text-white flex items-center gap-1 sm:gap-2 hover:bg-white/30 transition-colors order-2 flex-1 sm:flex-none justify-center min-w-[120px]">
               Next <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
             </button>
@@ -332,20 +398,30 @@ const WordFlash = ({
       <button
         onClick={analyzeWithAI}
         disabled={
-          !userTranscript.trim() || isLoading || isRecording || !hasShownWord
+          !isAllStepsCompleted ||
+          isLoading ||
+          isAiLoading ||
+          taskResult !== null
         }
         className="p-3 sm:p-4 inline-flex items-center justify-center gap-2 bg-gradient-brand rounded-2xl font-semibold text-sm sm:text-base text-white hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
         title={
-          !hasShownWord
-            ? "View the word first"
+          taskResult !== null
+            ? "Task completed"
+            : !hasShownWord
+            ? "Record first by clicking microphone"
             : !userTranscript
-            ? "Record your speech first"
+            ? "No speech recorded"
             : "Check your answer with AI"
         }>
         {isAiLoading ? (
           <>
             <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             <span className="text-xs sm:text-sm">Analyzing...</span>
+          </>
+        ) : taskResult !== null ? (
+          <>
+            <FaCheckCircle className="w-5 h-5" />
+            Task Completed
           </>
         ) : (
           <>
