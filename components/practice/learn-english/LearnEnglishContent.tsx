@@ -13,6 +13,7 @@ import WordFlash from "./WordFlash";
 import WordPartsWorkshop from "./WordPartsWorkshop";
 import "./gradient-button.css";
 import toast from "react-hot-toast";
+import { apiRequest } from "@/lib/apiRequest";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -163,6 +164,7 @@ const LearnEnglishContent = () => {
     );
 
     const submissionData = {
+      sessionName: "Adult",
       tasks: [
         {
           taskName: "Auditory Discrimination",
@@ -203,22 +205,27 @@ const LearnEnglishContent = () => {
     console.log("===========================");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_AI_API}/adult-task/submit`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            authtoken: `${accessToken}`,
-          },
-          body: JSON.stringify(submissionData),
-        }
+      // const res = await fetch(
+      //   `${process.env.NEXT_PUBLIC_BACKEND_API}/adult-task/submit`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       authtoken: `Bearer ${accessToken}`,
+      //     },
+      //     body: JSON.stringify(submissionData),
+      //   }
+      // );
+      const res = await apiRequest(
+        "/adult-task/submit",
+        "POST",
+        submissionData
       );
-      const data = await res.json();
+
       console.log("===== SUBMISSION RESPONSE =====");
-      console.log(JSON.stringify(data, null, 2));
+      console.log(res);
       console.log("===============================");
-      if (data?.success === true) {
+      if (res?.success === true) {
         toast.success("Answers submitted successfully!");
         setIsSubmitted(true);
       }
