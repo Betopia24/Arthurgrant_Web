@@ -1,8 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Heading from "../shared/Heading";
 import { FaFire, FaClock, FaChartLine, FaBullseye } from "react-icons/fa";
+import { useAuthStore } from "@/stores/authStore";
+import useGetSessionTime from "@/hooks/useGetSessionTime";
+import { authApi } from "@/lib/api";
 
 type PracticeHeroProps = {
   heading: string;
@@ -22,6 +25,15 @@ type PracticeHeroProps = {
   goalWidth: string; // e.g. "70%"
 };
 
+interface UserProgressType {
+  dayStreak: number;
+  totalWords: number;
+  totalLessons: number;
+  overallAccuracy: number;
+  dailyGoal: number;
+  lastActivityDate: string;
+}
+
 const PracticeHero = ({
   heading,
   subheading,
@@ -39,6 +51,39 @@ const PracticeHero = ({
   progressWidth,
   goalWidth,
 }: PracticeHeroProps) => {
+  const { user } = useAuthStore();
+  const sessionTimes = useGetSessionTime();
+  const [data, setData] = useState<UserProgressType | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const profileResponse = await authApi.getProfile();
+
+        if (isMounted) {
+          setData(profileResponse.data.userProgress);
+          console.log("check response:", profileResponse.data.userProgress);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false; // cleanup
+    };
+  }, []);
+
   return (
     <div className="pt-36 pb-16 md:py-44 bg-gradient-to-br from-brand-dark via-brand-darker to-brand-darker">
       <div className="app-container flex flex-col items-center gap-12">
@@ -70,7 +115,10 @@ const PracticeHero = ({
             <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-8 border-b-8 border-r-8 border-t-transparent border-b-transparent border-r-gray-900"></div>
 
             <h1 className="text-lg sm:text-xl lg:text-3xl font-semibold mb-2">
-              <span className="text-gradient">{greetText}</span> Welcome Back
+              <span className="text-gradient">{`Hi ${
+                user?.firstName || "User"
+              }!`}</span>{" "}
+              Welcome Back
             </h1>
 
             <p className="text-gray-300 text-sm sm:text-base lg:text-lg">
@@ -82,7 +130,7 @@ const PracticeHero = ({
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full mt-4">
           {/* Streak */}
           <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between gap-3">
@@ -91,9 +139,15 @@ const PracticeHero = ({
               </div>
               <span className="text-base font-semibold">Streak</span>
             </div>
-            <div className="mt-3 text-3xl font-bold text-center text-white">
-              {streakValue}
-            </div>
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full animate-pulse bg-gray-700"></div>
+              </div>
+            ) : (
+              <div className="mt-3 text-3xl font-bold text-center text-white">
+                {data?.dayStreak || "N/A"}
+              </div>
+            )}
             <div className="text-center text-base sm:text-lg font-semibold">
               Days Streak!
             </div>
@@ -111,15 +165,10 @@ const PracticeHero = ({
               <span className="text-base font-semibold">Session Timer</span>
             </div>
             <div className="mt-3 text-3xl font-bold text-center text-white">
-              {sessionTime}
+              {sessionTimes}
             </div>
             <div className="text-center text-base sm:text-lg font-semibold">
               Remaining
-            </div>
-            <div className="mt-3 w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-pink-400 to-pink-600"
-                style={{ width: sessionProgressWidth }}></div>
             </div>
           </div>
 
@@ -137,11 +186,6 @@ const PracticeHero = ({
             <div className="text-center text-base sm:text-lg font-semibold">
               Remaining
             </div>
-            <div className="mt-3 w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-sky-400 to-sky-600"
-                style={{ width: progressWidth }}></div>
-            </div>
           </div>
 
           {/* Today's Goal */}
@@ -152,16 +196,19 @@ const PracticeHero = ({
               </div>
               <span className="text-base font-semibold">Today's Goal</span>
             </div>
-            <div className="mt-3 text-3xl font-bold text-center text-white">
-              {goalValue}
-            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full animate-pulse bg-gray-700"></div>
+              </div>
+            ) : (
+              <div className="mt-3 text-3xl font-bold text-center text-white">
+                {data?.dailyGoal ? `${data.dailyGoal}%` : "N/A"}
+              </div>
+            )}
+
             <div className="text-center text-base sm:text-lg font-semibold">
               Accuracy
-            </div>
-            <div className="mt-3 w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-green-400 to-green-600"
-                style={{ width: goalWidth }}></div>
             </div>
           </div>
         </div>

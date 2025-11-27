@@ -13,6 +13,7 @@ import WordFlash from "./WordFlash";
 import WordPartsWorkshop from "./WordPartsWorkshop";
 import "./gradient-button.css";
 import toast from "react-hot-toast";
+import { apiRequest } from "@/lib/apiRequest";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -163,6 +164,7 @@ const LearnEnglishContent = () => {
     );
 
     const submissionData = {
+      sessionName: "Adult",
       tasks: [
         {
           taskName: "Auditory Discrimination",
@@ -203,22 +205,27 @@ const LearnEnglishContent = () => {
     console.log("===========================");
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_AI_API}/adult-task/submit`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            authtoken: `${accessToken}`,
-          },
-          body: JSON.stringify(submissionData),
-        }
+      // const res = await fetch(
+      //   `${process.env.NEXT_PUBLIC_BACKEND_API}/adult-task/submit`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       authtoken: `Bearer ${accessToken}`,
+      //     },
+      //     body: JSON.stringify(submissionData),
+      //   }
+      // );
+      const res = await apiRequest(
+        "/adult-task/submit",
+        "POST",
+        submissionData
       );
-      const data = await res.json();
+
       console.log("===== SUBMISSION RESPONSE =====");
-      console.log(JSON.stringify(data, null, 2));
+      console.log(res);
       console.log("===============================");
-      if (data?.success === true) {
+      if (res?.success === true) {
         toast.success("Answers submitted successfully!");
         setIsSubmitted(true);
       }
@@ -270,35 +277,36 @@ const LearnEnglishContent = () => {
               onTaskComplete={handleTask1Complete}
             />
             <PhonemeGraphemeMapping
+              isLocked={isTask2Locked}
               taskResult={taskResults.task2}
               onTaskComplete={handleTask2Complete}
-              isLocked={isTask2Locked}
             />
             <WordFlash
+              isLocked={isTask3Locked}
               taskResult={taskResults.task3}
               onTaskComplete={handleTask3Complete}
             />
             <WordPartsWorkshop
+              isLocked={isTask4Locked}
               taskResult={taskResults.task4}
               onTaskComplete={handleTask4Complete}
             />
             <PhraseMaker
+              isLocked={isTask5Locked}
               taskResult={taskResults.task5}
               onTaskComplete={handleTask5Complete}
-              isLocked={isTask5Locked}
             />
             <SentenceBuilder
+              isLocked={isTask6Locked}
               taskResult={taskResults.task6}
               onTaskComplete={handleTask6Complete}
-              isLocked={isTask5Locked}
             />
           </div>
 
           {/* Submit All Button */}
           <div
             ref={submitButtonRef}
-            className="w-full flex flex-col items-center justify-center gap-4"
-          >
+            className="w-full flex flex-col items-center justify-center gap-4">
             <button
               onClick={handleSubmitAllAnswers}
               disabled={!allTasksCompleted || isSubmitting || isSubmitted}
@@ -306,8 +314,7 @@ const LearnEnglishContent = () => {
                 !allTasksCompleted || isSubmitting || isSubmitted
                   ? "bg-[#828882] opacity-50 cursor-not-allowed"
                   : "bg-gradient-brand text-white cursor-pointer hover:brightness-110 transition-all"
-              }`}
-            >
+              }`}>
               {isSubmitting
                 ? "Submitting..."
                 : isSubmitted

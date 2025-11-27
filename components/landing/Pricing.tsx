@@ -1,11 +1,6 @@
 import React from "react";
 import Heading from "../shared/Heading";
-import {
-  FaCheck,
-  FaLock,
-  FaShieldAlt,
-  FaTimesCircle,
-} from "react-icons/fa";
+import { FaCheck, FaLock, FaShieldAlt, FaTimesCircle } from "react-icons/fa";
 import { plans } from "@/lib/constants";
 import Link from "next/link";
 

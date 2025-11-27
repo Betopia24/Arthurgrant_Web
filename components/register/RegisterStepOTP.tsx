@@ -22,7 +22,7 @@ interface RegisterStepOTPProps {
   };
   userData: {
     step1: { selectedLanguage: string };
-    step2: { 
+    step2: {
       firstName: string;
       lastName: string;
       email: string;
@@ -31,20 +31,21 @@ interface RegisterStepOTPProps {
     };
     step3: { selectedAgeGroup: string };
     step4: { selectedHobbies: string[] };
-    step5: { 
+    step5: {
       selectedAvatarIndex: number;
       selectedAvatar: string;
     };
+    stepUserType: { selectedUserType: string };
   };
   updateData: (data: { otp: string[]; verified: boolean }) => void;
   prevStep: () => void;
 }
 
-export default function RegisterStepOTP({ 
-  data, 
-  userData, 
-  updateData, 
-  prevStep 
+export default function RegisterStepOTP({
+  data,
+  userData,
+  updateData,
+  prevStep,
 }: RegisterStepOTPProps) {
   const [loading, setLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
@@ -80,16 +81,18 @@ export default function RegisterStepOTP({
       setLoading(true);
       setError(null);
       setMessage(null);
-      
+
       // Send only email for OTP generation
       await authApi.register({ email: userData.step2.email });
-      
+
       setOtpSent(true);
       setCountdown(60); // Start 60 second countdown
       setMessage("OTP sent successfully! Please check your email.");
     } catch (error: any) {
       console.error("Error sending OTP:", error);
-      setError(error.response?.data?.message || "Failed to send OTP. Please try again.");
+      setError(
+        error.response?.data?.message || "Failed to send OTP. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -155,8 +158,9 @@ export default function RegisterStepOTP({
           age: userData.step3.selectedAgeGroup,
           hobbies: userData.step4.selectedHobbies.join(", "),
           profilePic: userData.step5.selectedAvatar,
-          language: userData.step1.selectedLanguage
-        }
+          language: userData.step1.selectedLanguage,
+          userType: userData.stepUserType.selectedUserType,
+        },
       };
 
       // console.log("Sending to backend:", verifyData); // Debug log
@@ -169,7 +173,7 @@ export default function RegisterStepOTP({
         setSuccess(true);
         updateData({ otp, verified: true });
         setMessage("Registration successful! Redirecting to login...");
-        
+
         // Only redirect on success
         setTimeout(() => {
           router.push("/signin");
@@ -181,8 +185,10 @@ export default function RegisterStepOTP({
       console.error("Error verifying OTP:", error);
       // console.log("Full error object:", error);
       // console.log("Error response:", error.response);
-      
-      const errorMessage = error.response?.data?.message || "Registration failed. Please try again.";
+
+      const errorMessage =
+        error.response?.data?.message ||
+        "Registration failed. Please try again.";
       setError(errorMessage);
     } finally {
       setRegisterLoading(false);
@@ -210,7 +216,8 @@ export default function RegisterStepOTP({
               Registration Successful!
             </h2>
             <p className="text-gray-300 text-sm mt-2">
-              Your account has been created successfully. Redirecting to sign in...
+              Your account has been created successfully. Redirecting to sign
+              in...
             </p>
           </div>
         ) : (
@@ -225,17 +232,13 @@ export default function RegisterStepOTP({
               <p className="text-gray-300 text-sm mt-2">
                 Enter the 6-digit code sent to {userData.step2.email}
               </p>
-              
+
               {/* Success/Info Messages */}
               {message && (
-                <p className="text-green-400 text-sm mt-2">
-                  {message}
-                </p>
+                <p className="text-green-400 text-sm mt-2">{message}</p>
               )}
               {loading && (
-                <p className="text-blue-400 text-sm mt-2">
-                  Sending OTP...
-                </p>
+                <p className="text-blue-400 text-sm mt-2">Sending OTP...</p>
               )}
               {otpSent && !loading && !message && (
                 <p className="text-green-400 text-sm mt-2">
@@ -265,7 +268,9 @@ export default function RegisterStepOTP({
               </div>
 
               {/* Error Message */}
-              {error && <p className="text-red-500 text-xs mt-2 text-center">{error}</p>}
+              {error && (
+                <p className="text-red-500 text-xs mt-2 text-center">{error}</p>
+              )}
 
               <div className="flex items-center justify-center mt-6">
                 <h1 className="text-gray-300 text-sm text-center">
@@ -276,7 +281,11 @@ export default function RegisterStepOTP({
                     disabled={loading || countdown > 0}
                     className="text-gradient font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading ? "Sending..." : countdown > 0 ? `Resend in ${countdown}s` : "Resend"}
+                    {loading
+                      ? "Sending..."
+                      : countdown > 0
+                      ? `Resend in ${countdown}s`
+                      : "Resend"}
                   </button>
                 </h1>
               </div>

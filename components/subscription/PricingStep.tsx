@@ -100,7 +100,7 @@ export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
             {/* Buttons */}
             {idx === 1 ? (
               <button className="mt-12 py-2.5 w-full rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer">
-                Start With {plan.planName} Plan
+                Start With {plan.planName} 
               </button>
             ) : (
               <>
