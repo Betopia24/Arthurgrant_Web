@@ -82,7 +82,7 @@ const PracticeHero = ({
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {/* Streak */}
           <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between gap-3">
@@ -116,15 +116,10 @@ const PracticeHero = ({
             <div className="text-center text-base sm:text-lg font-semibold">
               Remaining
             </div>
-            <div className="mt-3 w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-pink-400 to-pink-600"
-                style={{ width: sessionProgressWidth }}></div>
-            </div>
           </div>
 
           {/* Progress */}
-          <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
+          <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg md:col-span-3 lg:col-span-1">
             <div className="flex items-center justify-between gap-3">
               <div className="p-3 rounded-full bg-gradient-to-r from-sky-300 to-sky-600 flex items-center justify-center">
                 <FaChartLine className="text-white text-xl" />
@@ -137,15 +132,10 @@ const PracticeHero = ({
             <div className="text-center text-base sm:text-lg font-semibold">
               Remaining
             </div>
-            <div className="mt-3 w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-sky-400 to-sky-600"
-                style={{ width: progressWidth }}></div>
-            </div>
           </div>
 
           {/* Today's Goal */}
-          <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
+          {/* <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between gap-3">
               <div className="p-3 rounded-full bg-gradient-to-r from-green-300 to-green-600 flex items-center justify-center">
                 <FaBullseye className="text-white text-xl" />
@@ -163,7 +153,7 @@ const PracticeHero = ({
                 className="h-full bg-gradient-to-r from-green-400 to-green-600"
                 style={{ width: goalWidth }}></div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
