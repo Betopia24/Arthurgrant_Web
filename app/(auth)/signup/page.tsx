@@ -7,6 +7,7 @@ import RegisterStepFour from "@/components/register/RegisterStepFour";
 import RegisterStepFive from "@/components/register/RegisterStepFive";
 import RegisterStepOTP from "@/components/register/RegisterStepOTP";
 import { ProtectedAuthRoute } from "@/components/shared/ProtectedAuthRoute";
+import ResgisterStepUserType from "@/components/register/RegisterStepUserType";
 
 // Define the complete data structure for all steps
 export interface RegisterData {
@@ -34,6 +35,9 @@ export interface RegisterData {
     otp: string[];
     verified: boolean;
   };
+  stepUserType: {
+    selectedUserType: string;
+  };
 }
 
 function SignUp() {
@@ -51,6 +55,9 @@ function SignUp() {
     },
     step3: {
       selectedAgeGroup: "6-9",
+    },
+    stepUserType: {
+      selectedUserType: "",
     },
     step4: {
       selectedHobbies: [],
@@ -81,8 +88,6 @@ function SignUp() {
   };
 
   const handleSubmit = () => {
-    // console.log("Final form data:", formData);
-    // Move to OTP verification step
     nextStep();
   };
 
@@ -96,6 +101,7 @@ function SignUp() {
             nextStep={nextStep}
           />
         );
+
       case 2:
         return (
           <RegisterStepSecond
@@ -105,7 +111,20 @@ function SignUp() {
             prevStep={prevStep}
           />
         );
+
+      // 👉 Bring UserType here as Step 3
       case 3:
+        return (
+          <ResgisterStepUserType
+            data={formData.stepUserType}
+            updateData={(data) => updateFormData("stepUserType", data)}
+            nextStep={nextStep}
+            prevStep={prevStep}
+          />
+        );
+
+      // Age Group becomes Step 4 now
+      case 4:
         return (
           <RegisterStepThree
             data={formData.step3}
@@ -114,7 +133,8 @@ function SignUp() {
             prevStep={prevStep}
           />
         );
-      case 4:
+
+      case 5:
         return (
           <RegisterStepFour
             data={formData.step4}
@@ -124,7 +144,8 @@ function SignUp() {
             ageGroup={formData.step3.selectedAgeGroup}
           />
         );
-      case 5:
+
+      case 6:
         return (
           <RegisterStepFive
             data={formData.step5}
@@ -133,7 +154,8 @@ function SignUp() {
             onSubmit={handleSubmit}
           />
         );
-      case 6:
+
+      case 7:
         return (
           <RegisterStepOTP
             data={formData.stepOTP}
@@ -142,6 +164,7 @@ function SignUp() {
             prevStep={prevStep}
           />
         );
+
       default:
         return null;
     }

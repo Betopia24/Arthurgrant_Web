@@ -58,7 +58,7 @@ export default function SuccessStep({ selectedPlan }: SuccessStepProps) {
 
       <div className="flex flex-col gap-3 w-full mt-4">
         <Link
-          href="/dashboard"
+          href="/profile"
           className="py-3 px-4 w-full rounded-xl font-semibold bg-gradient-brand hover:opacity-90 transition text-center"
         >
           Go to Dashboard

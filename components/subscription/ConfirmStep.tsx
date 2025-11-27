@@ -67,12 +67,7 @@ export default function ConfirmStep({
 
   const handleNextClick = () => {
     if (!isAuthenticated) {
-      toast("Please login to continue with subscription", {
-        style: {
-          backgroundColor: "#ffff",
-          color: "#000",
-        },
-      });
+      toast.error("Please login to continue with subscription");
       return;
     }
     onNext();

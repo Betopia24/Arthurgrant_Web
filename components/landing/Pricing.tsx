@@ -10,6 +10,15 @@ import { plans } from "@/lib/constants";
 import Link from "next/link";
 
 const Pricing = () => {
+
+
+
+  
+
+
+
+
+
   return (
     <div className="py-20 bg-section-dark text-white">
       <div className="app-container flex flex-col items-center gap-12">
