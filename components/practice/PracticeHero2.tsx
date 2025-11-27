@@ -4,6 +4,7 @@ import React from "react";
 import Heading from "../shared/Heading";
 import { FaFire, FaClock, FaChartLine, FaBullseye } from "react-icons/fa";
 import { useAuthStore } from "@/stores/authStore";
+import useGetSessionTime from "@/hooks/useGetSessionTime";
 
 type PracticeHeroProps = {
   heading: string;
@@ -41,6 +42,7 @@ const PracticeHero = ({
   goalWidth,
 }: PracticeHeroProps) => {
   const { user } = useAuthStore();
+  const sessionTimes = useGetSessionTime();
   return (
     <div className="pt-36 pb-16 md:py-44 bg-gradient-to-br from-brand-dark via-brand-darker to-brand-darker">
       <div className="app-container flex flex-col items-center gap-12">
@@ -116,7 +118,7 @@ const PracticeHero = ({
               <span className="text-base font-semibold">Session Timer</span>
             </div>
             <div className="mt-3 text-3xl font-bold text-center text-white">
-              {sessionTime}
+              {sessionTimes}
             </div>
             <div className="text-center text-base sm:text-lg font-semibold">
               Remaining
