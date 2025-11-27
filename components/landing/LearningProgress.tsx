@@ -2,6 +2,7 @@ import React from "react";
 import Heading from "../shared/Heading";
 import { FaMedal } from "react-icons/fa";
 import RewardVideo from "../reward-video/RewardVideo";
+import LearningProgressSection from "../Progress/LearningProgressSection";
 
 interface ProgressBarProps {
   label: string;
