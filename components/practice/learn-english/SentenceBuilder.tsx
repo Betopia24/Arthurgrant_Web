@@ -163,184 +163,169 @@ const SentenceBuilder = ({
     <div
       className={`p-5 md:p-8 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-6 w-full relative ${
         isLocked ? "opacity-60" : ""
-      }`}
-    >
+      }`}>
+      <h1 className="font-semibold text-2xl text-white">Sentence Builder</h1>
+
+      {/* Main content */}
       {isLocked ? (
-        <TaskLoadingLock variant="locked" title="Complete Task 5 to Unlock this Task " />
+        <TaskLoadingLock
+          variant="locked"
+          title="Complete Task 5 to Unlock this Task "
+        />
+      ) : isFetching ? (
+        <TaskLoadingLock
+          variant="loading"
+          title=" Sentence Builder Loading.."
+        />
       ) : (
-        <>
-          <h1 className="font-semibold text-2xl text-white">
-            Sentence Builder
-          </h1>
+        <div className="rounded-xl p-5 md:p-8 bg-[#101231] space-y-20">
+          <div>
+            <h3 className="text-white font-semibold text-xl">
+              Arrange the words to form a correct sentence:
+            </h3>
+            <p className="text-white text-md">
+              Click each word in sequence to build the sentence.
+            </p>
+          </div>
 
-          {isFetching ? (
-            <TaskLoadingLock
-              variant="loading"
-              title=" Sentence Builder Loading.."
-            />
-          ) : (
+          {currentSentence && (
             <>
-              {/* Main content */}
-              <div className="rounded-xl p-5 md:p-8 bg-[#101231] space-y-20">
-                <div>
-                  <h3 className="text-white font-semibold text-xl">
-                    Arrange the words to form a correct sentence:
-                  </h3>
-                  <p className="text-white text-md">
-                    Click each word in sequence to build the sentence.
-                  </p>
+              {/* Available Words */}
+              <div className="flex flex-col gap-2">
+                <span className="text-gray-300">Available Words:</span>
+                <div className="flex flex-wrap gap-4">
+                  {availableWords.length > 0 ? (
+                    availableWords.map((word, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleWordClick(word)}
+                        disabled={taskResult !== null}
+                        className={`gradient-button w-fit ${
+                          taskResult !== null
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}>
+                        {word}
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 italic">
+                      All words selected. Click words below to remove them.
+                    </p>
+                  )}
                 </div>
-
-                {currentSentence && (
-                  <>
-                    {/* Available Words */}
-                    <div className="flex flex-col gap-2">
-                      <span className="text-gray-300">Available Words:</span>
-                      <div className="flex flex-wrap gap-4">
-                        {availableWords.length > 0 ? (
-                          availableWords.map((word, index) => (
-                            <button
-                              key={index}
-                              onClick={() => handleWordClick(word)}
-                              disabled={taskResult !== null}
-                              className={`gradient-button w-fit ${
-                                taskResult !== null
-                                  ? "opacity-50 cursor-not-allowed"
-                                  : ""
-                              }`}
-                            >
-                              {word}
-                            </button>
-                          ))
-                        ) : (
-                          <p className="text-gray-500 italic">
-                            All words selected. Click words below to remove
-                            them.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Your Sentence */}
-                    <div className="flex flex-col gap-2">
-                      <span className="text-gray-300">Your sentence:</span>
-                      <div className="bg-[#FFFFFF1C] rounded-xl p-6 min-h-[80px] flex items-center justify-center">
-                        {selectedWords.length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
-                            {selectedWords.map((word, index) => (
-                              <button
-                                key={index}
-                                onClick={() => handleRemoveWord(index)}
-                                disabled={taskResult !== null}
-                                className={`px-4 py-2 bg-gradient-brand rounded-lg font-semibold text-white text-lg hover:brightness-110 transition ${
-                                  taskResult !== null
-                                    ? "opacity-50 cursor-not-allowed"
-                                    : "cursor-pointer"
-                                }`}
-                              >
-                                {word}
-                              </button>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-gray-500 italic">
-                            Click words above to build your sentence
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Result Message */}
-                    {showResult && (
-                      <div className="flex items-center justify-center">
-                        {selectedWords.join(" ").trim() ===
-                        currentSentence.sentence.trim() ? (
-                          <div className="flex items-center gap-3 bg-green-500/20 border-2 border-green-500 rounded-xl px-6 py-3">
-                            <FaCheckCircle className="w-6 h-6 text-green-500" />
-                            <span className="text-green-500 font-semibold text-lg">
-                              Perfect! The sentence is correct: "
-                              {currentSentence.sentence}"
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-3 bg-red-500/20 border-2 border-red-500 rounded-xl px-6 py-3">
-                            <span className="text-red-500 font-semibold text-lg">
-                              Wrong! The correct sentence is: "
-                              {currentSentence.sentence}"
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Navigation */}
-                    <div className="flex items-center justify-between">
-                      <button
-                        onClick={handlePrevious}
-                        disabled={currentIndex === 0}
-                        className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors"
-                      >
-                        <ArrowLeft className="w-4 h-4" /> Previous
-                      </button>
-
-                      <div className="flex items-center gap-4">
-                        <h2 className="text-gradient font-semibold text-lg">
-                          {currentIndex + 1} of {sentences.length}
-                        </h2>
-                        <button
-                          onClick={handleReset}
-                          disabled={taskResult !== null}
-                          className={`text-sm text-gray-400 hover:text-white transition ${
-                            taskResult !== null
-                              ? "opacity-50 cursor-not-allowed"
-                              : ""
-                          }`}
-                        >
-                          Reset
-                        </button>
-                      </div>
-
-                      <button
-                        onClick={handleNext}
-                        disabled={currentIndex === sentences.length - 1}
-                        className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors"
-                      >
-                        Next <ArrowRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </>
-                )}
               </div>
 
-              {/* AI Check Button */}
-              <button
-                onClick={handleCheckWithAI}
-                disabled={
-                  selectedWords.length === 0 || isLoading || taskResult !== null
-                }
-                className="p-4 inline-flex items-center justify-center gap-2 bg-gradient-brand rounded-2xl font-semibold text-base text-white hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Analyzing...
-                  </>
-                ) : taskResult !== null ? (
-                  <>
-                    <FaCheckCircle className="w-5 h-5" />
-                    Task Completed
-                  </>
-                ) : (
-                  <>
-                    Check with AI
-                    <Sparkles className="w-5 h-5" />
-                  </>
-                )}
-              </button>
+              {/* Your Sentence */}
+              <div className="flex flex-col gap-2">
+                <span className="text-gray-300">Your sentence:</span>
+                <div className="bg-[#FFFFFF1C] rounded-xl p-6 min-h-[80px] flex items-center justify-center">
+                  {selectedWords.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedWords.map((word, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleRemoveWord(index)}
+                          disabled={taskResult !== null}
+                          className={`px-4 py-2 bg-gradient-brand rounded-lg font-semibold text-white text-lg hover:brightness-110 transition ${
+                            taskResult !== null
+                              ? "opacity-50 cursor-not-allowed"
+                              : "cursor-pointer"
+                          }`}>
+                          {word}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 italic">
+                      Click words above to build your sentence
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Result Message */}
+              {showResult && (
+                <div className="flex items-center justify-center">
+                  {selectedWords.join(" ").trim() ===
+                  currentSentence.sentence.trim() ? (
+                    <div className="flex items-center gap-3 bg-green-500/20 border-2 border-green-500 rounded-xl px-6 py-3">
+                      <FaCheckCircle className="w-6 h-6 text-green-500" />
+                      <span className="text-green-500 font-semibold text-lg">
+                        Perfect! The sentence is correct: "
+                        {currentSentence.sentence}"
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 bg-red-500/20 border-2 border-red-500 rounded-xl px-6 py-3">
+                      <span className="text-red-500 font-semibold text-lg">
+                        Wrong! The correct sentence is: "
+                        {currentSentence.sentence}"
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Navigation */}
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={handlePrevious}
+                  disabled={currentIndex === 0}
+                  className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors">
+                  <ArrowLeft className="w-4 h-4" /> Previous
+                </button>
+
+                <div className="flex items-center gap-4">
+                  <h2 className="text-gradient font-semibold text-lg">
+                    {currentIndex + 1} of {sentences.length}
+                  </h2>
+                  <button
+                    onClick={handleReset}
+                    disabled={taskResult !== null}
+                    className={`text-sm text-gray-400 hover:text-white transition ${
+                      taskResult !== null ? "opacity-50 cursor-not-allowed" : ""
+                    }`}>
+                    Reset
+                  </button>
+                </div>
+
+                <button
+                  onClick={handleNext}
+                  disabled={currentIndex === sentences.length - 1}
+                  className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors">
+                  Next <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
             </>
           )}
-        </>
+        </div>
       )}
+
+      {/* AI Check Button */}
+      <button
+        onClick={handleCheckWithAI}
+        disabled={
+          selectedWords.length === 0 || isLoading || taskResult !== null
+        }
+        className="p-4 inline-flex items-center justify-center gap-2 bg-gradient-brand rounded-2xl font-semibold text-base text-white hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed">
+        {isLoading ? (
+          <>
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            Analyzing...
+          </>
+        ) : taskResult !== null ? (
+          <>
+            <FaCheckCircle className="w-5 h-5" />
+            Task Completed
+          </>
+        ) : (
+          <>
+            Check with AI
+            <Sparkles className="w-5 h-5" />
+          </>
+        )}
+      </button>
     </div>
   );
 };
