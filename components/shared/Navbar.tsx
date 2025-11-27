@@ -94,7 +94,7 @@ const Navbar = () => {
   const filteredNavLinks = navLinks.filter((link) => {
     if (
       !isAuthenticated &&
-      (link.label === "Practice" || link.label === "Progress")
+      (link.label === "Practice" || link.label === "Progress" || link.label === "Rewards")
     ) {
       return false;
     }

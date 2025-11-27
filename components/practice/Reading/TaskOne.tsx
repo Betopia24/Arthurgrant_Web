@@ -1,11 +1,10 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { BiVolumeFull } from "react-icons/bi";
-import { FaCheckCircle, FaArrowRight } from "react-icons/fa";
-import { useAuthStore } from "@/stores/authStore";
 import TaskHeader from "@/components/shared/TaskHeader";
+import { useAuthStore } from "@/stores/authStore";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { AnyCnameRecord } from "dns";
+import { BiVolumeFull } from "react-icons/bi";
+import { FaArrowRight, FaCheckCircle } from "react-icons/fa";
 import TaskLoadingLockError from "../TaskLoadingLock";
 
 interface TaskResult {
