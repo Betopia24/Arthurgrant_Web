@@ -1,5 +1,6 @@
 // components/subscription/ConfirmStep.tsx
 "use client";
+import toast from "react-hot-toast";
 import { FaCheck, FaArrowRightLong } from "react-icons/fa6";
 
 interface Plan {
@@ -27,33 +28,46 @@ interface ConfirmStepProps {
   isAuthenticated: boolean;
 }
 
-export default function ConfirmStep({ selectedPlan, onNext, onBack, isAuthenticated }: ConfirmStepProps) {
+export default function ConfirmStep({
+  selectedPlan,
+  onNext,
+  onBack,
+  isAuthenticated,
+}: ConfirmStepProps) {
   const formatPrice = (plan: Plan) => {
     if (plan.amount === 0) return "Free";
-    
-    const intervalText = plan.interval === 'month' ? 'mo' : 
-                        plan.interval === 'year' ? 'yr' : 
-                        plan.interval;
-    
+
+    const intervalText =
+      plan.interval === "month"
+        ? "mo"
+        : plan.interval === "year"
+        ? "yr"
+        : plan.interval;
+
     return `$${plan.amount}/${intervalText}`;
   };
 
   const formatDuration = (plan: Plan) => {
     if (plan.amount === 0) return "7-day trial";
-    
-    if (plan.interval === 'lifetime') return "Lifetime access";
-    
-    const intervalCount = plan.intervalCount > 1 ? plan.intervalCount : '';
-    const intervalText = plan.interval === 'month' ? 'month' : 
-                        plan.interval === 'year' ? 'year' : 
-                        plan.interval;
-    
-    return `Billed every ${intervalCount} ${intervalText}${plan.intervalCount > 1 ? 's' : ''}`;
+
+    if (plan.interval === "lifetime") return "Lifetime access";
+
+    const intervalCount = plan.intervalCount > 1 ? plan.intervalCount : "";
+    const intervalText =
+      plan.interval === "month"
+        ? "month"
+        : plan.interval === "year"
+        ? "year"
+        : plan.interval;
+
+    return `Billed every ${intervalCount} ${intervalText}${
+      plan.intervalCount > 1 ? "s" : ""
+    }`;
   };
 
   const handleNextClick = () => {
     if (!isAuthenticated) {
-      alert("Please login to continue with subscription");
+      toast.error("Please login to continue with subscription");
       return;
     }
     onNext();
@@ -66,7 +80,8 @@ export default function ConfirmStep({ selectedPlan, onNext, onBack, isAuthentica
           Confirm Your Plan
         </h1>
         <p className="text-base sm:text-lg">
-          Start your journey with our free trial, then choose the plan that fits your learning goals
+          Start your journey with our free trial, then choose the plan that fits
+          your learning goals
         </p>
       </div>
 
@@ -90,10 +105,7 @@ export default function ConfirmStep({ selectedPlan, onNext, onBack, isAuthentica
             </p>
             <ul className="flex flex-col gap-3">
               {selectedPlan.features.map((feature, i) => (
-                <li
-                  key={i}
-                  className="flex items-center gap-2 text-gray-200"
-                >
+                <li key={i} className="flex items-center gap-2 text-gray-200">
                   <FaCheck className="text-green-500" /> {feature}
                 </li>
               ))}
@@ -115,9 +127,11 @@ export default function ConfirmStep({ selectedPlan, onNext, onBack, isAuthentica
             <div className="flex justify-between text-gray-300">
               <span>Billing Frequency</span>
               <span className="text-white/80 font-semibold">
-                {selectedPlan.interval === 'month' ? 'Monthly' : 
-                 selectedPlan.interval === 'year' ? 'Yearly' : 
-                 selectedPlan.interval}
+                {selectedPlan.interval === "month"
+                  ? "Monthly"
+                  : selectedPlan.interval === "year"
+                  ? "Yearly"
+                  : selectedPlan.interval}
               </span>
             </div>
             <div className="flex justify-between text-gray-300">
