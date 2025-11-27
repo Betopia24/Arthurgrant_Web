@@ -90,7 +90,13 @@ const PowerWordsPulse = ({ powerWords, error, loading }: PropsType) => {
       setActiveRecording(type);
     } catch (error) {
       console.error("Error starting recording:", error);
-      alert("Please allow microphone access to use this feature.");
+
+      toast("Please allow microphone access to use this feature.", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
     }
   };
 
