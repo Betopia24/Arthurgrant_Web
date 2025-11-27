@@ -18,11 +18,13 @@ type WordPartsType = {
 };
 
 interface WordPartsWorkshopProps {
+  isLocked: boolean;
   taskResult: TaskResult | null;
   onTaskComplete: (result: TaskResult | null) => void;
 }
 
 const WordPartsWorkshop = ({
+  isLocked,
   taskResult,
   onTaskComplete,
 }: WordPartsWorkshopProps) => {
@@ -103,12 +105,20 @@ const WordPartsWorkshop = ({
   const isLastItem = currentIndex >= getMaxLength() - 1;
   const currentMeanings = getCurrentMeanings();
 
+  const handleSubmitComplete = () => {
+    onTaskComplete({ isAnswer: true, marks: 100 });
+  };
   return (
     <div className="p-5 md:p-8 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-6 w-full">
       <h1 className="font-semibold text-2xl text-white">Word Parts Workshop</h1>
 
       {/* Main content */}
-      {isLoading && !wordParts ? (
+      {isLocked ? (
+        <TaskLoadingLockError
+          title="Complete Task 3 to unlock this task"
+          variant="locked"
+        />
+      ) : isLoading && !wordParts ? (
         <TaskLoadingLockError title="word parts loading..." variant="loading" />
       ) : (
         <div className="rounded-xl p-5 md:p-8 bg-[#101231] space-y-20">
@@ -185,6 +195,13 @@ const WordPartsWorkshop = ({
           </div>
         </div>
       )}
+
+      <button
+        onClick={handleSubmitComplete}
+        disabled={!isLastItem}
+        className="p-3 sm:p-4 inline-flex items-center justify-center gap-2 bg-gradient-brand rounded-2xl font-semibold text-sm sm:text-base text-white hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
+        Go to next task
+      </button>
     </div>
   );
 };
