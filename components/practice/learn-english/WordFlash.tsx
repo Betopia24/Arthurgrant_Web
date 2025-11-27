@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import React, { useEffect, useState, useCallback } from "react";
 import { FaMicrophone } from "react-icons/fa";
 import TaskLoadingLockError from "../TaskLoadingLock";
+import toast from "react-hot-toast";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -136,7 +137,12 @@ const WordFlash = ({
 
   const startRecording = useCallback(() => {
     if (!hasShownWord) {
-      alert("Please view the word first by clicking next/previous");
+      toast("Please view the word first by clicking next/previous", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
       return;
     }
 
@@ -164,12 +170,22 @@ const WordFlash = ({
 
   const analyzeWithAI = async () => {
     if (!userTranscript.trim()) {
-      alert("Please record your speech first");
+      toast("Please record your speech first", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
       return;
     }
 
     if (!hasShownWord) {
-      alert("Please view the word first by clicking next/previous");
+      toast("Please view the word first by clicking next/previous", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
       return;
     }
 
@@ -192,7 +208,13 @@ const WordFlash = ({
       setShowResult(true);
     } catch (error) {
       console.error("AI analysis failed:", error);
-      alert("Analysis failed. Please try again.");
+
+      toast("Analysis failed. Please try again.", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
     } finally {
       setIsAiLoading(false);
     }

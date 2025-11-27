@@ -171,7 +171,12 @@ const PrecisionDrill = ({
 
   const startRecording = async () => {
     if (!scenarios || allWords.length === 0) {
-      alert("Please wait for words to load.");
+      toast("Please wait for words to load.", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
       return;
     }
 
@@ -216,7 +221,13 @@ const PrecisionDrill = ({
       }, 1000);
     } catch (error) {
       console.error("Error starting recording:", error);
-      alert("Please allow microphone access to use this feature.");
+
+      toast("Please allow microphone access to use this feature.", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
     }
   };
 
@@ -251,7 +262,12 @@ const PrecisionDrill = ({
 
   const handleAICheck = async () => {
     if (!audioFile) {
-      alert("Please record your speech first.");
+      toast("Please record your speech first.", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
       return;
     }
 
