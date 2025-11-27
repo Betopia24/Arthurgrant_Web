@@ -996,7 +996,7 @@ const SpeakingTaskContent = () => {
             {loading.submit ? "Submitting speaking..." : " Submit All Answers"}
           </button>
           {/* Completion Message */}
-          {allTasksCompleted && <CompletePageFooterMessage text="Done" />}
+          {/* {allTasksCompleted && <CompletePageFooterMessage text="Done" />} */}
         </div>
       </div>
     </div>
