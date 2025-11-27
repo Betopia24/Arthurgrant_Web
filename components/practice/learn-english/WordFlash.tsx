@@ -23,6 +23,7 @@ const WordFlash = ({
   const [words, setWords] = useState<string[]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isWordVisible, setIsWordVisible] = useState(false);
   const [userTranscript, setUserTranscript] = useState("");
@@ -72,18 +73,7 @@ const WordFlash = ({
     } catch (error) {
       console.error("Failed to fetch words:", error);
       // Fallback words in case of API failure
-      setWords([
-        "TRAP",
-        "CLOCK",
-        "PHONE",
-        "TABLE",
-        "CHAIR",
-        "WATER",
-        "LIGHT",
-        "PAPER",
-        "MUSIC",
-        "BRAVE",
-      ]);
+      setWords([]);
     } finally {
       setIsLoading(false);
     }
@@ -183,7 +173,7 @@ const WordFlash = ({
       return;
     }
 
-    setIsLoading(true);
+    setIsAiLoading(true);
     try {
       const currentWord = words[currentWordIndex];
 
@@ -204,7 +194,7 @@ const WordFlash = ({
       console.error("AI analysis failed:", error);
       alert("Analysis failed. Please try again.");
     } finally {
-      setIsLoading(false);
+      setIsAiLoading(false);
     }
   };
 
@@ -352,7 +342,7 @@ const WordFlash = ({
             ? "Record your speech first"
             : "Check your answer with AI"
         }>
-        {isLoading ? (
+        {isAiLoading ? (
           <>
             <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             <span className="text-xs sm:text-sm">Analyzing...</span>
