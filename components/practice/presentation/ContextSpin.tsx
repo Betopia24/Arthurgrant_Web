@@ -101,7 +101,13 @@ const ContextSpin = ({
       }, 1000);
     } catch (error) {
       console.error("Error starting recording:", error);
-      alert("Please allow microphone access to use this feature.");
+
+      toast("Please allow microphone access to use this feature.", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
     }
   };
 
@@ -135,7 +141,12 @@ const ContextSpin = ({
 
   const handleAICheck = async () => {
     if (!audioFile || selectedWords.length === 0 || !contextData) {
-      alert("Please record your speech and select words first.");
+      toast("Please record your speech and select words first.", {
+        style: {
+          backgroundColor: "#ffff",
+          color: "#000",
+        },
+      });
       return;
     }
 

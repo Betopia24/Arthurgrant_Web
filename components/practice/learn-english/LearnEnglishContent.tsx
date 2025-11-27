@@ -275,10 +275,12 @@ const LearnEnglishContent = () => {
               isLocked={isTask2Locked}
             />
             <WordFlash
+              isLocked={isTask3Locked}
               taskResult={taskResults.task3}
               onTaskComplete={handleTask3Complete}
             />
             <WordPartsWorkshop
+              isLocked={isTask4Locked}
               taskResult={taskResults.task4}
               onTaskComplete={handleTask4Complete}
             />
@@ -297,8 +299,7 @@ const LearnEnglishContent = () => {
           {/* Submit All Button */}
           <div
             ref={submitButtonRef}
-            className="w-full flex flex-col items-center justify-center gap-4"
-          >
+            className="w-full flex flex-col items-center justify-center gap-4">
             <button
               onClick={handleSubmitAllAnswers}
               disabled={!allTasksCompleted || isSubmitting || isSubmitted}
@@ -306,8 +307,7 @@ const LearnEnglishContent = () => {
                 !allTasksCompleted || isSubmitting || isSubmitted
                   ? "bg-[#828882] opacity-50 cursor-not-allowed"
                   : "bg-gradient-brand text-white cursor-pointer hover:brightness-110 transition-all"
-              }`}
-            >
+              }`}>
               {isSubmitting
                 ? "Submitting..."
                 : isSubmitted

@@ -162,15 +162,13 @@ export default function ConfirmStep({
           {/* Buttons */}
           <button
             className="mt-4 py-2.5 w-full rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer"
-            onClick={handleNextClick}
-          >
+            onClick={handleNextClick}>
             {isAuthenticated ? "Proceed to Payment" : "Login to Continue"}
             <FaArrowRightLong className="w-5 h-5" />
           </button>
           <button
             className="relative mt-2 py-2.5 w-full rounded-xl bg-gradient-brand h-10 cursor-pointer"
-            onClick={onBack}
-          >
+            onClick={onBack}>
             <div className="absolute inset-[1px] bg-[#0B0C23] rounded-xl p-2 flex justify-center items-center">
               <h1 className="text-gradient font-semibold">Go Back</h1>
             </div>
