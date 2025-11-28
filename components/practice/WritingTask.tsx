@@ -6,6 +6,7 @@ import { Sparkles } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import PracticeHero from "./PracticeHero2";
 import { withRouteGuard } from "../shared/ProtectPage";
+import { usePathname } from "next/navigation";
 
 const NEXT_PUBLIC_AI_API = process.env.NEXT_PUBLIC_AI_API;
 const NEXT_PUBLIC_BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API;
@@ -33,6 +34,8 @@ interface FinalFeedback {
 }
 
 const WritingTask = () => {
+  const currentPath = usePathname();
+
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [writing, setWriting] = useState<string>("");
   const [wordReletive, setWordReletive] = useState<WordRelative | null>(null);
@@ -117,6 +120,7 @@ const WritingTask = () => {
       }
 
       setFinalFeedback(data);
+      localStorage.setItem("subscription_change_route", currentPath);
     } catch (error) {
       console.error("Error fetching final feedback:", error);
     } finally {
