@@ -91,9 +91,13 @@ export default function Page() {
           </div>
 
           {loading ? (
-            <div className="text-white text-center py-12">Loading achievements...</div>
+            <div className="text-white text-center py-12">
+              Loading achievements...
+            </div>
           ) : badges.length === 0 ? (
-            <div className="text-gray-400 text-center py-12">No achievements yet. Keep practicing!</div>
+            <div className="text-gray-400 text-center py-12">
+              No achievements yet. Keep practicing!
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
               {badges.map((badge) => {
@@ -119,8 +123,8 @@ export default function Page() {
                           }`}
                         >
                           {badge.icon ? (
-                            <img 
-                              src={badge.icon} 
+                            <img
+                              src={badge.icon}
                               alt={badge.name}
                               className="w-6 h-6"
                             />
