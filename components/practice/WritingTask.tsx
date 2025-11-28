@@ -44,12 +44,21 @@ const WritingTask = () => {
   );
   const [loadingTopic, setLoadingTopic] = useState(false);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [Word, setWord] = useState<any | null>(null);
 
   const { user, accessToken } = useAuthStore();
 
   // Circle settings
   const circleRadius = 45;
   const circleCircumference = 2 * Math.PI * circleRadius;
+
+  const [categories, setCategories] = useState<any[]>([]);
+
+  // Callback to handle data from child
+  const handleCategories = (data: any) => {
+    console.log("Received from child:", data);
+    setCategories(data); // store data in state
+  };
 
   // ============ SELECT WORD + SEND TO API ============
   const handleSelectedWord = async (word: string) => {
@@ -169,16 +178,18 @@ const WritingTask = () => {
           <div className="w-full flex flex-col gap-8">
             {/* ============ WORD SELECTION ============ */}
             <div className="flex flex-wrap gap-4">
+              {/* <WritingTopicsGenerating onSuccess={handleCategories} /> */}
+
               {words.map((word, idx) => (
                 <button
                   key={idx}
                   className={`px-4 py-2 rounded-lg font-semibold transition duration-300
-                  ${
-                    selectedWord === word
-                      ? "bg-gradient-to-r from-[#FFBC6F] via-[#F176B7] to-[#3797CD]"
-                      : "bg-[#2D2F4A] hover:bg-gradient-to-r hover:from-[#FFBC6F] hover:via-[#F176B7] hover:to-[#3797CD]"
-                  }
-                `}
+      ${
+        selectedWord === word
+          ? "bg-gradient-to-r from-[#FFBC6F] via-[#F176B7] to-[#3797CD]"
+          : "bg-[#2D2F4A] hover:bg-gradient-to-r hover:from-[#FFBC6F] hover:via-[#F176B7] hover:to-[#3797CD]"
+      }
+    `}
                   onClick={() => handleSelectedWord(word)}
                   disabled={loadingTopic}>
                   {loadingTopic && selectedWord !== word ? "Loading..." : word}
