@@ -9,6 +9,7 @@ import Task4ReadingComprehension from "./Reading/TaskFour";
 import Task1PhonemeFlashcards from "./Reading/TaskOne";
 import Task3DragMatch from "./Reading/TaskThree";
 import Task2SightWordPractice from "./Reading/TaskTwo";
+import { withRouteGuard } from "../shared/ProtectPage";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -279,4 +280,4 @@ const ReadingTask = () => {
   );
 };
 
-export default ReadingTask;
+export default withRouteGuard(ReadingTask);

@@ -27,10 +27,16 @@ const useGetSubscriptionData = () => {
     fetchSubscriptions();
   }, []);
 
+  const message = data?.message;
+  const success = data?.success;
+  const daTa = data?.data;
+
   return {
-    data,
+    daTa,
     isLoading,
     isError,
+    message,
+    success,
   };
 };
 

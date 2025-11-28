@@ -21,6 +21,7 @@ import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMes
 import TaskLoadingLockError from "../TaskLoadingLock";
 import { apiRequest } from "@/lib/apiRequest";
 import toast from "react-hot-toast";
+import { withRouteGuard } from "@/components/shared/ProtectPage";
 
 // Speech Recognition setup
 const SpeechRecognitionAPI =
@@ -1013,4 +1014,4 @@ const SpeakingTaskContent = () => {
   );
 };
 
-export default SpeakingTaskContent;
+export default withRouteGuard(SpeakingTaskContent);
