@@ -69,7 +69,7 @@ export default function Page() {
       />
 
       <div className="py-20 bg-section-dark">
-        <div className="app-container flex flex-col items-center gap-12">
+        <div className="app-container flex flex-col items-center gap-12 md:py-12 mt-12">
           {/* Heading */}
           <Heading
             heading="Learning You Can See"
