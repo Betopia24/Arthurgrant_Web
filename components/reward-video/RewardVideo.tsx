@@ -1,5 +1,5 @@
 import React from "react";
-import Heading from "../shared/Heading";
+import Heading, { Heading2 } from "../shared/Heading";
 import Image from "next/image";
 import { activities } from "@/lib/constants";
 import Link from "next/link";
@@ -9,7 +9,7 @@ import { FaLock } from "react-icons/fa";
 const RewardVideo = () => {
   return (
     <div className="w-full">
-      <Heading
+      <Heading2
         heading="Learning Feels Better When, You're Rewarded"
         subheading="Daily practice unlocks new videos, matched to your passion— sports, dance, cooking, and more"
         specialText="You're Rewarded"
