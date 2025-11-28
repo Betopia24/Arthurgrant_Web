@@ -16,6 +16,7 @@ import { apiRequest } from "@/lib/apiRequest";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/stores/authStore";
 import { withRouteGuard } from "@/components/shared/ProtectPage";
+import { usePathname } from "next/navigation";
 
 type ScenariosTypes = {
   slow: string[];
@@ -44,6 +45,7 @@ type ErrorState = {
 };
 
 const PresentationContent = () => {
+  const currentPath = usePathname();
   const { user } = useAuthStore();
 
   const { task_1, task_2, task_3, task_4 } = useAppSelector(
@@ -213,6 +215,7 @@ const PresentationContent = () => {
       const res = await apiRequest("/presentation/submit", "POST", body);
       console.log("check presentation submit", res);
       setIsSubmit(true);
+      localStorage.setItem("subscription_change_route", currentPath);
       toast.success(res.message || "Presentation submitted successfully");
     } catch (error: any) {
       setIsSubmit(false);
