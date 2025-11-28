@@ -21,6 +21,7 @@ import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMes
 import TaskLoadingLockError from "../TaskLoadingLock";
 import { apiRequest } from "@/lib/apiRequest";
 import toast from "react-hot-toast";
+import { withRouteGuard } from "@/components/shared/ProtectPage";
 
 // Speech Recognition setup
 const SpeechRecognitionAPI =
@@ -53,6 +54,8 @@ const SpeakingTaskContent = () => {
   const [phrasesPool, setPhrasesPool] = useState<string[]>([]);
   const [sentencesPool, setSentencesPool] = useState<string[]>([]);
   const [vocabPool, setVocabPool] = useState<string[][]>([]);
+
+  const [isSubmit, setIsSubmit] = useState(false);
 
   const [loading, setLoading] = useState<LoadingState>({
     wordsPool: true,
@@ -790,10 +793,12 @@ const SpeakingTaskContent = () => {
       };
 
       const res = await apiRequest("/speaking/submit-session", "POST", body);
+      setIsSubmit(true);
       console.log("check Speaking submit", res);
       toast.success(res.message || "Speaking submitted successfully");
     } catch (error: any) {
       console.error(error);
+      setIsSubmit(false);
       setErrors((prev) => ({
         ...prev,
         submit: "Failed to submit Speaking. Please try again.",
@@ -996,11 +1001,17 @@ const SpeakingTaskContent = () => {
             {loading.submit ? "Submitting speaking..." : " Submit All Answers"}
           </button>
           {/* Completion Message */}
-          {/* {allTasksCompleted && <CompletePageFooterMessage text="Done" />} */}
+          {allTasksCompleted && isSubmit && (
+            <CompletePageFooterMessage
+              text={`Congratulations ${
+                user?.firstName || "there"
+              }! You've completed all speaking learning tasks for today. Your progress is outstanding!`}
+            />
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-export default SpeakingTaskContent;
+export default withRouteGuard(SpeakingTaskContent);

@@ -14,6 +14,8 @@ import { useAppSelector } from "@/redux/hooks";
 import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMessage";
 import { apiRequest } from "@/lib/apiRequest";
 import toast from "react-hot-toast";
+import { useAuthStore } from "@/stores/authStore";
+import { withRouteGuard } from "@/components/shared/ProtectPage";
 
 type ScenariosTypes = {
   slow: string[];
@@ -42,6 +44,8 @@ type ErrorState = {
 };
 
 const PresentationContent = () => {
+  const { user } = useAuthStore();
+
   const { task_1, task_2, task_3, task_4 } = useAppSelector(
     (state) => state.presentation
   );
@@ -49,6 +53,7 @@ const PresentationContent = () => {
   const [scenarios, setScenarios] = useState<ScenariosTypes | null>(null);
   const [contextData, setContextData] = useState<ContextDataType | null>(null);
   const [flowChainData, setFlowChainData] = useState<string[]>([]);
+  const [isSubmit, setIsSubmit] = useState(false);
 
   const [loading, setLoading] = useState<LoadingState>({
     powerWords: false,
@@ -207,8 +212,11 @@ const PresentationContent = () => {
       };
       const res = await apiRequest("/presentation/submit", "POST", body);
       console.log("check presentation submit", res);
+      setIsSubmit(true);
       toast.success(res.message || "Presentation submitted successfully");
     } catch (error: any) {
+      setIsSubmit(false);
+
       console.error(error);
       setErrors((prev) => ({
         ...prev,
@@ -296,11 +304,17 @@ const PresentationContent = () => {
               : " Submit All Answers"}
           </button>
 
-          {/* {allCompleted && <CompletePageFooterMessage text="Done" />} */}
+          {allCompleted && isSubmit && (
+            <CompletePageFooterMessage
+              text={`Congratulations ${
+                user?.firstName || "there"
+              }! You've completed all Presentation tasks for today. Your progress is outstanding!`}
+            />
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-export default PresentationContent;
+export default withRouteGuard(PresentationContent);

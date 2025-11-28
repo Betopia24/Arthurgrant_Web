@@ -14,6 +14,7 @@ import WordPartsWorkshop from "./WordPartsWorkshop";
 import "./gradient-button.css";
 import toast from "react-hot-toast";
 import { apiRequest } from "@/lib/apiRequest";
+import { withRouteGuard } from "@/components/shared/ProtectPage";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -347,4 +348,4 @@ const LearnEnglishContent = () => {
   );
 };
 
-export default LearnEnglishContent;
+export default withRouteGuard(LearnEnglishContent);
