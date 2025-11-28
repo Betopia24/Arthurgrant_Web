@@ -133,12 +133,15 @@ export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
             ) : (
               <>
                 <button
-                  className={`relative mt-12 py-2.5 w-full rounded-xl bg-gradient-brand h-[44px] cursor-pointer ${
-                    !isAuthenticated || plan?.planName ==='free' ? "opacity-70" : ""
+                  className={`relative mt-12 py-2.5 w-full rounded-xl bg-gradient-brand h-[44px]  ${
+                    !isAuthenticated || plan?.planName === "free"
+                      ? "opacity-40 cursor-no-drop"
+                      : "cursor-pointer"
                   }`}
                 >
                   <div className="absolute inset-[1px] bg-gradient-to-br from-[#2E2E43] via-[#2C2C41] to-[#27273B] rounded-xl p-2 flex justify-center items-center">
                     <h1 className="text-gradient font-semibold">
+                      {/* Your Current Plan */}
                       Start With {plan.planName} Plan
                     </h1>
                   </div>
