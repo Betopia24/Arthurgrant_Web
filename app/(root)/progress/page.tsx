@@ -40,23 +40,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 export default function Page() {
   return (
     <>
-      <PracticeHero
-        heading="Learning You Can See"
-        subheading="Track your learning journey with daily stats, streaks, and achievements — see how far you’ve come."
-        specialText="Can See"
-        align="center"
-        greetText="Hi Raju!"
-        streakValue="9"
-        sessionTime="12:34"
-        progressValue="2/4"
-        goalValue="75%"
-        sessionProgressWidth="60%"
-        progressWidth="40%"
-        goalWidth="70%"
-      />
-
       <div className="py-20 bg-section-dark">
-        <div className="app-container flex flex-col items-center gap-12">
+        <div className="app-container flex flex-col items-center gap-12 md:py-12 mt-12">
           {/* Heading */}
           <Heading
             heading="Learning You Can See"
@@ -88,8 +73,7 @@ export default function Page() {
                     isUnlocked
                       ? "bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to"
                       : "bg-gray-700"
-                  }`}
-                >
+                  }`}>
                   <div className="rounded-xl bg-[#232339] p-6 flex flex-col gap-3">
                     <div className="w-full flex items-start justify-between">
                       {/* Main achievement icon */}
@@ -98,8 +82,7 @@ export default function Page() {
                           isUnlocked
                             ? "bg-gradient-brand text-white"
                             : "bg-[#91919C] text-black"
-                        }`}
-                      >
+                        }`}>
                         <Icon className="w-5 h-5" />
                       </div>
 
@@ -107,8 +90,7 @@ export default function Page() {
                       <div
                         className={`flex items-center justify-center w-6 h-6 rounded-full ${
                           isUnlocked ? "bg-gradient-brand" : "bg-[#91919C]"
-                        }`}
-                      >
+                        }`}>
                         <Check className="w-3 h-3 text-white" />
                       </div>
                     </div>
