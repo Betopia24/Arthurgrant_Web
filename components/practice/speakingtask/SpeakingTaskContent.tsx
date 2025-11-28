@@ -22,6 +22,7 @@ import TaskLoadingLockError from "../TaskLoadingLock";
 import { apiRequest } from "@/lib/apiRequest";
 import toast from "react-hot-toast";
 import { withRouteGuard } from "@/components/shared/ProtectPage";
+import { usePathname } from "next/navigation";
 
 // Speech Recognition setup
 const SpeechRecognitionAPI =
@@ -45,6 +46,7 @@ type ErrorState = {
 };
 
 const SpeakingTaskContent = () => {
+  const currentPath = usePathname();
   const { user } = useAuthStore();
   const ageRange = user?.age;
   const firstAge = ageRange?.split("-")[0];
@@ -793,6 +795,9 @@ const SpeakingTaskContent = () => {
       };
 
       const res = await apiRequest("/speaking/submit-session", "POST", body);
+      if (res.success === true) {
+        localStorage.setItem("subscription_change_route", currentPath);
+      }
       setIsSubmit(true);
       console.log("check Speaking submit", res);
       toast.success(res.message || "Speaking submitted successfully");

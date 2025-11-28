@@ -15,6 +15,7 @@ import "./gradient-button.css";
 import toast from "react-hot-toast";
 import { apiRequest } from "@/lib/apiRequest";
 import { withRouteGuard } from "@/components/shared/ProtectPage";
+import { usePathname } from "next/navigation";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -22,6 +23,8 @@ interface TaskResult {
 }
 
 const LearnEnglishContent = () => {
+  const currentPath = usePathname();
+
   const { user, accessToken } = useAuthStore();
 
   // Time tracking
@@ -229,6 +232,7 @@ const LearnEnglishContent = () => {
       if (res?.success === true) {
         toast.success("Answers submitted successfully!");
         setIsSubmitted(true);
+        localStorage.setItem("subscription_change_route", currentPath);
       }
     } catch (error: any) {
       toast.error(

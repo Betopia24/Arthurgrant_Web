@@ -102,6 +102,8 @@ export default function BillingStep({
       } else {
         // Payment succeeded
         onPaymentSuccess();
+        console.log("check payment is complete ===========NAHIAN");
+        localStorage.removeItem("subscription_change_route");
       }
     } catch (error: any) {
       setErrorMessage(error.message || "An unexpected error occurred.");
@@ -297,8 +299,7 @@ export default function BillingStep({
                 value={billingDetails.address.country}
                 onChange={(e) =>
                   handleBillingDetailChange("address.country", e.target.value)
-                }
-              >
+                }>
                 <option value="US">United States</option>
                 <option value="CA">Canada</option>
                 <option value="GB">United Kingdom</option>
@@ -341,8 +342,7 @@ export default function BillingStep({
             <button
               type="submit"
               disabled={!stripe || isProcessing}
-              className="w-full py-3.5 rounded-xl bg-gradient-brand text-white font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
+              className="w-full py-3.5 rounded-xl bg-gradient-brand text-white font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               {isProcessing ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -360,8 +360,7 @@ export default function BillingStep({
               type="button"
               onClick={onBack}
               disabled={isProcessing}
-              className="relative py-2.5 w-full rounded-xl bg-gradient-brand h-12 cursor-pointer disabled:opacity-50"
-            >
+              className="relative py-2.5 w-full rounded-xl bg-gradient-brand h-12 cursor-pointer disabled:opacity-50">
               <div className="absolute inset-[1px] bg-[#3E3E51] rounded-xl p-2 flex justify-center items-center">
                 <h1 className="text-gradient font-semibold">Go Back</h1>
               </div>
@@ -428,8 +427,7 @@ export default function BillingStep({
               {selectedPlan.features.map((feature, index) => (
                 <li
                   key={index}
-                  className="flex items-center gap-2 text-gray-300 text-sm"
-                >
+                  className="flex items-center gap-2 text-gray-300 text-sm">
                   <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                   {feature}
                 </li>
