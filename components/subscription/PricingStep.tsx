@@ -1,7 +1,9 @@
 // components/subscription/PricingStep.tsx
 "use client";
 import Heading from "@/components/shared/Heading";
+import { useAuthStore } from "@/stores/authStore";
 import { FaCheck } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 interface Plan {
   id: string;
@@ -27,28 +29,50 @@ interface PricingStepProps {
 }
 
 export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
+  const { isAuthenticated } = useAuthStore();
+  const router = useRouter();
+
   // Format price for display
   const formatPrice = (plan: Plan) => {
     if (plan.amount === 0) return "Free";
-    
-    const intervalText = plan.interval === 'month' ? 'mo' : 
-                        plan.interval === 'year' ? 'yr' : 
-                        plan.interval;
-    
+
+    const intervalText =
+      plan.interval === "month"
+        ? "mo"
+        : plan.interval === "year"
+        ? "yr"
+        : plan.interval;
+
     return `$${plan.amount}/${intervalText}`;
   };
 
   const formatDuration = (plan: Plan) => {
     if (plan.amount === 0) return "7-day trial";
-    
-    if (plan.interval === 'lifetime') return "Lifetime access";
-    
-    const intervalCount = plan.intervalCount > 1 ? plan.intervalCount : '';
-    const intervalText = plan.interval === 'month' ? 'month' : 
-                        plan.interval === 'year' ? 'year' : 
-                        plan.interval;
-    
-    return `Billed every ${intervalCount} ${intervalText}${plan.intervalCount > 1 ? 's' : ''}`;
+
+    if (plan.interval === "lifetime") return "Lifetime access";
+
+    const intervalCount = plan.intervalCount > 1 ? plan.intervalCount : "";
+    const intervalText =
+      plan.interval === "month"
+        ? "month"
+        : plan.interval === "year"
+        ? "year"
+        : plan.interval;
+
+    return `Billed every ${intervalCount} ${intervalText}${
+      plan.intervalCount > 1 ? "s" : ""
+    }`;
+  };
+
+  const handlePlanClick = (plan: Plan) => {
+    if (plan.planName.toLowerCase() === "free") {
+      return;
+    }
+    if (!isAuthenticated) {
+      router.push("/signin");
+      return;
+    }
+    onSelectPlan(plan);
   };
 
   return (
@@ -68,7 +92,7 @@ export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
                 ? "relative z-0"
                 : "bg-gradient-to-br from-[#2B2E4E] to-[#12132F] border border-gray-700"
             }`}
-            onClick={() => onSelectPlan(plan)}
+            onClick={() => handlePlanClick(plan)}
           >
             {idx === 1 && (
               <div className="absolute inset-0 rounded-2xl p-[2px] bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to z-[-1]">
@@ -99,14 +123,25 @@ export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
 
             {/* Buttons */}
             {idx === 1 ? (
-              <button className="mt-12 py-2.5 w-full rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer">
-                Start With {plan.planName} 
+              <button
+                className={`mt-12 py-2.5 w-full rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer ${
+                  !isAuthenticated ? "opacity-70" : ""
+                }`}
+              >
+                Start With {plan.planName}
               </button>
             ) : (
               <>
-                <button className="relative mt-12 py-2.5 w-full rounded-xl bg-gradient-brand h-[44px] cursor-pointer">
+                <button
+                  className={`relative mt-12 py-2.5 w-full rounded-xl bg-gradient-brand h-[44px]  ${
+                    !isAuthenticated || plan?.planName === "free"
+                      ? "opacity-40 cursor-no-drop"
+                      : "cursor-pointer"
+                  }`}
+                >
                   <div className="absolute inset-[1px] bg-gradient-to-br from-[#2E2E43] via-[#2C2C41] to-[#27273B] rounded-xl p-2 flex justify-center items-center">
                     <h1 className="text-gradient font-semibold">
+                      {/* Your Current Plan */}
                       Start With {plan.planName} Plan
                     </h1>
                   </div>
