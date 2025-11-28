@@ -5,7 +5,8 @@ import Heading from "../shared/Heading";
 import { Sparkles } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import PracticeHero from "./PracticeHero2";
-import WritingTopicsGenerating from "./WritingTopicsGenerating";
+import { withRouteGuard } from "../shared/ProtectPage";
+import { usePathname } from "next/navigation";
 
 const NEXT_PUBLIC_AI_API = process.env.NEXT_PUBLIC_AI_API;
 const NEXT_PUBLIC_BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API;
@@ -33,6 +34,8 @@ interface FinalFeedback {
 }
 
 const WritingTask = () => {
+  const currentPath = usePathname();
+
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [writing, setWriting] = useState<string>("");
   const [wordReletive, setWordReletive] = useState<WordRelative | null>(null);
@@ -126,6 +129,7 @@ const WritingTask = () => {
       }
 
       setFinalFeedback(data);
+      localStorage.setItem("subscription_change_route", currentPath);
     } catch (error) {
       console.error("Error fetching final feedback:", error);
     } finally {
@@ -187,12 +191,8 @@ const WritingTask = () => {
       }
     `}
                   onClick={() => handleSelectedWord(word)}
-                  disabled={loadingTopic}
-                >
-                  {word}{" "}
-                  {selectedWord === word && !loadingTopic && (
-                    <FaCircleCheck className="inline-block ml-2 text-white" />
-                  )}
+                  disabled={loadingTopic}>
+                  {loadingTopic && selectedWord !== word ? "Loading..." : word}
                 </button>
               ))}
             </div>
@@ -204,8 +204,7 @@ const WritingTask = () => {
                 {wordReletive?.related_words?.map((relatedWord, idx) => (
                   <span
                     key={idx}
-                    className="px-2 py-1 bg-gray-700 rounded mr-2"
-                  >
+                    className="px-2 py-1 bg-gray-700 rounded mr-2">
                     {relatedWord}
                   </span>
                 ))}
@@ -241,8 +240,7 @@ const WritingTask = () => {
                       ? "bg-gray-500 cursor-not-allowed"
                       : "bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-white"
                   }`}
-                    disabled={isButtonDisabled || loadingFeedback}
-                  >
+                    disabled={isButtonDisabled || loadingFeedback}>
                     {loadingFeedback
                       ? "Checking..."
                       : "Check My Writing with AI"}
@@ -262,8 +260,7 @@ const WritingTask = () => {
                     width="120"
                     height="120"
                     viewBox="0 0 120 120"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
+                    xmlns="http://www.w3.org/2000/svg">
                     <circle
                       cx="60"
                       cy="60"
@@ -290,8 +287,7 @@ const WritingTask = () => {
                         x1="0%"
                         y1="0%"
                         x2="100%"
-                        y2="100%"
-                      >
+                        y2="100%">
                         <stop offset="0%" stopColor="#FFBC6F" />
                         <stop offset="50%" stopColor="#F176B7" />
                         <stop offset="100%" stopColor="#3797CD" />
@@ -318,8 +314,7 @@ const WritingTask = () => {
                     width="24"
                     height="24"
                     viewBox="0 0 24 24"
-                    fill="none"
-                  >
+                    fill="none">
                     <path
                       d="M5 14L8.5 17.5L19 6.5"
                       stroke="white"
@@ -341,4 +336,4 @@ const WritingTask = () => {
   );
 };
 
-export default WritingTask;
+export default withRouteGuard(WritingTask);

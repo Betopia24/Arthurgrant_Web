@@ -1,24 +1,10 @@
 import React from "react";
 import Heading from "../shared/Heading";
-import {
-  FaCheck,
-  FaLock,
-  FaShieldAlt,
-  FaTimesCircle,
-} from "react-icons/fa";
+import { FaCheck, FaLock, FaShieldAlt, FaTimesCircle } from "react-icons/fa";
 import { plans } from "@/lib/constants";
 import Link from "next/link";
 
 const Pricing = () => {
-
-
-
-  
-
-
-
-
-
   return (
     <div className="py-20 bg-section-dark text-white">
       <div className="app-container flex flex-col items-center gap-12">
@@ -94,7 +80,7 @@ const Pricing = () => {
         </div>
 
         {/* Bottom Guarantee Row */}
-        <div
+        {/* <div
           className="flex flex-col md:flex-row gap-4 items-center justify-center mt-6 text-gray-400 text-sm 
                 border-none lg:border lg:border-gray-500 rounded-full px-4 py-2 bg-[#1a1a3b]"
         >
@@ -116,7 +102,7 @@ const Pricing = () => {
             <FaLock className="text-green-500 flex-shrink-0" />
             Secure payments
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

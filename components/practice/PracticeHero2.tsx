@@ -6,6 +6,7 @@ import { FaFire, FaClock, FaChartLine, FaBullseye } from "react-icons/fa";
 import { useAuthStore } from "@/stores/authStore";
 import useGetSessionTime from "@/hooks/useGetSessionTime";
 import { authApi } from "@/lib/api";
+import { usePathname } from "next/navigation";
 
 type PracticeHeroProps = {
   heading: string;
@@ -51,6 +52,7 @@ const PracticeHero = ({
   progressWidth,
   goalWidth,
 }: PracticeHeroProps) => {
+  const currentPath = usePathname();
   const { user } = useAuthStore();
   const sessionTimes = useGetSessionTime();
   const [data, setData] = useState<UserProgressType | null>(null);
@@ -130,88 +132,90 @@ const PracticeHero = ({
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full mt-4">
-          {/* Streak */}
-          <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
-            <div className="flex items-center justify-between gap-3">
-              <div className="p-3 rounded-full bg-gradient-to-r from-yellow-300 to-yellow-600 flex items-center justify-center">
-                <FaFire className="text-white text-xl" />
+        {currentPath !== "/progress" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full mt-4">
+            {/* Streak */}
+            <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
+              <div className="flex items-center justify-between gap-3">
+                <div className="p-3 rounded-full bg-gradient-to-r from-yellow-300 to-yellow-600 flex items-center justify-center">
+                  <FaFire className="text-white text-xl" />
+                </div>
+                <span className="text-base font-semibold">Streak</span>
               </div>
-              <span className="text-base font-semibold">Streak</span>
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full animate-pulse bg-gray-700"></div>
+                </div>
+              ) : (
+                <div className="mt-3 text-3xl font-bold text-center text-white">
+                  {data?.dayStreak || "N/A"}
+                </div>
+              )}
+              <div className="text-center text-base sm:text-lg font-semibold">
+                Days Streak!
+              </div>
+              <div className="text-center text-base font-semibold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-yellow-600">
+                Keep it up!
+              </div>
             </div>
-            {loading ? (
-              <div className="flex items-center justify-center">
-                <div className="w-14 h-14 rounded-full animate-pulse bg-gray-700"></div>
+
+            {/* Session Timer */}
+            <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
+              <div className="flex items-center justify-between gap-3">
+                <div className="p-3 rounded-full bg-gradient-to-r from-pink-300 to-pink-600 flex items-center justify-center">
+                  <FaClock className="text-white text-xl" />
+                </div>
+                <span className="text-base font-semibold">Session Timer</span>
               </div>
-            ) : (
               <div className="mt-3 text-3xl font-bold text-center text-white">
-                {data?.dayStreak || "N/A"}
+                {sessionTimes}
               </div>
-            )}
-            <div className="text-center text-base sm:text-lg font-semibold">
-              Days Streak!
-            </div>
-            <div className="text-center text-base font-semibold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-yellow-600">
-              Keep it up!
-            </div>
-          </div>
-
-          {/* Session Timer */}
-          <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
-            <div className="flex items-center justify-between gap-3">
-              <div className="p-3 rounded-full bg-gradient-to-r from-pink-300 to-pink-600 flex items-center justify-center">
-                <FaClock className="text-white text-xl" />
+              <div className="text-center text-base sm:text-lg font-semibold">
+                Remaining
               </div>
-              <span className="text-base font-semibold">Session Timer</span>
-            </div>
-            <div className="mt-3 text-3xl font-bold text-center text-white">
-              {sessionTimes}
-            </div>
-            <div className="text-center text-base sm:text-lg font-semibold">
-              Remaining
-            </div>
-          </div>
-
-          {/* Progress */}
-          <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
-            <div className="flex items-center justify-between gap-3">
-              <div className="p-3 rounded-full bg-gradient-to-r from-sky-300 to-sky-600 flex items-center justify-center">
-                <FaChartLine className="text-white text-xl" />
-              </div>
-              <span className="text-base font-semibold">Progress</span>
-            </div>
-            <div className="mt-3 text-3xl font-bold text-center text-white">
-              {progressValue}
-            </div>
-            <div className="text-center text-base sm:text-lg font-semibold">
-              Remaining
-            </div>
-          </div>
-
-          {/* Today's Goal */}
-          <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
-            <div className="flex items-center justify-between gap-3">
-              <div className="p-3 rounded-full bg-gradient-to-r from-green-300 to-green-600 flex items-center justify-center">
-                <FaBullseye className="text-white text-xl" />
-              </div>
-              <span className="text-base font-semibold">Today's Goal</span>
             </div>
 
-            {loading ? (
-              <div className="flex items-center justify-center">
-                <div className="w-14 h-14 rounded-full animate-pulse bg-gray-700"></div>
+            {/* Progress */}
+            <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
+              <div className="flex items-center justify-between gap-3">
+                <div className="p-3 rounded-full bg-gradient-to-r from-sky-300 to-sky-600 flex items-center justify-center">
+                  <FaChartLine className="text-white text-xl" />
+                </div>
+                <span className="text-base font-semibold">Progress</span>
               </div>
-            ) : (
               <div className="mt-3 text-3xl font-bold text-center text-white">
-                {data?.dailyGoal ? `${data.dailyGoal}%` : "N/A"}
+                {progressValue}
               </div>
-            )}
+              <div className="text-center text-base sm:text-lg font-semibold">
+                Remaining
+              </div>
+            </div>
 
-            <div className="text-center text-base sm:text-lg font-semibold">
-              Accuracy
+            {/* Today's Goal */}
+            <div className="flex flex-col gap-2 bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-xl shadow-lg">
+              <div className="flex items-center justify-between gap-3">
+                <div className="p-3 rounded-full bg-gradient-to-r from-green-300 to-green-600 flex items-center justify-center">
+                  <FaBullseye className="text-white text-xl" />
+                </div>
+                <span className="text-base font-semibold">Today's Goal</span>
+              </div>
+
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full animate-pulse bg-gray-700"></div>
+                </div>
+              ) : (
+                <div className="mt-3 text-3xl font-bold text-center text-white">
+                  {data?.dailyGoal ? `${data.dailyGoal}%` : "N/A"}
+                </div>
+              )}
+
+              <div className="text-center text-base sm:text-lg font-semibold">
+                Accuracy
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

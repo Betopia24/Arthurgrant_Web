@@ -197,7 +197,7 @@ export default function Home() {
             onVideoModalClose={handleVideoModalClose}
           />
           <Features />
-          <LearningProgress />
+          {/* <LearningProgress /> */}
           <About />
           <Review />
           <Pricing />
