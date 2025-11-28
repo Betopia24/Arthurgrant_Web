@@ -9,6 +9,8 @@ import Task4ReadingComprehension from "./Reading/TaskFour";
 import Task1PhonemeFlashcards from "./Reading/TaskOne";
 import Task3DragMatch from "./Reading/TaskThree";
 import Task2SightWordPractice from "./Reading/TaskTwo";
+import { withRouteGuard } from "../shared/ProtectPage";
+import { usePathname } from "next/navigation";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -16,6 +18,8 @@ interface TaskResult {
 }
 
 const ReadingTask = () => {
+  const currentPath = usePathname();
+
   const { user, accessToken } = useAuthStore();
 
   // Time tracking
@@ -168,6 +172,7 @@ const ReadingTask = () => {
       if (data?.success === true) {
         toast.success("Answers submitted successfully!");
         setIsSubmitted(true);
+        localStorage.setItem("subscription_change_route", currentPath);
       }
     } catch (error: any) {
       toast.error(
@@ -279,4 +284,4 @@ const ReadingTask = () => {
   );
 };
 
-export default ReadingTask;
+export default withRouteGuard(ReadingTask);

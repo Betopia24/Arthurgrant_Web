@@ -5,6 +5,8 @@ import Heading from "../shared/Heading";
 import { Sparkles } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import PracticeHero from "./PracticeHero2";
+import { withRouteGuard } from "../shared/ProtectPage";
+import { usePathname } from "next/navigation";
 
 const NEXT_PUBLIC_AI_API = process.env.NEXT_PUBLIC_AI_API;
 const NEXT_PUBLIC_BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API;
@@ -32,6 +34,8 @@ interface FinalFeedback {
 }
 
 const WritingTask = () => {
+  const currentPath = usePathname();
+
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [writing, setWriting] = useState<string>("");
   const [wordReletive, setWordReletive] = useState<WordRelative | null>(null);
@@ -40,12 +44,21 @@ const WritingTask = () => {
   );
   const [loadingTopic, setLoadingTopic] = useState(false);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [Word, setWord] = useState<any | null>(null);
 
   const { user, accessToken } = useAuthStore();
 
   // Circle settings
   const circleRadius = 45;
   const circleCircumference = 2 * Math.PI * circleRadius;
+
+  const [categories, setCategories] = useState<any[]>([]);
+
+  // Callback to handle data from child
+  const handleCategories = (data: any) => {
+    console.log("Received from child:", data);
+    setCategories(data); // store data in state
+  };
 
   // ============ SELECT WORD + SEND TO API ============
   const handleSelectedWord = async (word: string) => {
@@ -116,6 +129,7 @@ const WritingTask = () => {
       }
 
       setFinalFeedback(data);
+      localStorage.setItem("subscription_change_route", currentPath);
     } catch (error) {
       console.error("Error fetching final feedback:", error);
     } finally {
@@ -164,19 +178,20 @@ const WritingTask = () => {
           <div className="w-full flex flex-col gap-8">
             {/* ============ WORD SELECTION ============ */}
             <div className="flex flex-wrap gap-4">
+              {/* <WritingTopicsGenerating onSuccess={handleCategories} /> */}
+
               {words.map((word, idx) => (
                 <button
                   key={idx}
                   className={`px-4 py-2 rounded-lg font-semibold transition duration-300
-                  ${
-                    selectedWord === word
-                      ? "bg-gradient-to-r from-[#FFBC6F] via-[#F176B7] to-[#3797CD]"
-                      : "bg-[#2D2F4A] hover:bg-gradient-to-r hover:from-[#FFBC6F] hover:via-[#F176B7] hover:to-[#3797CD]"
-                  }
-                `}
+      ${
+        selectedWord === word
+          ? "bg-gradient-to-r from-[#FFBC6F] via-[#F176B7] to-[#3797CD]"
+          : "bg-[#2D2F4A] hover:bg-gradient-to-r hover:from-[#FFBC6F] hover:via-[#F176B7] hover:to-[#3797CD]"
+      }
+    `}
                   onClick={() => handleSelectedWord(word)}
-                  disabled={loadingTopic}
-                >
+                  disabled={loadingTopic}>
                   {loadingTopic && selectedWord !== word ? "Loading..." : word}
                 </button>
               ))}
@@ -189,8 +204,7 @@ const WritingTask = () => {
                 {wordReletive?.related_words?.map((relatedWord, idx) => (
                   <span
                     key={idx}
-                    className="px-2 py-1 bg-gray-700 rounded mr-2"
-                  >
+                    className="px-2 py-1 bg-gray-700 rounded mr-2">
                     {relatedWord}
                   </span>
                 ))}
@@ -226,8 +240,7 @@ const WritingTask = () => {
                       ? "bg-gray-500 cursor-not-allowed"
                       : "bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-white"
                   }`}
-                    disabled={isButtonDisabled || loadingFeedback}
-                  >
+                    disabled={isButtonDisabled || loadingFeedback}>
                     {loadingFeedback
                       ? "Checking..."
                       : "Check My Writing with AI"}
@@ -247,8 +260,7 @@ const WritingTask = () => {
                     width="120"
                     height="120"
                     viewBox="0 0 120 120"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
+                    xmlns="http://www.w3.org/2000/svg">
                     <circle
                       cx="60"
                       cy="60"
@@ -275,8 +287,7 @@ const WritingTask = () => {
                         x1="0%"
                         y1="0%"
                         x2="100%"
-                        y2="100%"
-                      >
+                        y2="100%">
                         <stop offset="0%" stopColor="#FFBC6F" />
                         <stop offset="50%" stopColor="#F176B7" />
                         <stop offset="100%" stopColor="#3797CD" />
@@ -303,8 +314,7 @@ const WritingTask = () => {
                     width="24"
                     height="24"
                     viewBox="0 0 24 24"
-                    fill="none"
-                  >
+                    fill="none">
                     <path
                       d="M5 14L8.5 17.5L19 6.5"
                       stroke="white"
@@ -326,4 +336,4 @@ const WritingTask = () => {
   );
 };
 
-export default WritingTask;
+export default withRouteGuard(WritingTask);
