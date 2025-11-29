@@ -27,7 +27,7 @@ const SentenceBuilder = ({
   onTaskComplete,
   isLocked,
 }: SentenceBuilderProps) => {
-  const { accessToken } = useAuthStore();
+  const { accessToken,user } = useAuthStore();
 
   const [sentences, setSentences] = useState<Sentence[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -45,7 +45,7 @@ const SentenceBuilder = ({
       setIsFetching(true);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_AI_API}/adult/sentence-builder/get_sentences`,
+          `${process.env.NEXT_PUBLIC_AI_API}/adult/sentence-builder/get_sentences?user_id=${user?.id}`,
           {
             method: "GET",
             headers: {
