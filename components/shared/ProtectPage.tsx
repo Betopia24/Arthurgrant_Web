@@ -1,27 +1,41 @@
-// // components/withRouteGuard.tsx
-// "use client";
+"use client";
+import { useAuthStore } from "@/stores/authStore";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useEffect } from "react";
 
-// import { useEffect } from "react";
-// import { usePathname, useRouter } from "next/navigation";
+interface ProtectPageProps {
+  children: React.ReactNode;
+}
 
-// const ALLOWED_ROUTES_KEY = "subscription_change_route";
+const ProtectPage: React.FC<ProtectPageProps> = ({ children }) => {
+  const path = usePathname();
+  const router = useRouter();
+  const user = useAuthStore().user;
+  const isSubscribed = user?.isSubscribed;
+  const isSubscriptionFree = user?.isSubscriptionFree;
 
-// export const withRouteGuard = <P extends object>(
-//   Component: React.ComponentType<P>
-// ) => {
-//   return function ProtectedComponent(props: P) {
-//     const router = useRouter();
-//     const pathname = usePathname();
+  useEffect(() => {
+    // User with free subscription can only access "/practice/writing"
+    if (!isSubscribed && isSubscriptionFree) {
+      const allowedRoute = "/practice/writing";
+      const isPracticeRoute = path.startsWith("/practice");
 
-//     useEffect(() => {
-//       const savedRoute = localStorage.getItem(ALLOWED_ROUTES_KEY);
+      if (isPracticeRoute && path !== allowedRoute) {
+        router.push("/pricing");
+      }
+    }
+  }, [path, isSubscribed, isSubscriptionFree, router]);
 
-//       // If there's a saved route, user can only access that route + pricing
-//       if (savedRoute && pathname !== savedRoute && pathname !== "/pricing") {
-//         router.replace("/pricing");
-//       }
-//     }, [pathname, router]);
+  // Show loading or nothing during redirect
+  if (!isSubscribed && isSubscriptionFree) {
+    const isRestrictedRoute =
+      path.startsWith("/practice") && path !== "/practice/writing";
+    if (isRestrictedRoute) {
+      return <div>Redirecting...</div>; // or null
+    }
+  }
 
-//     return <Component {...props} />;
-//   };
-// };
+  return <>{children}</>;
+};
+
+export default ProtectPage;
