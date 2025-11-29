@@ -28,7 +28,7 @@ const PhraseMaker = ({
   onTaskComplete,
   isLocked,
 }: PhraseMakerProps) => {
-  const { accessToken } = useAuthStore();
+  const { accessToken ,user} = useAuthStore();
 
   const [phrases, setPhrases] = useState<Phrase[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -56,7 +56,7 @@ const PhraseMaker = ({
       setIsFetching(true);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_AI_API}/adult/phrase-maker/get_phrases`,
+          `${process.env.NEXT_PUBLIC_AI_API}/adult/phrase-maker/get_phrases?user_id=${user?.id}`,
           {
             method: "GET",
             headers: {

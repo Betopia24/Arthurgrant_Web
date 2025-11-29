@@ -52,7 +52,7 @@ const Task4ReadingComprehension = ({
             process.env.NEXT_PUBLIC_AI_API
           }/reading/comprehension/generate_comprehension?age=${
             user?.age.split("-")[0]
-          }`,
+          }&user_id=${user?.id}`,
           {
             method: "GET",
             headers: {
