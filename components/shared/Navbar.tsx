@@ -338,7 +338,7 @@ const Navbar = () => {
 
           {/* Nav Links */}
           <nav className="flex flex-col gap-1 mb-8">
-            {navLinks.map((link) => {
+            {filteredNavLinks.map((link) => {
               const isDropdown = !!link.dropdown;
               const isActive = isLinkActive(link);
 
