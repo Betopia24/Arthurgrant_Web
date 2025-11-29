@@ -1,5 +1,10 @@
 import SpeakingTaskContent from "@/components/practice/speakingtask/SpeakingTaskContent";
+import ProtectPage from "@/components/shared/ProtectPage";
 
 export default function SpeakingTaskPage() {
-  return <SpeakingTaskContent />;
+  return (
+    <ProtectPage>
+      <SpeakingTaskContent />
+    </ProtectPage>
+  );
 }

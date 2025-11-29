@@ -7,6 +7,7 @@ export const aiRequest = async (
 ) => {
   try {
     const accessToken = useAuthStore.getState().accessToken;
+    const userId = useAuthStore.getState().user?.id;
 
     if (!accessToken) {
       console.warn("Blocked: No access token found.");
@@ -17,7 +18,7 @@ export const aiRequest = async (
     const isFormData = body instanceof FormData;
 
     const headers: HeadersInit = {
-      authtoken: `Bearer ${accessToken}`,
+      authtoken: `${accessToken}`,
     };
 
     // Only set Content-Type for non-FormData requests
@@ -25,11 +26,14 @@ export const aiRequest = async (
       headers["Content-Type"] = "application/json";
     }
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_AI_API}${endpoint}`, {
-      method,
-      headers,
-      body: isFormData ? body : body ? JSON.stringify(body) : undefined,
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_AI_API}${endpoint}?user_id=${userId}`,
+      {
+        method,
+        headers,
+        body: isFormData ? body : body ? JSON.stringify(body) : undefined,
+      }
+    );
 
     if (!res.ok) {
       const errorText = await res.text();
