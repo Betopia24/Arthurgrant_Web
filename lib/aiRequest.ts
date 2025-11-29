@@ -25,15 +25,14 @@ export const aiRequest = async (
     if (!isFormData) {
       headers["Content-Type"] = "application/json";
     }
+    const separator = endpoint.includes("?") ? "&" : "?";
+    const url = `${process.env.NEXT_PUBLIC_AI_API}${endpoint}${separator}user_id=${userId}`;
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_AI_API}${endpoint}?user_id=${userId}`,
-      {
-        method,
-        headers,
-        body: isFormData ? body : body ? JSON.stringify(body) : undefined,
-      }
-    );
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: isFormData ? body : body ? JSON.stringify(body) : undefined,
+    });
 
     if (!res.ok) {
       const errorText = await res.text();
