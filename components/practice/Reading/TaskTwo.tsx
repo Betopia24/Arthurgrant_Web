@@ -38,7 +38,7 @@ const Task2SightWordPractice = ({
       setIsLoading(true);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_AI_API}/reading/sight-word-practice/sight_words`,
+          `${process.env.NEXT_PUBLIC_AI_API}/reading/sight-word-practice/sight_words?user_id=${user?.id}`,
           {
             method: "POST",
             headers: {

@@ -45,7 +45,7 @@ const Task3DragMatch = ({
   onTaskComplete,
   isLocked,
 }: Task3Props) => {
-  const { accessToken } = useAuthStore();
+  const { accessToken,user } = useAuthStore();
 
   const [wordCards, setWordCards] = useState<WordCard[]>([]);
   const [pictureCards, setPictureCards] = useState<PictureCard[]>([]);
@@ -82,6 +82,8 @@ const Task3DragMatch = ({
         const response = await res.json();
 
         const data = response.data;
+
+        console.log("Word Match Data:", data);
         const words: Word[] = data.words || [];
         const images: Image[] = data.images || [];
 
@@ -101,6 +103,7 @@ const Task3DragMatch = ({
           bg: bgGradients[idx % bgGradients.length],
         }));
         const shuffledWords = shuffleArray(wordsData);
+        console.log("Shuffled Words:", shuffledWords);
 
         // Create picture cards and shuffle them
         const imagesData: PictureCard[] = images.map((image) => ({

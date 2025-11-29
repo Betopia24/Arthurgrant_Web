@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Heading from "../shared/Heading";
 import { FaFire, FaClock, FaChartLine, FaBullseye } from "react-icons/fa";
-import { useAuthStore } from "@/stores/authStore";
 import useGetSessionTime from "@/hooks/useGetSessionTime";
-import { authApi } from "@/lib/api";
 import { usePathname } from "next/navigation";
+import useGetMe from "@/hooks/useGetMe";
 
 type PracticeHeroProps = {
   heading: string;
@@ -26,15 +25,6 @@ type PracticeHeroProps = {
   goalWidth: string; // e.g. "70%"
 };
 
-interface UserProgressType {
-  dayStreak: number;
-  totalWords: number;
-  totalLessons: number;
-  overallAccuracy: number;
-  dailyGoal: number;
-  lastActivityDate: string;
-}
-
 const PracticeHero = ({
   heading,
   subheading,
@@ -53,38 +43,9 @@ const PracticeHero = ({
   goalWidth,
 }: PracticeHeroProps) => {
   const currentPath = usePathname();
-  const { user } = useAuthStore();
   const sessionTimes = useGetSessionTime();
-  const [data, setData] = useState<UserProgressType | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const profileResponse = await authApi.getProfile();
-
-        if (isMounted) {
-          setData(profileResponse.data.userProgress);
-          console.log("check response:", profileResponse.data.userProgress);
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      isMounted = false; // cleanup
-    };
-  }, []);
+  const { data, loading } = useGetMe();
 
   return (
     <div className="pt-36 pb-16 md:py-44 bg-gradient-to-br from-brand-dark via-brand-darker to-brand-darker">
@@ -118,7 +79,7 @@ const PracticeHero = ({
 
             <h1 className="text-lg sm:text-xl lg:text-3xl font-semibold mb-2">
               <span className="text-gradient">{`Hi ${
-                user?.firstName || "User"
+                data?.firstName || "User"
               }!`}</span>{" "}
               Welcome Back
             </h1>
@@ -148,7 +109,7 @@ const PracticeHero = ({
                 </div>
               ) : (
                 <div className="mt-3 text-3xl font-bold text-center text-white">
-                  {data?.dayStreak || "N/A"}
+                  {data?.userProgress?.dayStreak || "N/A"}
                 </div>
               )}
               <div className="text-center text-base sm:text-lg font-semibold">
@@ -206,7 +167,9 @@ const PracticeHero = ({
                 </div>
               ) : (
                 <div className="mt-3 text-3xl font-bold text-center text-white">
-                  {data?.dailyGoal ? `${data.dailyGoal}%` : "N/A"}
+                  {data?.userProgress?.dailyGoal
+                    ? `${data.userProgress?.dailyGoal}%`
+                    : "N/A"}
                 </div>
               )}
 
