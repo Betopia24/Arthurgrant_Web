@@ -17,14 +17,14 @@ const exampleApi = baseApi.injectEndpoints({
           params: params,
         };
       },
-      providesTags: ["example"],
+      providesTags: ["Example"],
     }),
     getSingleExample: builder.query({
       query: (id) => ({
         url: `example/${id}`,
         method: "GET",
       }),
-      providesTags: ["example"],
+      providesTags: ["Example"],
     }),
 
     createExample: builder.mutation({
@@ -35,7 +35,7 @@ const exampleApi = baseApi.injectEndpoints({
           body: data,
         };
       },
-      invalidatesTags: ["example"],
+      invalidatesTags: ["Example"],
     }),
 
     updateExample: builder.mutation({
@@ -46,7 +46,7 @@ const exampleApi = baseApi.injectEndpoints({
           body: data?.formData,
         };
       },
-      invalidatesTags: ["example"],
+      invalidatesTags: ["Example"],
     }),
     deleteExample: builder.mutation({
       query: (id) => {
@@ -55,7 +55,7 @@ const exampleApi = baseApi.injectEndpoints({
           method: "DELETE",
         };
       },
-      invalidatesTags: ["example"],
+      invalidatesTags: ["Example"],
     }),
   }),
 });

@@ -10,7 +10,7 @@ const authApi = baseApi.injectEndpoints({
           body: userInfo,
         };
       },
-      invalidatesTags: ["user"],
+      invalidatesTags: ["User"],
     }),
     loginWithGoogle: builder.mutation({
       query: (userInfo) => {
@@ -21,7 +21,7 @@ const authApi = baseApi.injectEndpoints({
           body: userInfo,
         };
       },
-      invalidatesTags: ["user"],
+      invalidatesTags: ["User"],
     }),
     forgotPassword: builder.mutation({
       query: (userInfo) => {
@@ -32,7 +32,7 @@ const authApi = baseApi.injectEndpoints({
           body: userInfo,
         };
       },
-      invalidatesTags: ["user"],
+      invalidatesTags: ["User"],
     }),
     resetPassword: builder.mutation({
       query: (userInfo) => {
@@ -43,7 +43,7 @@ const authApi = baseApi.injectEndpoints({
           body: userInfo,
         };
       },
-      invalidatesTags: ["user"],
+      invalidatesTags: ["User"],
     }),
     updateUser: builder.mutation({
       query: (userInfo) => {
@@ -53,7 +53,7 @@ const authApi = baseApi.injectEndpoints({
           body: userInfo,
         };
       },
-      invalidatesTags: ["user"],
+      invalidatesTags: ["User"],
     }),
     register: builder.mutation({
       query: (userInfo) => {
@@ -78,7 +78,7 @@ const authApi = baseApi.injectEndpoints({
         url: "user/me",
         method: "GET",
       }),
-      providesTags: ["user"],
+      providesTags: ["User"],
     }),
   }),
 });
