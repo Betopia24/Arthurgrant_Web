@@ -171,7 +171,6 @@ const ReadingTask = () => {
       if (data?.success === true) {
         toast.success("Answers submitted successfully!");
         setIsSubmitted(true);
-        localStorage.setItem("subscription_change_route", currentPath);
       }
     } catch (error: any) {
       toast.error(
