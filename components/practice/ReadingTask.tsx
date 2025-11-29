@@ -9,7 +9,6 @@ import Task4ReadingComprehension from "./Reading/TaskFour";
 import Task1PhonemeFlashcards from "./Reading/TaskOne";
 import Task3DragMatch from "./Reading/TaskThree";
 import Task2SightWordPractice from "./Reading/TaskTwo";
-import { withRouteGuard } from "../shared/ProtectPage";
 import { usePathname } from "next/navigation";
 
 interface TaskResult {
@@ -284,4 +283,4 @@ const ReadingTask = () => {
   );
 };
 
-export default withRouteGuard(ReadingTask);
+export default ReadingTask;

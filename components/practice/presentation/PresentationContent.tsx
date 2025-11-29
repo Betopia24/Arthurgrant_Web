@@ -15,7 +15,6 @@ import CompletePageFooterMessage from "@/components/shared/CompletePageFooterMes
 import { apiRequest } from "@/lib/apiRequest";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/stores/authStore";
-import { withRouteGuard } from "@/components/shared/ProtectPage";
 import { usePathname } from "next/navigation";
 
 type ScenariosTypes = {
@@ -320,4 +319,4 @@ const PresentationContent = () => {
   );
 };
 
-export default withRouteGuard(PresentationContent);
+export default PresentationContent;
