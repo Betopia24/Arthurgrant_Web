@@ -33,7 +33,7 @@ interface FinalFeedback {
 }
 
 const WritingTask = () => {
-  const { data: user, loading } = useGetMe();
+  const { data: user } = useGetMe();
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [writing, setWriting] = useState<string>("");
   const [wordRelative, setWordRelative] = useState<WordRelative | null>(null);
@@ -162,39 +162,6 @@ const WritingTask = () => {
   // Button disabled conditions
   const isButtonDisabled =
     !selectedWord || writing.trim() === "" || loadingFeedback;
-  const router = useRouter();
-
-  // Show loading state
-  if (loading) {
-    return <Loading />;
-  }
-
-  // Show subscription wall for free users
-  if (!user?.isSubscriptionFree && !user?.isSubscribed) {
-    return (
-      <div className="fixed inset-0 z-[999999999] flex items-center justify-center bg-black/30 backdrop-blur-xl select-none">
-        <div className="relative bg-white/10 border border-white/20 rounded-2xl p-8 w-[90%] max-w-md backdrop-blur-2xl shadow-2xl text-center animate-[fadeIn_0.35s_ease-out]">
-          <h1 className="text-white text-2xl font-semibold mb-3">
-            Subscribe to Unlock All Tasks
-          </h1>
-
-          <p className="text-gray-200 text-sm mb-6 leading-relaxed">
-            Your current plan doesn't include this task. Upgrade now to
-            continue.
-          </p>
-
-          <button
-            onClick={() => router.push("/pricing")}
-            className="px-6 py-3 bg-gradient-to-r from-[#6a5af9] via-[#a855f7] to-[#ec4899] hover:opacity-90 text-white rounded-xl font-medium transition-all duration-200 shadow-lg">
-            View Subscription Plans
-          </button>
-
-          {/* Optional pulse glow behind card */}
-          <div className="absolute inset-0 -z-10 blur-2xl opacity-40 bg-gradient-to-r from-purple-600 via-pink-500 to-indigo-500 rounded-3xl"></div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>

@@ -796,7 +796,6 @@ const SpeakingTaskContent = () => {
 
       const res = await apiRequest("/speaking/submit-session", "POST", body);
       if (res.success === true) {
-        localStorage.setItem("subscription_change_route", currentPath);
       }
       setIsSubmit(true);
       setShowRetry(true);

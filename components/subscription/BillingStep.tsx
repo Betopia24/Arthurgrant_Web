@@ -102,8 +102,6 @@ export default function BillingStep({
       } else {
         // Payment succeeded
         onPaymentSuccess();
-        console.log("check payment is complete ===========NAHIAN");
-        localStorage.removeItem("subscription_change_route");
       }
     } catch (error: any) {
       setErrorMessage(error.message || "An unexpected error occurred.");
