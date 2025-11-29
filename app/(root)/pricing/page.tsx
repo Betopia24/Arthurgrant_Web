@@ -6,7 +6,6 @@ import { plansApi } from "@/lib/api";
 import { useSubscription } from "@/hooks/useSubscription";
 import PricingStep from "@/components/subscription/PricingStep";
 import ConfirmStep from "@/components/subscription/ConfirmStep";
-// import BillingStep from "@/components/subscription/BillingStep";
 import SuccessStep from "@/components/subscription/SuccessStep";
 import BillingWrapper from "@/components/subscription/BillingWrapper";
 import { Plan } from "@/lib/types";
