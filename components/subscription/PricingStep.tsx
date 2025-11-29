@@ -81,8 +81,8 @@ export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
   const handlePlanStart = (plan: Plan) => {
     if (Subscription !== null) {
       Swal.fire({
-        title: "You have already purchased this plan",
-        text: "You already have an active subscription for this plan.",
+        title: "You have an Active Subscription",
+        text: "You already have an active subscription with us.",
         icon: "info",
         draggable: true,
         showCancelButton: true,
