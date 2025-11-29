@@ -4,6 +4,7 @@ import Heading from "@/components/shared/Heading";
 import { useAuthStore } from "@/stores/authStore";
 import { FaCheck } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 interface Plan {
   id: string;
@@ -29,10 +30,12 @@ interface PricingStepProps {
 }
 
 export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const router = useRouter();
 
+  console.log(user, "user in pricing step");
   // Format price for display
+  const Subscription = user?.Subscription;
   const formatPrice = (plan: Plan) => {
     if (plan.amount === 0) return "Free";
 
@@ -73,6 +76,38 @@ export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
       return;
     }
     onSelectPlan(plan);
+  };
+
+  const handlePlanStart = (plan: Plan) => {
+    if (Subscription !== null) {
+      Swal.fire({
+        title: "You have already purchased this plan",
+        text: "You already have an active subscription for this plan.",
+        icon: "info",
+        draggable: true,
+        showCancelButton: true,
+        confirmButtonText: "Manage subscription",
+        cancelButtonText: "Close",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = "/profile";
+        }
+      });
+      return; // Stop here
+    }
+
+    // 👉 If no subscription → continue
+    Swal.fire({
+      title: `Start ${plan?.planName} Plan?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, start",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        console.log("Start plan API call here");
+      }
+    });
   };
 
   return (
@@ -120,10 +155,10 @@ export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
                 ))}
               </ul>
             </div>
-
-            {/* Buttons */}
             {idx === 1 ? (
+              // Middle Plan Button
               <button
+                onClick={() => handlePlanStart(plan)}
                 className={`mt-12 py-2.5 w-full rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer ${
                   !isAuthenticated ? "opacity-70" : ""
                 }`}
@@ -131,23 +166,24 @@ export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
                 Start With {plan.planName}
               </button>
             ) : (
-              <>
-                <button
-                  className={`relative mt-12 py-2.5 w-full rounded-xl bg-gradient-brand h-[44px]  ${
-                    !isAuthenticated || plan?.planName === "free"
-                      ? "opacity-40 cursor-no-drop"
-                      : "cursor-pointer"
-                  }`}
-                >
-                  <div className="absolute inset-[1px] bg-gradient-to-br from-[#2E2E43] via-[#2C2C41] to-[#27273B] rounded-xl p-2 flex justify-center items-center">
-                    <h1 className="text-gradient font-semibold">
-                      {/* Your Current Plan */}
-                      Start With {plan.planName} Plan
-                    </h1>
-                  </div>
-                </button>
-              </>
+              // Other Plan Buttons
+              <button
+                onClick={handlePlanStart ? () => handlePlanStart(plan) : undefined}
+                className={`relative mt-12 py-2.5 w-full rounded-xl bg-gradient-brand h-[44px] ${
+                  !isAuthenticated || plan?.planName === "free"
+                    ? "opacity-40 cursor-no-drop"
+                    : "cursor-pointer"
+                }`}
+              >
+                <div className="absolute inset-[1px] bg-gradient-to-br from-[#2E2E43] via-[#2C2C41] to-[#27273B] rounded-xl p-2 flex justify-center items-center">
+                  <h1 className="text-gradient font-semibold">
+                    Start With {plan.planName} Plan
+                  </h1>
+                </div>
+              </button>
             )}
+
+            {/* Buttons */}
           </div>
         ))}
       </div>
