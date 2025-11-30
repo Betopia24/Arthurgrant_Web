@@ -13,9 +13,9 @@ const navLinks = [
   {
     label: "Practice",
     dropdown: [
-      { href: "/practice/writing", label: "Writing Practice" },
       { href: "/practice/reading", label: "Reading Practice" },
       { href: "/practice/speaking", label: "Speaking Practice" },
+      { href: "/practice/writing", label: "Writing Practice" },
       { href: "/practice/presentation", label: "Presentation Practice" },
       { href: "/practice/learn-english", label: "English for Adult Practice" },
     ],
