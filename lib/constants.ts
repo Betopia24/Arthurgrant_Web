@@ -1,64 +1,81 @@
-import { BookOpenCheck, Flame, Gift, Medal, Mic, PenLine, Sparkles, Timer, Volume2 } from "lucide-react";
+import {
+  BookOpenCheck,
+  Flame,
+  Gift,
+  Medal,
+  Mic,
+  PenLine,
+  Sparkles,
+  Timer,
+  Volume2,
+} from "lucide-react";
 
 export const features = [
   {
     icon: "/icon-01.png",
     title: "Interactive Reading",
-    paragraph: "Phoneme recognition and word games with visual cues designed for dyslexic learners"
+    paragraph:
+      "Phoneme recognition and word games with visual cues designed for dyslexic learners",
   },
   {
     icon: "/icon-02.png",
     title: "Smart Writing",
-    paragraph: "Write. Learn. Improve. AI checks your grammar, structure, and style instantly."
+    paragraph:
+      "Write. Learn. Improve. AI checks your grammar, structure, and style instantly.",
   },
   {
     icon: "/icon-03.png",
     title: "Native Speaking",
-    paragraph: "Advanced AI pronunciation coaching with real-time feedback and accent training"
+    paragraph:
+      "Advanced AI pronunciation coaching with real-time feedback and accent training",
   },
   {
     icon: "/icon-04.png",
     title: "Reward System",
-    paragraph: "Phoneme recognition and word games with visual cues designed for dyslexic learners"
-  }
+    paragraph:
+      "Phoneme recognition and word games with visual cues designed for dyslexic learners",
+  },
 ];
-
 
 export const activities = [
-    { name: "Daily Reading Practice", done: true },
-    { name: "Daily Speaking Practice", done: true },
-    { name: "Daily Writing Practice", done: false },
-    { name: "Daily Vocabulary Practice", done: false },
+  { name: "Daily Reading Practice", done: true },
+  { name: "Daily Speaking Practice", done: true },
+  { name: "Daily Writing Practice", done: false },
+  { name: "Daily Vocabulary Practice", done: false },
 ];
-
 
 export const faq = [
   {
-    question: "How does MANIFEX help with dyslexia?",
-    answer: "MANIFEX uses research-backed methods specifically designed for dyslexic learners, including multi-sensory approaches, visual cues, phonics-based learning, and personalized pacing. Our AI adapts to each learner's unique needs and learning style."
+    question: "What is MANIFEX and who is it for?",
+    answer:
+      "MANIFEX is an AI-powered English learning platform with a dyslexia-friendly design that helps learners practice reading, writing, speaking, and vocabulary in one place. It is ideal for school-age children, university students, and busy professionals who want to improve their English in as little as 10 minutes a day.",
   },
   {
-    question: "How does MANIFEX help with dyslexia?",
-    answer: "MANIFEX uses research-backed methods specifically designed for dyslexic learners, including multi-sensory approaches, visual cues, phonics-based learning, and personalized pacing. Our AI adapts to each learner's unique needs and learning style."
+    question: "How does MANIFEX support dyslexic learners?",
+    answer:
+      "The platform uses phoneme-based reading games, clear typography, strong color contrast, and step-by-step guidance so dyslexic learners can focus and build skills confidently. AI adaptively adjusts difficulty and pacing based on performance, making practice less overwhelming and more encouraging.",
   },
   {
-    question: "How does MANIFEX help with dyslexia?",
-    answer: "MANIFEX uses research-backed methods specifically designed for dyslexic learners, including multi-sensory approaches, visual cues, phonics-based learning, and personalized pacing. Our AI adapts to each learner's unique needs and learning style."
+    question: "What makes MANIFEX different from other English platforms?",
+    answer:
+      "MANIFEX combines AI tutoring, real-time analytics, and a reward system that unlocks videos tailored to each learner’s interests such as sports, dance, or cooking. Parents and learners can see detailed progress across reading, writing, pronunciation, and vocabulary with 30, 60, and 90 day views.",
   },
   {
-    question: "How does MANIFEX help with dyslexia?",
-    answer: "MANIFEX uses research-backed methods specifically designed for dyslexic learners, including multi-sensory approaches, visual cues, phonics-based learning, and personalized pacing. Our AI adapts to each learner's unique needs and learning style."
+    question: "How much time do learners need each day?",
+    answer:
+      "Most learners use MANIFEX for about 10–20 minutes a day, enough to complete a few targeted tasks in reading, writing, and speaking. Short, consistent sessions are designed to fit into busy schedules while still driving measurable improvement over weeks and months.",
   },
   {
-    question: "How does MANIFEX help with dyslexia?",
-    answer: "MANIFEX uses research-backed methods specifically designed for dyslexic learners, including multi-sensory approaches, visual cues, phonics-based learning, and personalized pacing. Our AI adapts to each learner's unique needs and learning style."
+    question: "Can parents or teachers track progress?",
+    answer:
+      "Yes, MANIFEX includes a visual dashboard that shows streaks, words learned, lesson completion, and accuracy over time. Families and educators can quickly see strengths, areas for improvement, and whether learners are on track with their goals.",
   },
   {
-    question: "How does MANIFEX help with dyslexia?",
-    answer: "MANIFEX uses research-backed methods specifically designed for dyslexic learners, including multi-sensory approaches, visual cues, phonics-based learning, and personalized pacing. Our AI adapts to each learner's unique needs and learning style."
-  }
+    question: "What plans do you offer and can I try it for free?",
+    answer:
+      "MANIFEX offers a Free Trial, a Premium plan for individual learners, and a Family plan with up to five learner profiles. New users can start with the free trial and then upgrade to Premium or Family with a 30-day money-back guarantee and the option to cancel anytime.",
+  },
 ];
-
 
 export const plans = [
   {
@@ -103,34 +120,33 @@ export const plans = [
   },
 ];
 
-
 export const aboutUsInfo = {
   sections: [
     {
       title: "Neuroplasticity",
       description:
         "The brain has an incredible ability to reorganize itself by forming new neural connections throughout life. This process supports learning, problem-solving, and adaptation to new challenges. Activities designed to activate neuroplasticity can make practice more impactful over time.",
-      imageUrl: "about-01.png"
+      imageUrl: "about-01.png",
     },
     {
       title: "Rhythmic Therapy",
       description:
         "Humans are naturally responsive to rhythm. By using rhythmic and repetitive patterns, the brain and nervous system can be regulated. Rhythmic therapy utilizes music to influence neural pathways, facilitating new learning behaviors through cognitive processing. This approach can reduce stress, improve focus, and enhance reading, writing, and speaking skills.",
-      imageUrl: "about-02.png"
+      imageUrl: "about-02.png",
     },
     {
       title: "Dysgraphia Support",
       description:
         "Dysgraphia is a neurological condition that affects writing. Our tools offer structured practice to strengthen handwriting, written expression, and the motor skills that support the writing process.",
-      imageUrl: "about-03.png"
+      imageUrl: "about-03.png",
     },
     {
       title: "Dyslexia Support",
       description:
         "Dyslexia, a neurobiological learning difference, can make reading, writing, and spelling difficult. We provide engaging activities that build fluency, comprehension, and language skills—helping learners overcome barriers with confidence.",
-      imageUrl: "about-04.png"
+      imageUrl: "about-04.png",
     },
-  ]
+  ],
 };
 
 export const achievements = [
@@ -138,54 +154,54 @@ export const achievements = [
     title: "Daily Streak Hero",
     description: "Practiced 7 days in a row without missing.",
     status: "Unlocked",
-    icon: Flame
+    icon: Flame,
   },
   {
     title: "Sentence Starter",
     description: "Wrote your first 3-line story successfully.",
     status: "Unlocked",
-    icon: PenLine
+    icon: PenLine,
   },
   {
     title: "Speaking Star",
     description: "Learned 100 new words with perfect recall.",
     status: "Unlocked",
-    icon: Mic
+    icon: Mic,
   },
   {
     title: "Word Wizard",
     description: "Learned 100 new words with perfect recall.",
     status: "Unlocked",
-    icon: Sparkles
+    icon: Sparkles,
   },
   {
     title: "Quick Learner",
     description: "Finished all daily tasks in under 10 minutes.",
     status: "Locked",
-    icon: Timer
+    icon: Timer,
   },
   {
     title: "Phonics Pro",
     description: "Complete 50 phoneme flashcards.",
     status: "Locked",
-    icon: Volume2
+    icon: Volume2,
   },
   {
     title: "Comprehension Champ",
     description: "Unlocked 20 comprehension exercises.",
     status: "Locked",
-    icon: BookOpenCheck
+    icon: BookOpenCheck,
   },
   {
     title: "Reward Hunter",
     description: "Unlocked 20 reward videos.",
     status: "Locked",
-    icon: Gift
+    icon: Gift,
   },
   {
     title: "Milestone Master",
     description: "Unlocked 5 achievements in one month.",
     status: "Locked",
-    icon: Medal
-  }
+    icon: Medal,
+  },
 ];
