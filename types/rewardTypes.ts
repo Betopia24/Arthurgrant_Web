@@ -21,3 +21,23 @@ export interface DailyCheckRewardResponseType {
     }[];
   };
 }
+
+export interface RewardVideoItemsType {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  videoUrl: string;
+  fileSize: number;
+  age: string;
+  views: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RewardVideoItemsResponseType {
+  success: boolean;
+  message: string;
+  data: RewardVideoItemsType[];
+}
