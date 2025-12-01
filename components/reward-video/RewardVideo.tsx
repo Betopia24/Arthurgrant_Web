@@ -22,64 +22,12 @@ import {
   DailyCheckRewardResponseType,
   RewardVideoItemsType,
 } from "@/types/rewardTypes";
-
-// Skeleton Components
-const VideoPlayerSkeleton = () => (
-  <div className="w-full aspect-video bg-gray-700 rounded-lg animate-pulse flex items-center justify-center">
-    <div className="text-gray-500">Loading video...</div>
-  </div>
-);
-
-const VideoInfoSkeleton = () => (
-  <div className="mt-4 space-y-2">
-    <div className="h-6 bg-gray-700 rounded animate-pulse w-3/4"></div>
-    <div className="h-4 bg-gray-700 rounded animate-pulse w-full"></div>
-    <div className="h-4 bg-gray-700 rounded animate-pulse w-2/3"></div>
-    <div className="flex flex-wrap gap-4 mt-2">
-      {[1, 2, 3, 4].map((item) => (
-        <div
-          key={item}
-          className="h-3 bg-gray-700 rounded animate-pulse w-16"></div>
-      ))}
-    </div>
-  </div>
-);
-
-const TaskListSkeleton = () => (
-  <div className="flex flex-col gap-2 mt-2">
-    {[1, 2, 3].map((item) => (
-      <div key={item} className="flex items-center gap-2">
-        <div className="w-5 h-5 bg-gray-700 rounded-full animate-pulse"></div>
-        <div className="h-4 bg-gray-700 rounded animate-pulse flex-1"></div>
-      </div>
-    ))}
-  </div>
-);
-
-const VideoListSkeleton = () => (
-  <div className="mt-4 p-4 bg-[#3A3D57] rounded-lg max-h-80 overflow-y-auto">
-    <div className="h-6 bg-gray-700 rounded animate-pulse w-1/3 mb-3"></div>
-    <div className="space-y-3">
-      {[1, 2, 3].map((item) => (
-        <div
-          key={item}
-          className="flex items-start gap-3 p-3 rounded-lg bg-[#4C4F69]">
-          <div className="w-16 h-12 bg-gray-700 rounded flex-shrink-0 animate-pulse"></div>
-          <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-700 rounded animate-pulse w-3/4"></div>
-            <div className="flex flex-wrap gap-2">
-              {[1, 2, 3].map((tag) => (
-                <div
-                  key={tag}
-                  className="h-3 bg-gray-700 rounded animate-pulse w-12"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+import {
+  TaskListSkeleton,
+  VideoInfoSkeleton,
+  VideoListSkeleton,
+  VideoPlayerSkeleton,
+} from "./RewardSkeletons";
 
 const RewardVideo = () => {
   const [data, setData] = useState<DailyCheckRewardResponseType | null>(null);
@@ -87,6 +35,7 @@ const RewardVideo = () => {
   const [selectedVideo, setSelectedVideo] =
     useState<RewardVideoItemsType | null>(null);
   const [showVideoList, setShowVideoList] = useState(false);
+  const [allCompleted, setAllCompleted] = useState<boolean>(false);
 
   const [loading, setLoading] = useState({
     data: true,
@@ -97,15 +46,6 @@ const RewardVideo = () => {
     data: false,
     rewardVideos: false,
   });
-
-  // Format file size to readable format
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
 
   // Format views count
   const formatViews = (views: number): string => {
@@ -132,13 +72,37 @@ const RewardVideo = () => {
         setRewardVideos(activeVideos);
 
         // Set initial video if not already set and there are active videos
-        if (activeVideos.length > 0 && !selectedVideo) {
-          setSelectedVideo(activeVideos[0]);
+        if (activeVideos.length > 0) {
+          // Always set first video when fetching all videos
+          if (showVideoList || !selectedVideo) {
+            setSelectedVideo(activeVideos[0]);
+          }
         }
       }
     } catch (error) {
       console.error("Error fetching reward videos:", error);
       setError((prev) => ({ ...prev, rewardVideos: true }));
+    } finally {
+      setLoading((prev) => ({ ...prev, rewardVideos: false }));
+    }
+  };
+
+  // Fetch initial video (first video) on component mount
+  const fetchInitialVideo = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, rewardVideos: true }));
+      const res = await apiRequest("/reward-video", "GET");
+      if (res.success) {
+        const videos: RewardVideoItemsType[] = res.data;
+        const activeVideos = videos.filter((video) => video.isActive);
+
+        if (activeVideos.length > 0) {
+          // Set the first video as selected initially
+          setSelectedVideo(activeVideos[0]);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching initial video:", error);
     } finally {
       setLoading((prev) => ({ ...prev, rewardVideos: false }));
     }
@@ -157,7 +121,9 @@ const RewardVideo = () => {
 
   // Handle video item click
   const handleVideoClick = (video: RewardVideoItemsType) => {
-    setSelectedVideo(video);
+    if (allCompleted) {
+      setSelectedVideo(video);
+    }
   };
 
   // Fetch daily reward check on component mount
@@ -182,10 +148,20 @@ const RewardVideo = () => {
         setLoading((prev) => ({ ...prev, data: false }));
       }
     };
+
     fetchDailyRewardCheck();
+    // Fetch initial video on component mount
+    fetchInitialVideo();
   }, []);
 
-  const allCompleted = true;
+  useEffect(() => {
+    if (data) {
+      const completed = data?.progress.tasks?.every((task) => task.completed);
+      setAllCompleted(completed || false);
+    } else {
+      setAllCompleted(false);
+    }
+  }, [data]);
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -216,7 +192,7 @@ const RewardVideo = () => {
                 <Poster
                   className="absolute inset-0 block h-full w-full bg-black rounded-lg sm:rounded-md opacity-0 
                     transition-opacity data-[visible]:opacity-100 [&>img]:h-full [&>img]:w-full [&>img]:object-cover"
-                  src={"https://files.vidstack.io/sprite-fight/poster.webp"}
+                  src={"/reward-thumbnail.png"}
                   alt={selectedVideo?.title || "Reward Video Poster"}
                 />
               </MediaProvider>
@@ -226,7 +202,7 @@ const RewardVideo = () => {
                 <DefaultVideoLayout icons={defaultLayoutIcons} />
               )}
 
-              {/* 🔒 LOCK OVERLAY WHEN NOT COMPLETE */}
+              {/*  LOCK OVERLAY WHEN NOT COMPLETE */}
               {!allCompleted && (
                 <div
                   className="
@@ -235,23 +211,26 @@ const RewardVideo = () => {
                   "
                   onClick={(e) => e.stopPropagation()} // disable clicking on video
                 >
-                  <div className="flex flex-col items-center gap-2 text-white text-center px-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-8 h-8 sm:w-12 sm:h-12 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M16.5 10.5V7.5C16.5 5.01472 14.4853 3 12 3C9.51472 3 7.5 5.01472 7.5 7.5V10.5M6 10.5H18V20.25H6V10.5Z"
-                      />
-                    </svg>
-                    <p className="text-xs sm:text-sm">
-                      Complete all tasks to unlock this video
-                    </p>
+                  <div className="flex flex-col items-center gap-3 sm:gap-4 text-white text-center px-4 max-w-xs">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-[#2B2E4E] to-brand-darker flex items-center justify-center">
+                      <FaLock className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-semibold mb-1">
+                        Video Locked
+                      </h3>
+                      <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                        Complete all daily tasks to unlock this video and access
+                        all available content
+                      </p>
+                    </div>
+                    <div className="mt-2 px-4 py-2 bg-white/10 rounded-lg border border-white/20">
+                      <p className="text-xs font-medium">
+                        {data?.progress.tasks.filter((t) => t.completed)
+                          .length || 0}
+                        /{data?.progress.tasks.length || 0} tasks completed
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -389,9 +368,7 @@ const RewardVideo = () => {
                         }`}>
                         <div className="w-12 h-9 sm:w-16 sm:h-12 bg-black rounded flex-shrink-0 overflow-hidden">
                           <img
-                            src={
-                              "https://files.vidstack.io/sprite-fight/poster.webp"
-                            }
+                            src={"/reward-thumbnail.png"}
                             alt={video.title}
                             className="w-full h-full object-cover"
                           />
