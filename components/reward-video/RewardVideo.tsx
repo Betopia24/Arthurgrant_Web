@@ -278,7 +278,6 @@ const RewardVideo = () => {
                 <span>Category: {selectedVideo.category}</span>
                 <span>Age: {selectedVideo.age}</span>
                 <span>Views: {formatViews(selectedVideo.views)}</span>
-                <span>Size: {formatFileSize(selectedVideo.fileSize)}</span>
               </div>
             </div>
           ) : null}
@@ -407,9 +406,6 @@ const RewardVideo = () => {
                             </span>
                             <span className="text-xs text-gray-400">
                               {formatViews(video.views)} views
-                            </span>
-                            <span className="text-xs text-gray-400">
-                              {video.age}
                             </span>
                           </div>
                         </div>
