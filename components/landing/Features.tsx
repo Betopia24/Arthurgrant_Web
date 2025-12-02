@@ -2,8 +2,12 @@ import React from "react";
 import Heading from "../shared/Heading";
 import Image from "next/image";
 import { features } from "@/lib/constants";
+import { useAuthStore } from "@/stores/authStore";
+import Link from "next/link";
 
 const Hero = () => {
+  const { isAuthenticated } = useAuthStore();
+
   return (
     <div className="py-20 bg-section-dark">
       <div className="app-container flex flex-col items-center gap-12">
@@ -44,12 +48,12 @@ const Hero = () => {
               </p>
 
               {/* Button */}
-              <a
-                href="#"
+              <Link
+                href={isAuthenticated ? feature.href : "/signin"}
                 className="mt-10 inline-block w-full text-center px-5 py-2 sm:px-6 sm:py-3 md:px-8 md:py-3 xl:px-10 rounded-2xl bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to font-semibold text-white text-sm sm:text-base md:text-lg shadow-lg transition hover:opacity-90"
               >
                 Start {feature.title.split(" ")[0]}
-              </a>
+              </Link>
             </div>
           ))}
         </div>

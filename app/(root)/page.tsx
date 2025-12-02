@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useRef, useEffect } from "react";
 import FAQ from "@/components/landing/FAQ";
 import Features from "@/components/landing/Features";
@@ -11,16 +10,31 @@ import About from "@/components/landing/About";
 import LanguagePopup from "@/components/shared/LanguagePopup";
 import { Volume2, VolumeOff } from "lucide-react";
 import { useLanguageStore } from "@/stores/languageStore";
+import Image from "next/image";
 
 export default function Home() {
-  const { preferredLang, hasSelectedLanguage, setLanguage } = useLanguageStore();
+  const { preferredLang, hasSelectedLanguage, setLanguage } =
+    useLanguageStore();
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [showMusicPopup, setShowMusicPopup] = useState(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
-  const [showIntroVideo, setShowIntroVideo] = useState(true);
+  const [showIntroVideo, setShowIntroVideo] = useState(false); // ← changed: starts hidden
+  const [showIntroLogo, setShowIntroLogo] = useState(true);     // ← logo shows first
   const [showLanguagePopup, setShowLanguagePopup] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const introVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Auto-hide logo after ~2.5s and then show intro video
+  useEffect(() => {
+    if (showIntroLogo) {
+      const timer = setTimeout(() => {
+        setShowIntroLogo(false);
+        setShowIntroVideo(true); // ← now start the video
+      }, 1500); // adjust duration if you want logo longer/shorter
+
+      return () => clearTimeout(timer);
+    }
+  }, [showIntroLogo]);
 
   // Auto-play music when video modal closes
   const playMusic = () => {
@@ -68,7 +82,6 @@ export default function Home() {
   const handleIntroVideoEnd = () => {
     console.log("Intro video ended");
     setShowIntroVideo(false);
-
     // Show language popup only if no language selected yet
     if (!hasSelectedLanguage) {
       setShowLanguagePopup(true);
@@ -84,7 +97,6 @@ export default function Home() {
       introVideoRef.current.pause();
     }
     setShowIntroVideo(false);
-
     // Show language popup only if no language selected yet
     if (!hasSelectedLanguage) {
       setShowLanguagePopup(true);
@@ -99,7 +111,6 @@ export default function Home() {
     console.log("Language selected:", languageCode);
     setLanguage(languageCode);
     setShowLanguagePopup(false);
-    
     // After language selection, show the hero section video
     setIsVideoModalOpen(true);
   };
@@ -136,23 +147,40 @@ export default function Home() {
 
   // Disable scroll when intro video or language popup is showing
   useEffect(() => {
-    if (showIntroVideo || showLanguagePopup || isVideoModalOpen) {
+    if (showIntroVideo || showLanguagePopup || isVideoModalOpen || showIntroLogo) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
     }
-
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [showIntroVideo, showLanguagePopup, isVideoModalOpen]);
+  }, [showIntroVideo, showLanguagePopup, isVideoModalOpen, showIntroLogo]);
 
   return (
     <>
       {/* Hidden audio element */}
       <audio ref={audioRef} loop src="/bg-music-01.mp3" preload="auto" />
 
-      {/* Full-screen Intro Video -> Shows FIRST */}
+      {/* Beautiful Logo Intro - Shows FIRST */}
+      {showIntroLogo && (
+        <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+          <div className="text-center animate__animated animate__fadeIn animate__slow">
+            <div className="flex flex-col items-center gap-8">
+              <img
+                src="/manifex-logo-02.png"
+                alt="Manifex Logo"
+                className="h-32 md:h-48 drop-shadow-2xl animate__animated animate__zoomIn animate__delay-1s"
+              />
+              <h1 className="text-6xl md:text-8xl font-extrabold bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 bg-clip-text text-transparent tracking-tight animate__animated animate__fadeInUp animate__delay-2s">
+                Manifex
+              </h1>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full-screen Intro Video -> Shows SECOND (after logo) */}
       {showIntroVideo && (
         <div
           className="fixed inset-0 z-50 bg-black flex items-center justify-center cursor-pointer"
@@ -168,7 +196,6 @@ export default function Home() {
             <source src="/intro-01.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-
           {/* Skip button */}
           <button
             className="absolute top-4 right-4 bg-black/50 text-white px-4 py-2 rounded-lg hover:bg-black/70 transition-colors cursor-pointer"
@@ -189,7 +216,7 @@ export default function Home() {
       )}
 
       {/* Main Landing Page Content -> Shows AFTER language selection */}
-      {!showIntroVideo && !showLanguagePopup && (
+      {!showIntroVideo && !showLanguagePopup && !showIntroLogo && (
         <div style={{ minHeight: "100vh", cursor: "default" }}>
           <Hero
             onVideoEnd={handleVideoEnd}
@@ -228,7 +255,6 @@ export default function Home() {
                   </div>
                 </div>
               )}
-
               <button
                 onClick={toggleMusic}
                 className="bg-gradient-brand-btn text-white p-2 border rounded-full transition-colors shadow-lg cursor-pointer"
