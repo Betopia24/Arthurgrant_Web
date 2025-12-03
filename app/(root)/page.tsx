@@ -172,7 +172,7 @@ export default function Home() {
                 alt="Manifex Logo"
                 className="h-32 md:h-48 drop-shadow-2xl animate__animated animate__zoomIn animate__delay-1s"
               />
-              <h1 className="text-6xl md:text-8xl font-extrabold bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 bg-clip-text text-transparent tracking-tight animate__animated animate__fadeInUp animate__delay-2s">
+              <h1 className="text-6xl md:text-8xl uppercase font-extrabold bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 bg-clip-text text-transparent tracking-tight animate__animated animate__fadeInUp animate__delay-2s">
                 Manifex
               </h1>
             </div>
