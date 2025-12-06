@@ -142,13 +142,13 @@ export const aboutUsInfo = {
       title: "Dysgraphia Support",
       description:
         "Dysgraphia is a neurological condition that affects writing. Our tools offer structured practice to strengthen handwriting, written expression, and the motor skills that support the writing process.",
-      imageUrl: "about-03.png",
+      imageUrl: "about-2.jpg",
     },
     {
       title: "Dyslexia Support",
       description:
         "Dyslexia, a neurobiological learning difference, can make reading, writing, and spelling difficult. We provide engaging activities that build fluency, comprehension, and language skills—helping learners overcome barriers with confidence.",
-      imageUrl: "about-04.png",
+      imageUrl: "about-1.png",
     },
   ],
 };
