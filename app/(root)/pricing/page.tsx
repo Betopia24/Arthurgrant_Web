@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
-import { plansApi } from "@/lib/api";
+import { authApi, plansApi } from "@/lib/api";
 import { useSubscription } from "@/hooks/useSubscription";
 import PricingStep from "@/components/subscription/PricingStep";
 import ConfirmStep from "@/components/subscription/ConfirmStep";
@@ -12,16 +12,15 @@ import { Plan } from "@/lib/types";
 
 export default function SubscriptionPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const { createSubscription, refreshUserSubscription } = useSubscription();
-
   const [step, setStep] = useState<
     "pricing" | "confirm" | "billing" | "success"
   >("pricing");
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [loading, setLoading] = useState(true);
   const [paymentIntent, setPaymentIntent] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   // Fetch plans from API
   useEffect(() => {
