@@ -18,6 +18,7 @@
 /out/
 
 # production
+temp_auto_push.bat
 /build
 
 # misc
@@ -38,3 +39,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.gitignore
+branch_structure.json
