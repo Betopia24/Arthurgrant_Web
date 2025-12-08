@@ -22,7 +22,9 @@ export default function FamilyMembersManager({
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
 
-  
+  // modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   // Sync subscription on update
   useEffect(() => {
@@ -44,45 +46,44 @@ export default function FamilyMembersManager({
     }
   }, [subscriptionId]);
 
-// Add new family member
-const addMember = async () => {
-  if (!newEmail) {
-    setEmailError("Email is required");
-    return;
-  }
-
-  setIsAdding(true);
-  setEmailError(null);
-
-  try {
-    const payload = {
-      subscriptionId,   // must come from props or state
-      memberEmail: newEmail,
-    };
-
-    const response = await subscriptionApi.addFamilyMember(payload);
-
-    if (response?.success) {
-      setNewEmail("");
-      await fetchMembers();  // refresh members list
-      onRefresh?.();  
-      toast.success("Member added successfully");  // notify parent (optional)
-    } else {
-      setEmailError(response?.message || "Adding member failed");
-      toast.error(response?.message || "Adding member failed");
+  // Add new family member
+  const addMember = async () => {
+    if (!newEmail) {
+      setEmailError("Email is required");
+      return;
     }
-  } catch (error: any) {
-    const backendMessage =
-      error?.response?.data?.errorMessages?.[0]?.message ||
-      error?.response?.data?.message ||
-      "Failed to add member";
 
-    setEmailError(backendMessage);
-  } finally {
-    setIsAdding(false);
-  }
-};
+    setIsAdding(true);
+    setEmailError(null);
 
+    try {
+      const payload = {
+        subscriptionId, // must come from props or state
+        memberEmail: newEmail,
+      };
+
+      const response = await subscriptionApi.addFamilyMember(payload);
+
+      if (response?.success) {
+        setNewEmail("");
+        await fetchMembers(); // refresh members list
+        onRefresh?.();
+        toast.success("Member added successfully"); // notify parent (optional)
+      } else {
+        setEmailError(response?.message || "Adding member failed");
+        toast.error(response?.message || "Adding member failed");
+      }
+    } catch (error: any) {
+      const backendMessage =
+        error?.response?.data?.errorMessages?.[0]?.message ||
+        error?.response?.data?.message ||
+        "Failed to add member";
+
+      setEmailError(backendMessage);
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   // Remove family member
   const removeMember = async (memberId: string) => {
@@ -125,13 +126,13 @@ const addMember = async () => {
           disabled={isAdding}
           size="large"
           status={emailError ? "error" : undefined}
-          className="flex-1 rounded-xl input-style"
+          className="flex-1 rounded-xl input-style "
         />
 
         <button
           onClick={addMember}
           disabled={isAdding}
-          className="px-5 py-2 bg-indigo-600 rounded-xl hover:bg-indigo-700 disabled:opacity-50"
+          className="px-5 py-2 bg-indigo-600 rounded-xl hover:bg-indigo-700 disabled:opacity-50 cursor-pointer"
         >
           {isAdding ? "Adding..." : "Add"}
         </button>
@@ -157,8 +158,12 @@ const addMember = async () => {
             </div>
 
             <button
-              onClick={() => removeMember(member?.user?.id)}
-              className="text-red-400 hover:text-red-200"
+              // onClick={() => removeMember(member?.user?.id)}
+              onClick={() => {
+                setPendingDeleteId(member?.user?.id);
+                setShowDeleteModal(true);
+              }}
+              className="text-red-400 hover:text-red-200 cursor-pointer"
               disabled={removingId === member.id}
             >
               {removingId === member.id ? (
@@ -170,6 +175,42 @@ const addMember = async () => {
           </div>
         ))}
       </div>
+
+      {/* modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          <div className="bg-[#1B1B35] p-6 rounded-xl w-80 text-center">
+            <h3 className="text-lg font-semibold mb-3">Are you sure?</h3>
+            <p className="text-gray-300 mb-5">
+              Do you want to delete this member, this action is irreversible?
+            </p>
+
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setPendingDeleteId(null);
+                }}
+                className="px-4 py-2 bg-gray-600 rounded-lg hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  if (pendingDeleteId) {
+                    removeMember(pendingDeleteId);
+                  }
+                  setShowDeleteModal(false);
+                }}
+                className="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700 cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

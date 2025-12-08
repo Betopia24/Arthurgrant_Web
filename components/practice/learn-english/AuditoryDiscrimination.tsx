@@ -30,7 +30,7 @@ const AuditoryDiscrimination = ({
   taskResult,
   onTaskComplete,
 }: AuditoryDiscriminationProps) => {
-  const { accessToken } = useAuthStore();
+  const { accessToken,user } = useAuthStore();
 
   const [wordPairs, setWordPairs] = useState<WordPair[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -45,7 +45,7 @@ const AuditoryDiscrimination = ({
       setIsFetching(true);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_AI_API}/adult/auditory-discrimination/get_auditory_discrimination`,
+          `${process.env.NEXT_PUBLIC_AI_API}/adult/auditory-discrimination/get_auditory_discrimination?user_id=${user?.id}`,
           {
             method: "GET",
             headers: {

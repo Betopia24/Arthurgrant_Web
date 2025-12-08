@@ -34,7 +34,7 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
             process.env.NEXT_PUBLIC_AI_API
           }/reading/phoneme-flashcards/generate_phoneme_flashcards?age=${
             user?.age.split("-")[0]
-          }`,
+          }&user_id=${user?.id}`,
           {
             method: "GET",
             headers: {

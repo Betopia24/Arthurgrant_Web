@@ -14,7 +14,7 @@ export default function Page() {
         <Heading
           heading="At the Core of Our Approach are 4 Key Foundations"
           subheading="MANIFEX is here to redefine the way people learn English. For children with dyslexia, for students aiming to sharpen skills, for
-professionals preparing for communication — learning should be adaptive, encouraging, and fun."
+            professionals preparing for communication — learning should be adaptive, encouraging, and fun."
           specialText="4 Key Foundations"
           align="center"
         />

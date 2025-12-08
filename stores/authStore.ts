@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface SubscriptionPlan {
   id: string;
@@ -33,7 +33,6 @@ interface Subscription {
   plan: SubscriptionPlan;
   members: any[];
 }
-
 
 interface User {
   id: string;
@@ -75,18 +74,20 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       isAuthenticated: false,
       isLoading: false,
-      login: (accessToken: string) => set({ accessToken, isAuthenticated: true }),
-      logout: () => set({
-        user: null,
-        accessToken: null,
-        isAuthenticated: false
-      }),
+      login: (accessToken: string) =>
+        set({ accessToken, isAuthenticated: true }),
+      logout: () =>
+        set({
+          user: null,
+          accessToken: null,
+          isAuthenticated: false,
+        }),
       setUser: (user: User) => set({ user }),
       setLoading: (isLoading: boolean) => set({ isLoading }),
       setToken: (accessToken: string) => set({ accessToken }),
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
     }
   )
 );

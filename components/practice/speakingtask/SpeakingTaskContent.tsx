@@ -57,6 +57,7 @@ const SpeakingTaskContent = () => {
   const [vocabPool, setVocabPool] = useState<string[][]>([]);
 
   const [isSubmit, setIsSubmit] = useState(false);
+  const [showRetry, setShowRetry] = useState(false);
 
   const [loading, setLoading] = useState<LoadingState>({
     wordsPool: true,
@@ -533,7 +534,7 @@ const SpeakingTaskContent = () => {
       const sim = similarityPercent(task2State.phrase, transcript);
       setTask2State((prev) => ({ ...prev, fluency: sim, listening: false }));
 
-      if (sim >= 65) {
+      if (sim >= 1) {
         setTask2State((prev) => ({ ...prev, done: true }));
         setCurrentTask((prev) => Math.min(prev + 1, 4));
       }
@@ -778,7 +779,7 @@ const SpeakingTaskContent = () => {
           {
             taskName: "Phrase Repeat",
             score: task2Score,
-            isCorrect: task2Score >= 65, // true when fluency >= 65
+            isCorrect: task2Score >= 1,
           },
           {
             taskName: "Listen & Speak",
@@ -795,9 +796,9 @@ const SpeakingTaskContent = () => {
 
       const res = await apiRequest("/speaking/submit-session", "POST", body);
       if (res.success === true) {
-        localStorage.setItem("subscription_change_route", currentPath);
       }
       setIsSubmit(true);
+      setShowRetry(true);
       console.log("check Speaking submit", res);
       toast.success(res.message || "Speaking submitted successfully");
     } catch (error: any) {
@@ -812,6 +813,64 @@ const SpeakingTaskContent = () => {
       setLoading((prev) => ({ ...prev, submit: false }));
     }
   };
+
+  // Retry function to reset all tasks
+  const handleRetry = useCallback(() => {
+    // Reset all task states
+    setTask1State({
+      word:
+        wordsPool.length > 0
+          ? wordsPool[Math.floor(Math.random() * wordsPool.length)]
+          : "",
+      done: false,
+      listening: false,
+      attempts: 0,
+    });
+
+    setTask2State({
+      phrase:
+        phrasesPool.length > 0
+          ? phrasesPool[Math.floor(Math.random() * phrasesPool.length)]
+          : "",
+      fluency: null,
+      done: false,
+      listening: false,
+    });
+
+    setTask3State({
+      sentence:
+        sentencesPool.length > 0
+          ? sentencesPool[Math.floor(Math.random() * sentencesPool.length)]
+          : "",
+      done: false,
+      listening: false,
+      attempts: 0,
+    });
+
+    setTask4State({
+      words:
+        vocabPool.length > 0
+          ? (() => {
+              const allAvailableWords = vocabPool.flat();
+              const uniqueWords = [...new Set(allAvailableWords)];
+              const shuffledWords = [...uniqueWords].sort(
+                () => Math.random() - 0.5
+              );
+              return shuffledWords.slice(0, 4);
+            })()
+          : [],
+      correct: new Set(),
+      done: false,
+      listening: false,
+    });
+
+    // Reset progress and UI states
+    setCurrentTask(1);
+    setIsSubmit(false);
+    setShowRetry(false);
+    setOverallProgress(0);
+  }, [wordsPool, phrasesPool, sentencesPool, vocabPool]);
+
   return (
     <div className="min-h-screen bg-section-dark">
       <PracticeHero
@@ -994,16 +1053,30 @@ const SpeakingTaskContent = () => {
             />
           </div>
 
-          <button
-            onClick={handleSubmit}
-            disabled={loading.submit || !allTasksCompleted}
-            className={`px-12 py-4 font-semibold text-lg w-full rounded-xl ${
-              !allTasksCompleted || loading.submit
-                ? "bg-[#828882] opacity-50 cursor-not-allowed"
-                : "bg-gradient-to-r from-yellow-400 to-pink-500 text-white cursor-pointer hover:opacity-90 transition-opacity"
-            }`}>
-            {loading.submit ? "Submitting speaking..." : " Submit All Answers"}
-          </button>
+          {/* Submit and Retry Buttons */}
+          <div className="flex flex-col gap-4">
+            {!showRetry ? (
+              <button
+                onClick={handleSubmit}
+                disabled={loading.submit || !allTasksCompleted}
+                className={`px-12 py-4 font-semibold text-lg w-full rounded-xl ${
+                  !allTasksCompleted || loading.submit
+                    ? "bg-[#828882] opacity-50 cursor-not-allowed"
+                    : "bg-gradient-to-r from-yellow-400 to-pink-500 text-white cursor-pointer hover:opacity-90 transition-opacity"
+                }`}>
+                {loading.submit
+                  ? "Submitting speaking..."
+                  : " Submit All Answers"}
+              </button>
+            ) : (
+              <button
+                onClick={handleRetry}
+                className="px-12 py-4 font-semibold text-lg w-full rounded-xl bg-gradient-to-r from-blue-400 to-purple-500 text-white cursor-pointer hover:opacity-90 transition-opacity">
+                Retry Speaking Practice
+              </button>
+            )}
+          </div>
+
           {/* Completion Message */}
           {allTasksCompleted && isSubmit && (
             <CompletePageFooterMessage

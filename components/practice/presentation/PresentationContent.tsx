@@ -214,7 +214,6 @@ const PresentationContent = () => {
       const res = await apiRequest("/presentation/submit", "POST", body);
       console.log("check presentation submit", res);
       setIsSubmit(true);
-      localStorage.setItem("subscription_change_route", currentPath);
       toast.success(res.message || "Presentation submitted successfully");
     } catch (error: any) {
       setIsSubmit(false);

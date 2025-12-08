@@ -29,7 +29,7 @@ const PhonemeGraphemeMapping = ({
   onTaskComplete,
   isLocked,
 }: PhonemeGraphemeMappingProps) => {
-  const { accessToken } = useAuthStore();
+  const { accessToken ,user} = useAuthStore();
 
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -47,7 +47,7 @@ const PhonemeGraphemeMapping = ({
       setIsFetching(true);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_AI_API}/adult/phenome-mapping/get_phenome_mapping`,
+          `${process.env.NEXT_PUBLIC_AI_API}/adult/phenome-mapping/get_phenome_mapping?user_id=${user?.id}`,
           {
             method: "GET",
             headers: {

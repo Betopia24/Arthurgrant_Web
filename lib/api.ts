@@ -4,7 +4,7 @@ import { useAuthStore } from "@/stores/authStore";
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API;
 
 export const api = axios.create({
-  baseURL: `${API_BASE_URL}/api/v1`,
+  baseURL: `${API_BASE_URL}`,
   headers: {
     "Content-Type": "application/json",
   },

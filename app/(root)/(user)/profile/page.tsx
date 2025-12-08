@@ -416,8 +416,9 @@ function ProfilePage() {
                 {
                   label: "Personal Information",
                   icon: <CgProfile className="h-4 w-4" />,
+
                   content: (
-                    <div className="flex gap-8  flex-col">
+                    <div className="flex gap-8  flex-col ">
                       <div className="mt-8 w-full bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-2xl">
                         <div className="flex justify-between">
                           <h1 className="text-xl sm:text-2xl font-semibold">
@@ -696,6 +697,7 @@ function ProfilePage() {
                   ),
                 },
               ]}
+              className=""
             />
           </div>
         ) : (
