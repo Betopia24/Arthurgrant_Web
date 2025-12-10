@@ -16,7 +16,7 @@ const WORDS: string[] = [
   "Food",
   "Nature",
   "Art",
-  "Movie",
+  "Movies",
   "Travel",
   "Science",
   "Gaming",
