@@ -5,6 +5,9 @@ import { useAuthStore } from "@/stores/authStore";
 import { FaCheck } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import useGetMe from "@/hooks/useGetMe";
+import { useEffect, useState } from "react";
+import { authApi } from "@/lib/api";
 
 interface Plan {
   id: string;
@@ -30,10 +33,11 @@ interface PricingStepProps {
 }
 
 export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
+  const { data: users } = useGetMe();
+  console.log(users);
   const { isAuthenticated, user } = useAuthStore();
   const router = useRouter();
 
-  console.log(user, "user in pricing step");
   // Format price for display
   const Subscription = user?.Subscription;
   const formatPrice = (plan: Plan) => {
@@ -79,7 +83,20 @@ export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
   };
 
   const handlePlanStart = (plan: Plan) => {
-    if (Subscription !== null) {
+    if (users === null) {
+      Swal.fire({
+        title: `Start ${plan?.planName} Plan?`,
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Yes, start",
+        cancelButtonText: "Cancel",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          console.log("Start plan API call here");
+        }
+      });
+      return;
+    } else if (users?.isSubscribed === true) {
       Swal.fire({
         title: "You have an Active Subscription",
         text: "You already have an active subscription with us.",
@@ -93,21 +110,8 @@ export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
           window.location.href = "/profile";
         }
       });
-      return; // Stop here
+      return;
     }
-
-    // 👉 If no subscription → continue
-    Swal.fire({
-      title: `Start ${plan?.planName} Plan?`,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Yes, start",
-      cancelButtonText: "Cancel",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        console.log("Start plan API call here");
-      }
-    });
   };
 
   return (
@@ -168,7 +172,9 @@ export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
             ) : (
               // Other Plan Buttons
               <button
-                onClick={handlePlanStart ? () => handlePlanStart(plan) : undefined}
+                onClick={
+                  handlePlanStart ? () => handlePlanStart(plan) : undefined
+                }
                 className={`relative mt-12 py-2.5 w-full rounded-xl bg-gradient-brand h-[44px] ${
                   !isAuthenticated || plan?.planName === "free"
                     ? "opacity-40 cursor-no-drop"
