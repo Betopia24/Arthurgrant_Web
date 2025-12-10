@@ -1,14 +1,13 @@
 "use client";
-import React, { useState, ChangeEvent, MouseEvent } from "react";
+import React, { useState, ChangeEvent, MouseEvent, useEffect } from "react";
 import { FaCircleCheck } from "react-icons/fa6";
 import Heading from "../shared/Heading";
 import { Sparkles, RotateCcw } from "lucide-react";
 import PracticeHero from "./PracticeHero2";
-import { useRouter } from "next/navigation";
 import { aiRequest } from "@/lib/aiRequest";
 import useGetMe from "@/hooks/useGetMe";
 import { apiRequest } from "@/lib/apiRequest";
-import Loading from "@/app/(root)/loading";
+import { authApi } from "@/lib/api";
 
 const WORDS: string[] = [
   "Sports",
@@ -17,7 +16,7 @@ const WORDS: string[] = [
   "Food",
   "Nature",
   "Art",
-  "Movie",
+  "Movies",
   "Travel",
   "Science",
   "Gaming",
@@ -43,6 +42,8 @@ const WritingTask = () => {
   const [loadingTopic, setLoadingTopic] = useState(false);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+
 
   // Circle settings
   const circleRadius = 45;
@@ -85,6 +86,8 @@ const WritingTask = () => {
       setLoadingTopic(false);
     }
   };
+
+
 
   // Handles writing input change
   const handleWritingChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -213,7 +216,8 @@ const WritingTask = () => {
                       : "bg-[#2D2F4A] text-gray-200 hover:bg-gradient-to-r hover:from-[#FFBC6F] hover:via-[#F176B7] hover:to-[#3797CD] hover:text-white"
                   } disabled:opacity-50 disabled:cursor-not-allowed`}
                   onClick={() => handleSelectedWord(word)}
-                  disabled={loadingTopic}>
+                  disabled={loadingTopic}
+                >
                   {loadingTopic && selectedWord === word ? (
                     "Loading..."
                   ) : (
@@ -236,7 +240,8 @@ const WritingTask = () => {
                   {wordRelative.related_words?.map((relatedWord, idx) => (
                     <span
                       key={idx}
-                      className="px-3 py-1 bg-gray-700 rounded text-gray-200 text-sm">
+                      className="px-3 py-1 bg-gray-700 rounded text-gray-200 text-sm"
+                    >
                       {relatedWord}
                     </span>
                   ))}
@@ -272,7 +277,8 @@ const WritingTask = () => {
                         ? "bg-gray-500 cursor-not-allowed opacity-50"
                         : "bg-gradient-to-r from-[#FFBC6F] via-[#F176B7] to-[#3797CD] text-white hover:opacity-90"
                     }`}
-                    disabled={isButtonDisabled}>
+                    disabled={isButtonDisabled}
+                  >
                     {loadingFeedback
                       ? "Checking..."
                       : "Check My Writing with AI"}
@@ -295,7 +301,8 @@ const WritingTask = () => {
                       width="120"
                       height="120"
                       viewBox="0 0 120 120"
-                      xmlns="http://www.w3.org/2000/svg">
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
                       <circle
                         cx="60"
                         cy="60"
@@ -323,7 +330,8 @@ const WritingTask = () => {
                           x1="0%"
                           y1="0%"
                           x2="100%"
-                          y2="100%">
+                          y2="100%"
+                        >
                           <stop offset="0%" stopColor="#FFBC6F" />
                           <stop offset="50%" stopColor="#F176B7" />
                           <stop offset="100%" stopColor="#3797CD" />
@@ -345,14 +353,16 @@ const WritingTask = () => {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                   <button
                     onClick={handleRetry}
-                    className="flex items-center justify-center px-6 py-3 gap-2 bg-gradient-to-r from-[#FFBC6F] via-[#F176B7] to-[#3797CD] text-white rounded-xl font-semibold hover:opacity-90 transition-all duration-200 shadow-lg">
+                    className="flex items-center justify-center px-6 py-3 gap-2 bg-gradient-to-r from-[#FFBC6F] via-[#F176B7] to-[#3797CD] text-white rounded-xl font-semibold hover:opacity-90 transition-all duration-200 shadow-lg"
+                  >
                     <RotateCcw className="w-5 h-5" />
                     Try Again with Same Topic
                   </button>
 
                   <button
                     onClick={handleNewTopic}
-                    className="flex items-center justify-center px-6 py-3 gap-2 bg-[#2D2F4A] text-gray-200 border border-gray-600 rounded-xl font-semibold hover:bg-gray-700 transition-all duration-200">
+                    className="flex items-center justify-center px-6 py-3 gap-2 bg-[#2D2F4A] text-gray-200 border border-gray-600 rounded-xl font-semibold hover:bg-gray-700 transition-all duration-200"
+                  >
                     Choose New Topic
                   </button>
                 </div>
@@ -365,7 +375,8 @@ const WritingTask = () => {
                       width="24"
                       height="24"
                       viewBox="0 0 24 24"
-                      fill="none">
+                      fill="none"
+                    >
                       <path
                         d="M5 14L8.5 17.5L19 6.5"
                         stroke="white"

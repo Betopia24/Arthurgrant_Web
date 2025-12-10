@@ -261,6 +261,27 @@ const Task2SightWordPractice = ({
   const [showResult, setShowResult] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState<number>(0);
 
+  // Helper function to normalize and create pattern from sentence
+  const createPattern = (str: string) => {
+    // Remove the sight word and any punctuation, create a pattern
+    // Convert to lowercase and remove extra spaces
+    return str
+      .toLowerCase()
+      .replace(/[.,!?;:]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  // Helper function to remove underscores and normalize
+  const normalizeWithoutBlanks = (str: string) => {
+    return str
+      .replace(/_{2,}/g, '')
+      .toLowerCase()
+      .replace(/[.,!?;:]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
   useEffect(() => {
     const fetchSightWords = async () => {
       if (isLocked) return;
@@ -282,7 +303,7 @@ const Task2SightWordPractice = ({
         );
         const data = await res.json();
         console.log("Sight Word Practice API Response:", data);
-        setItems(data.items || []);
+        setItems(data.response || []);
       } catch (error: any) {
         console.error("Failed to load sight words", error);
         toast.error(
@@ -306,9 +327,15 @@ const Task2SightWordPractice = ({
 
     setSelectedAnswer(quizOption);
 
-    // Check if answer is correct (case-insensitive comparison)
-    const isCorrect =
-      quizOption.toLowerCase().trim() === currentItem.answer.toLowerCase().trim();
+    // Remove blanks and sight word, then compare the remaining pattern
+    const selectedNormalized = normalizeWithoutBlanks(quizOption);
+    const correctAnswer = createPattern(currentItem.answer);
+    const correctWithoutWord = correctAnswer.replace(currentItem.word.toLowerCase(), '').replace(/\s+/g, ' ').trim();
+    
+    console.log("Selected (normalized):", selectedNormalized);
+    console.log("Correct pattern:", correctWithoutWord);
+    
+    const isCorrect = selectedNormalized === correctWithoutWord;
 
     if (isCorrect) {
       setCorrectAnswers((prev) => prev + 1);
@@ -410,9 +437,10 @@ const Task2SightWordPractice = ({
                 <div className="space-y-3">
                   {currentItem.quiz.map((quizOption, idx) => {
                     const isSelected = selectedAnswer === quizOption;
-                    const isCorrect =
-                      quizOption.toLowerCase().trim() ===
-                      currentItem.answer.toLowerCase().trim();
+                    const selectedNormalized = normalizeWithoutBlanks(quizOption);
+                    const correctAnswer = createPattern(currentItem.answer);
+                    const correctWithoutWord = correctAnswer.replace(currentItem.word.toLowerCase(), '').replace(/\s+/g, ' ').trim();
+                    const isCorrect = selectedNormalized === correctWithoutWord;
 
                     let bgClass = "bg-[#363851] hover:bg-[#4a4d6e]";
                     if (showResult && isSelected) {
@@ -440,23 +468,29 @@ const Task2SightWordPractice = ({
               </div>
 
               {/* Result Message */}
-              {showResult && (
+              {showResult && selectedAnswer && (
                 <div className="flex items-center justify-center">
-                  {selectedAnswer?.toLowerCase().trim() ===
-                  currentItem.answer.toLowerCase().trim() ? (
-                    <div className="flex items-center gap-3 bg-green-500/20 border-2 border-green-500 rounded-xl px-6 py-3">
-                      <FaCheckCircle className="w-6 h-6 text-green-500" />
-                      <span className="text-green-500 font-semibold text-lg">
-                        Correct! Great job!
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3 bg-red-500/20 border-2 border-red-500 rounded-xl px-6 py-3">
-                      <span className="text-red-500 font-semibold text-lg">
-                        Wrong! The correct answer is: "{currentItem.answer}"
-                      </span>
-                    </div>
-                  )}
+                  {(() => {
+                    const selectedNormalized = normalizeWithoutBlanks(selectedAnswer);
+                    const correctAnswer = createPattern(currentItem.answer);
+                    const correctWithoutWord = correctAnswer.replace(currentItem.word.toLowerCase(), '').replace(/\s+/g, ' ').trim();
+                    const isCorrect = selectedNormalized === correctWithoutWord;
+                    
+                    return isCorrect ? (
+                      <div className="flex items-center gap-3 bg-green-500/20 border-2 border-green-500 rounded-xl px-6 py-3">
+                        <FaCheckCircle className="w-6 h-6 text-green-500" />
+                        <span className="text-green-500 font-semibold text-lg">
+                          Correct! Great job!
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3 bg-red-500/20 border-2 border-red-500 rounded-xl px-6 py-3">
+                        <span className="text-red-500 font-semibold text-lg">
+                          Wrong! The correct answer is: "{currentItem.answer}"
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 
