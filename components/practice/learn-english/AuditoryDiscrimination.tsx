@@ -22,54 +22,48 @@ interface TaskResult {
 }
 
 interface AuditoryDiscriminationProps {
+  taskData: WordPair[] | null;
+  isFetching: boolean;
   taskResult: TaskResult | null;
   onTaskComplete: (result: TaskResult | null) => void;
+  currentStepIndex: number;
+  onStepComplete: (stepIndex: number) => void;
+  totalSteps: number;
 }
 
 const AuditoryDiscrimination = ({
+  taskData,
+  isFetching,
   taskResult,
   onTaskComplete,
+  currentStepIndex,
+  onStepComplete,
+  totalSteps,
 }: AuditoryDiscriminationProps) => {
-  const { accessToken,user } = useAuthStore();
+  const { accessToken, user } = useAuthStore();
 
-  const [wordPairs, setWordPairs] = useState<WordPair[]>([]);
+  const [wordPairs, setWordPairs] = useState<WordPair[]>(taskData || []);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(true);
   const [showResult, setShowResult] = useState(false);
+  const [correctAnswers, setCorrectAnswers] = useState<number>(0);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
-  // Fetch data from API
+  // Update wordPairs when taskData changes
   useEffect(() => {
-    const fetchWordPairs = async () => {
-      setIsFetching(true);
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_AI_API}/adult/auditory-discrimination/get_auditory_discrimination?user_id=${user?.id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              authtoken: `${accessToken}`,
-            },
-          }
-        );
-        const data = await res.json();
-        console.log("Auditory Discrimination API Response:", data);
-        setWordPairs(data.word_pairs || []);
-      } catch (error) {
-        console.error("Failed to load auditory discrimination", error);
-      } finally {
-        setIsFetching(false);
-      }
-    };
-
-    if (accessToken) {
-      fetchWordPairs();
+    if (taskData) {
+      setWordPairs(taskData);
     }
-  }, [accessToken]);
+  }, [taskData]);
 
   const currentPair = wordPairs[currentIndex];
+
+  // Check if current step is already completed
+  const isStepCompleted = completedSteps.includes(currentIndex);
+
+  // Check if we can navigate to next step
+  const canNavigateNext = isStepCompleted || currentIndex >= currentStepIndex;
 
   // Play audio
   const playAudio = (audioUrl: string) => {
@@ -88,7 +82,7 @@ const AuditoryDiscrimination = ({
 
   // Handle next
   const handleNext = () => {
-    if (currentIndex < wordPairs.length - 1) {
+    if (currentIndex < wordPairs.length - 1 && canNavigateNext) {
       setCurrentIndex(currentIndex + 1);
       setSelectedAnswer(null);
       setShowResult(false);
@@ -105,19 +99,24 @@ const AuditoryDiscrimination = ({
       const isCorrect =
         selectedAnswer.toLowerCase() === currentPair.answer.toLowerCase();
 
-      const correctAnswers = wordPairs.filter(
-        (pair, idx) =>
-          idx <= currentIndex &&
-          selectedAnswer.toLowerCase() === pair.answer.toLowerCase()
-      ).length;
+      // Update correct answers count
+      if (isCorrect) {
+        setCorrectAnswers((prev) => prev + 1);
+      }
 
-      const marks = Math.round((correctAnswers / wordPairs.length) * 100);
+      // Mark step as completed
+      if (!completedSteps.includes(currentIndex)) {
+        setCompletedSteps([...completedSteps, currentIndex]);
+        onStepComplete(currentIndex);
+      }
 
       setShowResult(true);
       setIsLoading(false);
 
       // If this is the last pair, complete the task
       if (currentIndex === wordPairs.length - 1) {
+        const marks = Math.round((correctAnswers / wordPairs.length) * 100);
+
         const result: TaskResult = {
           isAnswer: true,
           marks: marks,
@@ -134,7 +133,10 @@ const AuditoryDiscrimination = ({
           Auditory Discrimination
         </h1>
         <div className="rounded-xl p-5 md:p-8 bg-[#101231] flex items-center justify-center min-h-[400px]">
-         <TaskLoadingLockError variant="loading" title="Auditory Discrimination Loading..."/>
+          <TaskLoadingLockError
+            variant="loading"
+            title="Auditory Discrimination Loading..."
+          />
         </div>
       </div>
     );
@@ -165,11 +167,12 @@ const AuditoryDiscrimination = ({
               <div className="flex flex-col items-center justify-center gap-2">
                 <button
                   onClick={() => playAudio(currentPair.audio_file1)}
-                  disabled={taskResult !== null}
+                  disabled={taskResult !== null || isStepCompleted}
                   className={`rounded-full font-semibold text-white w-16 h-16 flex items-center justify-center transition-all bg-gradient-brand hover:brightness-110 ${
-                    taskResult !== null ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                >
+                    taskResult !== null || isStepCompleted
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}>
                   <FaMicrophone className="w-6 h-6" />
                 </button>
                 <span className="text-white">Word 1</span>
@@ -178,11 +181,12 @@ const AuditoryDiscrimination = ({
               <div className="flex flex-col items-center justify-center gap-2">
                 <button
                   onClick={() => playAudio(currentPair.audio_file2)}
-                  disabled={taskResult !== null}
+                  disabled={taskResult !== null || isStepCompleted}
                   className={`rounded-full font-semibold text-white w-16 h-16 flex items-center justify-center transition-all bg-gradient-brand hover:brightness-110 ${
-                    taskResult !== null ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                >
+                    taskResult !== null || isStepCompleted
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}>
                   <FaMicrophone className="w-6 h-6" />
                 </button>
                 <span className="text-white">Word 2</span>
@@ -193,26 +197,38 @@ const AuditoryDiscrimination = ({
             <div className="flex items-center justify-center gap-8">
               <button
                 onClick={() => setSelectedAnswer("same")}
-                disabled={taskResult !== null}
+                disabled={taskResult !== null || isStepCompleted}
                 className={`gradient-button w-full ${
                   selectedAnswer === "same" ? "ring-2 ring-yellow-400" : ""
                 } ${
-                  taskResult !== null ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              >
+                  taskResult !== null || isStepCompleted
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}>
                 Same
               </button>
               <button
                 onClick={() => setSelectedAnswer("different")}
-                disabled={taskResult !== null}
+                disabled={taskResult !== null || isStepCompleted}
                 className={`gradient-button w-full ${
                   selectedAnswer === "different" ? "ring-2 ring-yellow-400" : ""
                 } ${
-                  taskResult !== null ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              >
+                  taskResult !== null || isStepCompleted
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}>
                 Different
               </button>
+            </div>
+
+            {/* Step Completion Indicator */}
+            <div className="flex items-center justify-center gap-2">
+              {isStepCompleted && (
+                <div className="flex items-center gap-2 bg-green-500/20 px-3 py-1 rounded-full">
+                  <FaCheckCircle className="w-4 h-4 text-green-500" />
+                  <span className="text-green-500 text-sm">Step Completed</span>
+                </div>
+              )}
             </div>
 
             {/* Result Message */}
@@ -241,20 +257,25 @@ const AuditoryDiscrimination = ({
               <button
                 onClick={handlePrevious}
                 disabled={currentIndex === 0}
-                className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors"
-              >
+                className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors">
                 <ArrowLeft className="w-4 h-4" /> Previous
               </button>
 
-              <h2 className="text-gradient font-semibold text-lg">
-                {currentIndex + 1} of {wordPairs.length}
-              </h2>
+              <div className="flex flex-col items-center">
+                <h2 className="text-gradient font-semibold text-lg">
+                  {currentIndex + 1} of {wordPairs.length}
+                </h2>
+                <p className="text-gray-400 text-sm">
+                  Steps completed: {completedSteps.length}/{wordPairs.length}
+                </p>
+              </div>
 
               <button
                 onClick={handleNext}
-                disabled={currentIndex === wordPairs.length - 1}
-                className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors"
-              >
+                disabled={
+                  currentIndex === wordPairs.length - 1 || !canNavigateNext
+                }
+                className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors">
                 Next <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -265,9 +286,10 @@ const AuditoryDiscrimination = ({
       {/* AI Check Button */}
       <button
         onClick={handleCheckWithAI}
-        disabled={!selectedAnswer || isLoading || taskResult !== null}
-        className="p-4 inline-flex items-center justify-center gap-2 bg-gradient-brand rounded-2xl font-semibold text-base text-white hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed"
-      >
+        disabled={
+          !selectedAnswer || isLoading || taskResult !== null || isStepCompleted
+        }
+        className="p-4 inline-flex items-center justify-center gap-2 bg-gradient-brand rounded-2xl font-semibold text-base text-white hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed">
         {isLoading ? (
           <>
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -277,6 +299,11 @@ const AuditoryDiscrimination = ({
           <>
             <FaCheckCircle className="w-5 h-5" />
             Task Completed
+          </>
+        ) : isStepCompleted ? (
+          <>
+            <FaCheckCircle className="w-5 h-5" />
+            Step Completed
           </>
         ) : (
           <>

@@ -11,17 +11,27 @@ interface TaskResult {
 }
 
 interface WordFlashProps {
+  taskData: string[] | null;
+  isFetching: boolean;
   isLocked: boolean;
   taskResult: TaskResult | null;
   onTaskComplete: (result: TaskResult | null) => void;
+  currentStepIndex: number;
+  onStepComplete: (stepIndex: number) => void;
+  totalSteps: number;
 }
 
 const WordFlash = ({
+  taskData,
+  isFetching,
   taskResult,
   onTaskComplete,
   isLocked,
+  currentStepIndex,
+  onStepComplete,
+  totalSteps,
 }: WordFlashProps) => {
-  const [words, setWords] = useState<string[]>([]);
+  const [words, setWords] = useState<string[]>(taskData || []);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -33,6 +43,14 @@ const WordFlash = ({
   const [hasShownWord, setHasShownWord] = useState(false);
   const [countdown, setCountdown] = useState<number>(0);
   const [correctAnswers, setCorrectAnswers] = useState<number>(0);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+
+  // Update words when taskData changes
+  useEffect(() => {
+    if (taskData) {
+      setWords(taskData);
+    }
+  }, [taskData]);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -70,23 +88,14 @@ const WordFlash = ({
     }
   }, []);
 
-  const fetchWords = async () => {
-    try {
-      setIsLoading(true);
-      const res = await aiRequest("/adult/word-flash/get_word_flash", "GET");
-      setWords(res.words || []);
-    } catch (error) {
-      console.error("Failed to fetch words:", error);
-      // Fallback words in case of API failure
-      setWords([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const currentWord = words[currentWordIndex] || "";
 
-  useEffect(() => {
-    fetchWords();
-  }, []);
+  // Check if current step is already completed
+  const isStepCompleted = completedSteps.includes(currentWordIndex);
+
+  // Check if we can navigate to next step
+  const canNavigateNext =
+    isStepCompleted || currentWordIndex >= currentStepIndex;
 
   // Start recording and show word for 3 seconds
   const startRecordingAndShowWord = useCallback(() => {
@@ -155,29 +164,13 @@ const WordFlash = ({
   const handleNext = useCallback(async () => {
     if (isRecording) return; // Prevent navigation during recording
 
-    if (currentWordIndex < words.length - 1) {
+    if (currentWordIndex < words.length - 1 && canNavigateNext) {
       setCurrentWordIndex((prev) => prev + 1);
       setHasShownWord(false);
       setUserTranscript("");
       setShowResult(false);
-    } else {
-      // If it's the last word, fetch new words
-      try {
-        setIsLoading(true);
-        const res = await aiRequest("/adult/word-flash/get_word_flash", "GET");
-        const newWords = res.words || [];
-        setWords(newWords);
-        setCurrentWordIndex(0);
-        setHasShownWord(false);
-        setUserTranscript("");
-        setShowResult(false);
-      } catch (error) {
-        console.error("Failed to fetch new words:", error);
-      } finally {
-        setIsLoading(false);
-      }
     }
-  }, [currentWordIndex, words.length, isRecording]);
+  }, [currentWordIndex, words.length, isRecording, canNavigateNext]);
 
   // Handle previous word
   const handlePrevious = useCallback(() => {
@@ -225,6 +218,12 @@ const WordFlash = ({
         setCorrectAnswers((prev) => prev + 1);
       }
 
+      // Mark step as completed
+      if (!completedSteps.includes(currentWordIndex)) {
+        setCompletedSteps([...completedSteps, currentWordIndex]);
+        onStepComplete(currentWordIndex);
+      }
+
       setShowResult(true);
 
       // If this is the last word, complete the task
@@ -251,7 +250,6 @@ const WordFlash = ({
     }
   };
 
-  const currentWord = words[currentWordIndex] || "";
   const isLastWord = currentWordIndex === words.length - 1;
   const isFirstWord = currentWordIndex === 0;
 
@@ -271,7 +269,7 @@ const WordFlash = ({
           title="Complete Task 2 to unlock this task"
           variant="locked"
         />
-      ) : isLoading && words.length === 0 ? (
+      ) : isFetching && words.length === 0 ? (
         <TaskLoadingLockError title="Word Flash Loading..." variant="loading" />
       ) : (
         <div className="rounded-xl p-4 sm:p-5 md:p-6 lg:p-8 bg-[#101231] space-y-6 sm:space-y-8">
@@ -314,22 +312,31 @@ const WordFlash = ({
               <button
                 onClick={startRecordingAndShowWord}
                 disabled={
-                  isRecording || !words[currentWordIndex] || taskResult !== null
+                  isRecording ||
+                  !words[currentWordIndex] ||
+                  taskResult !== null ||
+                  isStepCompleted
                 }
                 className={`rounded-full font-semibold text-white w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 flex items-center justify-center transition-all ${
                   isRecording
                     ? "bg-red-500 animate-pulse"
-                    : words[currentWordIndex] && taskResult === null
+                    : words[currentWordIndex] &&
+                      taskResult === null &&
+                      !isStepCompleted
                     ? "bg-gradient-brand hover:brightness-110"
                     : "bg-gray-500"
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
                 title={
                   isRecording
                     ? "Recording in progress..."
-                    : words[currentWordIndex] && taskResult === null
+                    : words[currentWordIndex] &&
+                      taskResult === null &&
+                      !isStepCompleted
                     ? "Click to start recording and view word"
                     : taskResult !== null
                     ? "Task completed"
+                    : isStepCompleted
+                    ? "Step completed"
                     : "No word available"
                 }>
                 <FaMicrophone className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" />
@@ -343,6 +350,16 @@ const WordFlash = ({
                 <p className="text-green-400 text-lg sm:text-xl font-semibold break-words px-2">
                   {userTranscript}
                 </p>
+              </div>
+            )}
+
+            {/* Step Completion Indicator */}
+            {isStepCompleted && (
+              <div className="text-center">
+                <div className="inline-flex items-center gap-2 bg-green-500/20 px-3 py-1 rounded-full">
+                  <FaCheckCircle className="w-4 h-4 text-green-500" />
+                  <span className="text-green-500 text-sm">Step Completed</span>
+                </div>
               </div>
             )}
 
@@ -378,15 +395,20 @@ const WordFlash = ({
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" /> Previous
             </button>
 
-            <h2 className="text-gradient font-semibold text-base sm:text-lg text-center order-3 w-full sm:w-auto sm:order-2">
-              {words.length > 0
-                ? `${currentWordIndex + 1} of ${words.length}`
-                : "0 of 0"}
-            </h2>
+            <div className="flex flex-col items-center order-3 w-full sm:w-auto sm:order-2">
+              <h2 className="text-gradient font-semibold text-base sm:text-lg text-center">
+                {words.length > 0
+                  ? `${currentWordIndex + 1} of ${words.length}`
+                  : "0 of 0"}
+              </h2>
+              <p className="text-gray-400 text-sm">
+                Steps completed: {completedSteps.length}/{words.length}
+              </p>
+            </div>
 
             <button
               onClick={handleNext}
-              disabled={isRecording || taskResult !== null}
+              disabled={isRecording || taskResult !== null || !canNavigateNext}
               className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 sm:px-5 md:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium text-white flex items-center gap-1 sm:gap-2 hover:bg-white/30 transition-colors order-2 flex-1 sm:flex-none justify-center min-w-[120px]">
               Next <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
             </button>
@@ -401,12 +423,15 @@ const WordFlash = ({
           !isAllStepsCompleted ||
           isLoading ||
           isAiLoading ||
-          taskResult !== null
+          taskResult !== null ||
+          isStepCompleted
         }
         className="p-3 sm:p-4 inline-flex items-center justify-center gap-2 bg-gradient-brand rounded-2xl font-semibold text-sm sm:text-base text-white hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
         title={
           taskResult !== null
             ? "Task completed"
+            : isStepCompleted
+            ? "Step completed"
             : !hasShownWord
             ? "Record first by clicking microphone"
             : !userTranscript
@@ -422,6 +447,11 @@ const WordFlash = ({
           <>
             <FaCheckCircle className="w-5 h-5" />
             Task Completed
+          </>
+        ) : isStepCompleted ? (
+          <>
+            <FaCheckCircle className="w-5 h-5" />
+            Step Completed
           </>
         ) : (
           <>

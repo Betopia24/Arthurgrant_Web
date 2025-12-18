@@ -1,4 +1,3 @@
-import { aiRequest } from "@/lib/aiRequest";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import React, { useEffect, useState, useCallback } from "react";
 import TaskLoadingLockError from "../TaskLoadingLock";
@@ -18,38 +17,41 @@ type WordPartsType = {
 };
 
 interface WordPartsWorkshopProps {
+  taskData: WordPartsType | null;
+  isFetching: boolean;
   isLocked: boolean;
   taskResult: TaskResult | null;
   onTaskComplete: (result: TaskResult | null) => void;
+  currentStepIndex: number;
+  onStepComplete: (stepIndex: number) => void;
+  totalSteps: number;
 }
 
 const WordPartsWorkshop = ({
+  taskData,
+  isFetching,
   isLocked,
   taskResult,
   onTaskComplete,
+  currentStepIndex,
+  onStepComplete,
+  totalSteps,
 }: WordPartsWorkshopProps) => {
-  const [wordParts, setWordParts] = useState<WordPartsType | null>(null);
+  const [wordParts, setWordParts] = useState<WordPartsType | null>(taskData);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
-  const fetchWordParts = async () => {
-    try {
-      setIsLoading(true);
-      const res = await aiRequest(
-        "/adult/word-parts-workshop/get_word_parts",
-        "GET"
-      );
-      setWordParts(res);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Update wordParts when taskData changes
   useEffect(() => {
-    fetchWordParts();
-  }, []);
+    setWordParts(taskData);
+  }, [taskData]);
+
+  // Check if current step is already completed
+  const isStepCompleted = completedSteps.includes(currentIndex);
+
+  // Check if we can navigate to next step
+  const canNavigateNext = isStepCompleted || currentIndex >= currentStepIndex;
 
   const handleNext = useCallback(() => {
     if (!wordParts) return;
@@ -60,10 +62,10 @@ const WordPartsWorkshop = ({
       wordParts.suffix.length
     );
 
-    if (currentIndex < maxLength - 1) {
+    if (currentIndex < maxLength - 1 && canNavigateNext) {
       setCurrentIndex((prev) => prev + 1);
     }
-  }, [currentIndex, wordParts]);
+  }, [currentIndex, wordParts, canNavigateNext]);
 
   const handlePrevious = useCallback(() => {
     if (currentIndex > 0) {
@@ -106,8 +108,18 @@ const WordPartsWorkshop = ({
   const currentMeanings = getCurrentMeanings();
 
   const handleSubmitComplete = () => {
-    onTaskComplete({ isAnswer: true, marks: 100 });
+    // Mark current step as completed
+    if (!completedSteps.includes(currentIndex)) {
+      setCompletedSteps([...completedSteps, currentIndex]);
+      onStepComplete(currentIndex);
+    }
+
+    // If this is the last item, complete the task
+    if (isLastItem) {
+      onTaskComplete({ isAnswer: true, marks: 100 });
+    }
   };
+
   return (
     <div className="p-5 md:p-8 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-6 w-full">
       <h1 className="font-semibold text-2xl text-white">Word Parts Workshop</h1>
@@ -118,7 +130,7 @@ const WordPartsWorkshop = ({
           title="Complete Task 3 to unlock this task"
           variant="locked"
         />
-      ) : isLoading && !wordParts ? (
+      ) : isFetching && !wordParts ? (
         <TaskLoadingLockError title="word parts loading..." variant="loading" />
       ) : (
         <div className="rounded-xl p-5 md:p-8 bg-[#101231] space-y-20">
@@ -180,15 +192,20 @@ const WordPartsWorkshop = ({
               <ArrowLeft className="w-4 h-4" /> Previous
             </button>
 
-            <h2 className="text-gradient font-semibold text-lg">
-              {wordParts
-                ? `${currentIndex + 1} of ${getMaxLength()}`
-                : "0 of 0"}
-            </h2>
+            <div className="flex flex-col items-center">
+              <h2 className="text-gradient font-semibold text-lg">
+                {wordParts
+                  ? `${currentIndex + 1} of ${getMaxLength()}`
+                  : "0 of 0"}
+              </h2>
+              <p className="text-gray-400 text-sm">
+                Steps completed: {completedSteps.length}/{getMaxLength()}
+              </p>
+            </div>
 
             <button
               onClick={handleNext}
-              disabled={isLastItem || isLoading}
+              disabled={isLastItem || isLoading || !canNavigateNext}
               className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors">
               Next <ArrowRight className="w-4 h-4" />
             </button>
@@ -198,9 +215,13 @@ const WordPartsWorkshop = ({
 
       <button
         onClick={handleSubmitComplete}
-        disabled={!isLastItem}
+        disabled={isLoading || taskResult !== null || isStepCompleted}
         className="p-3 sm:p-4 inline-flex items-center justify-center gap-2 bg-gradient-brand rounded-2xl font-semibold text-sm sm:text-base text-white hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
-        Go to next task
+        {taskResult !== null
+          ? "Task Completed"
+          : isStepCompleted
+          ? "Step Completed"
+          : "Complete Step"}
       </button>
     </div>
   );

@@ -13,9 +13,14 @@ interface TaskResult {
 }
 
 interface PhonemeGraphemeMappingProps {
+  taskData: any[] | null;
+  isFetching: boolean;
   taskResult: TaskResult | null;
   onTaskComplete: (result: TaskResult | null) => void;
   isLocked: boolean;
+  currentStepIndex: number;
+  onStepComplete: (stepIndex: number) => void;
+  totalSteps: number;
 }
 
 interface Exercise {
@@ -25,53 +30,39 @@ interface Exercise {
 }
 
 const PhonemeGraphemeMapping = ({
+  taskData,
+  isFetching,
   taskResult,
   onTaskComplete,
   isLocked,
+  currentStepIndex,
+  onStepComplete,
+  totalSteps,
 }: PhonemeGraphemeMappingProps) => {
-  const { accessToken ,user} = useAuthStore();
+  const { accessToken, user } = useAuthStore();
 
-  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [exercises, setExercises] = useState<Exercise[]>(taskData || []);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(true);
   const [showResult, setShowResult] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState<number>(0);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
-  // Fetch data from API
+  // Update exercises when taskData changes
   useEffect(() => {
-    const fetchExercises = async () => {
-      if (isLocked) return;
-
-      setIsFetching(true);
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_AI_API}/adult/phenome-mapping/get_phenome_mapping?user_id=${user?.id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              authtoken: `${accessToken}`,
-            },
-          }
-        );
-        const data = await res.json();
-        console.log("Phoneme Grapheme Mapping API Response:", data);
-        setExercises(data.exercises || []);
-      } catch (error) {
-        console.error("Failed to load phoneme grapheme mapping", error);
-      } finally {
-        setIsFetching(false);
-      }
-    };
-
-    if (accessToken && !isLocked) {
-      fetchExercises();
+    if (taskData) {
+      setExercises(taskData);
     }
-  }, [accessToken, isLocked]);
+  }, [taskData]);
 
   const currentExercise = exercises[currentIndex];
+
+  // Check if current step is already completed
+  const isStepCompleted = completedSteps.includes(currentIndex);
+
+  // Check if we can navigate to next step
+  const canNavigateNext = isStepCompleted || currentIndex >= currentStepIndex;
 
   // Play audio
   const playAudio = () => {
@@ -83,7 +74,7 @@ const PhonemeGraphemeMapping = ({
 
   // Handle option selection
   const handleOptionClick = (option: string) => {
-    if (taskResult !== null) return;
+    if (taskResult !== null || isStepCompleted) return;
 
     // Toggle selection
     if (selectedOptions.includes(option)) {
@@ -104,7 +95,7 @@ const PhonemeGraphemeMapping = ({
 
   // Handle next
   const handleNext = () => {
-    if (currentIndex < exercises.length - 1) {
+    if (currentIndex < exercises.length - 1 && canNavigateNext) {
       setCurrentIndex(currentIndex + 1);
       setSelectedOptions([]);
       setShowResult(false);
@@ -126,6 +117,12 @@ const PhonemeGraphemeMapping = ({
       // Update correct answers count
       if (isCorrect) {
         setCorrectAnswers((prev) => prev + 1);
+      }
+
+      // Mark step as completed
+      if (!completedSteps.includes(currentIndex)) {
+        setCompletedSteps([...completedSteps, currentIndex]);
+        onStepComplete(currentIndex);
       }
 
       setShowResult(true);
@@ -183,9 +180,11 @@ const PhonemeGraphemeMapping = ({
               <div className="flex flex-col items-center justify-center gap-4">
                 <button
                   onClick={playAudio}
-                  disabled={taskResult !== null}
+                  disabled={taskResult !== null || isStepCompleted}
                   className={`rounded-full font-semibold text-white w-16 h-16 flex items-center justify-center transition-all bg-gradient-brand hover:brightness-110 ${
-                    taskResult !== null ? "opacity-50 cursor-not-allowed" : ""
+                    taskResult !== null || isStepCompleted
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
                   }`}>
                   <FaMicrophone className="w-6 h-6" />
                 </button>
@@ -211,17 +210,31 @@ const PhonemeGraphemeMapping = ({
                   <button
                     key={index}
                     onClick={() => handleOptionClick(option)}
-                    disabled={taskResult !== null}
+                    disabled={taskResult !== null || isStepCompleted}
                     className={`gradient-button w-fit min-w-[60px] ${
                       selectedOptions.includes(option)
                         ? "ring-2 ring-yellow-400 scale-105"
                         : ""
                     } ${
-                      taskResult !== null ? "opacity-50 cursor-not-allowed" : ""
+                      taskResult !== null || isStepCompleted
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
                     }`}>
                     {option}
                   </button>
                 ))}
+              </div>
+
+              {/* Step Completion Indicator */}
+              <div className="flex items-center justify-center gap-2">
+                {isStepCompleted && (
+                  <div className="flex items-center gap-2 bg-green-500/20 px-3 py-1 rounded-full">
+                    <FaCheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-green-500 text-sm">
+                      Step Completed
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Result Message */}
@@ -254,13 +267,20 @@ const PhonemeGraphemeMapping = ({
                   <ArrowLeft className="w-4 h-4" /> Previous
                 </button>
 
-                <h2 className="text-gradient font-semibold text-lg">
-                  {currentIndex + 1} of {exercises.length}
-                </h2>
+                <div className="flex flex-col items-center">
+                  <h2 className="text-gradient font-semibold text-lg">
+                    {currentIndex + 1} of {exercises.length}
+                  </h2>
+                  <p className="text-gray-400 text-sm">
+                    Steps completed: {completedSteps.length}/{exercises.length}
+                  </p>
+                </div>
 
                 <button
                   onClick={handleNext}
-                  disabled={currentIndex === exercises.length - 1}
+                  disabled={
+                    currentIndex === exercises.length - 1 || !canNavigateNext
+                  }
                   className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors">
                   Next <ArrowRight className="w-4 h-4" />
                 </button>
@@ -274,7 +294,10 @@ const PhonemeGraphemeMapping = ({
       <button
         onClick={handleCheckWithAI}
         disabled={
-          selectedOptions.length === 0 || isLoading || taskResult !== null
+          selectedOptions.length === 0 ||
+          isLoading ||
+          taskResult !== null ||
+          isStepCompleted
         }
         className="p-4 inline-flex items-center justify-center gap-2 bg-gradient-brand rounded-2xl font-semibold text-base text-white hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed">
         {isLoading ? (
@@ -286,6 +309,11 @@ const PhonemeGraphemeMapping = ({
           <>
             <FaCheckCircle className="w-5 h-5" />
             Task Completed
+          </>
+        ) : isStepCompleted ? (
+          <>
+            <FaCheckCircle className="w-5 h-5" />
+            Step Completed
           </>
         ) : (
           <>
