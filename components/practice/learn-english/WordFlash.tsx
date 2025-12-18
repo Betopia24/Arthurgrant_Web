@@ -1,4 +1,3 @@
-import { aiRequest } from "@/lib/aiRequest";
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import React, { useEffect, useState, useCallback } from "react";
 import { FaCheckCircle, FaMicrophone } from "react-icons/fa";
@@ -17,7 +16,7 @@ interface WordFlashProps {
   taskResult: TaskResult | null;
   onTaskComplete: (result: TaskResult | null) => void;
   currentStepIndex: number;
-  onStepComplete: (stepIndex: number) => void;
+  onStepComplete: () => void;
   totalSteps: number;
 }
 
@@ -95,7 +94,8 @@ const WordFlash = ({
 
   // Check if we can navigate to next step
   const canNavigateNext =
-    isStepCompleted || currentWordIndex >= currentStepIndex;
+    currentWordIndex < words.length - 1 &&
+    (isStepCompleted || completedSteps.includes(currentWordIndex + 1));
 
   // Start recording and show word for 3 seconds
   const startRecordingAndShowWord = useCallback(() => {
@@ -164,7 +164,7 @@ const WordFlash = ({
   const handleNext = useCallback(async () => {
     if (isRecording) return; // Prevent navigation during recording
 
-    if (currentWordIndex < words.length - 1 && canNavigateNext) {
+    if (canNavigateNext) {
       setCurrentWordIndex((prev) => prev + 1);
       setHasShownWord(false);
       setUserTranscript("");
@@ -220,21 +220,24 @@ const WordFlash = ({
 
       // Mark step as completed
       if (!completedSteps.includes(currentWordIndex)) {
-        setCompletedSteps([...completedSteps, currentWordIndex]);
-        onStepComplete(currentWordIndex);
+        const newCompletedSteps = [...completedSteps, currentWordIndex];
+        setCompletedSteps(newCompletedSteps);
+        onStepComplete();
       }
 
       setShowResult(true);
 
-      // If this is the last word, complete the task
+      // If this is the last word and all steps are completed, complete the task
       if (currentWordIndex === words.length - 1) {
-        const marks = Math.round((correctAnswers / words.length) * 100);
-
-        const result: TaskResult = {
-          isAnswer: true,
-          marks: isCorrect ? marks + Math.round(100 / words.length) : marks,
-        };
-        onTaskComplete(result);
+        const allStepsCompleted = completedSteps.length + 1 >= words.length;
+        if (allStepsCompleted) {
+          const marks = Math.round((correctAnswers / words.length) * 100);
+          const result: TaskResult = {
+            isAnswer: true,
+            marks: isCorrect ? marks + Math.round(100 / words.length) : marks,
+          };
+          onTaskComplete(result);
+        }
       }
     } catch (error) {
       console.error("AI analysis failed:", error);
@@ -254,8 +257,11 @@ const WordFlash = ({
   const isFirstWord = currentWordIndex === 0;
 
   // Check if all steps are completed for AI button
-  const isAllStepsCompleted =
+  const isAllStepsCompletedForCurrentStep =
     hasShownWord && userTranscript.trim() && !isRecording;
+
+  // Check if all steps in the task are completed
+  const isAllTaskStepsCompleted = completedSteps.length >= words.length;
 
   return (
     <div className="p-4 sm:p-5 md:p-6 lg:p-8 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-4 sm:gap-5 md:gap-6 w-full max-w-full mx-auto">
@@ -420,7 +426,7 @@ const WordFlash = ({
       <button
         onClick={analyzeWithAI}
         disabled={
-          !isAllStepsCompleted ||
+          !isAllStepsCompletedForCurrentStep ||
           isLoading ||
           isAiLoading ||
           taskResult !== null ||

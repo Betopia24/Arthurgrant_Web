@@ -18,7 +18,7 @@ interface SentenceBuilderProps {
   onTaskComplete: (result: TaskResult | null) => void;
   isLocked: boolean;
   currentStepIndex: number;
-  onStepComplete: (stepIndex: number) => void;
+  onStepComplete: () => void;
   totalSteps: number;
 }
 
@@ -66,7 +66,9 @@ const SentenceBuilder = ({
   const isStepCompleted = completedSteps.includes(currentIndex);
 
   // Check if we can navigate to next step
-  const canNavigateNext = isStepCompleted || currentIndex >= currentStepIndex;
+  const canNavigateNext =
+    currentIndex < sentences.length - 1 &&
+    (isStepCompleted || completedSteps.includes(currentIndex + 1));
 
   const currentSentence = sentences[currentIndex];
 
@@ -112,7 +114,7 @@ const SentenceBuilder = ({
 
   // Handle next
   const handleNext = () => {
-    if (currentIndex < sentences.length - 1 && canNavigateNext) {
+    if (canNavigateNext) {
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
       setAvailableWords(sentences[nextIndex].sentence_options);
@@ -139,25 +141,33 @@ const SentenceBuilder = ({
 
       // Mark step as completed
       if (!completedSteps.includes(currentIndex)) {
-        setCompletedSteps([...completedSteps, currentIndex]);
-        onStepComplete(currentIndex);
+        const newCompletedSteps = [...completedSteps, currentIndex];
+        setCompletedSteps(newCompletedSteps);
+        onStepComplete();
       }
 
       setShowResult(true);
       setIsLoading(false);
 
+      // If this is the last sentence and all steps are completed, complete the task
       if (currentIndex === sentences.length - 1) {
-        const totalCorrect = isCorrect ? correctAnswers + 1 : correctAnswers;
-        const marks = Math.round((totalCorrect / sentences.length) * 100);
+        const allStepsCompleted = completedSteps.length + 1 >= sentences.length;
+        if (allStepsCompleted) {
+          const totalCorrect = isCorrect ? correctAnswers + 1 : correctAnswers;
+          const marks = Math.round((totalCorrect / sentences.length) * 100);
 
-        const result: TaskResult = {
-          isAnswer: true,
-          marks: marks,
-        };
-        onTaskComplete(result);
+          const result: TaskResult = {
+            isAnswer: true,
+            marks: marks,
+          };
+          onTaskComplete(result);
+        }
       }
     }, 1000);
   };
+
+  // Check if all steps are completed
+  const isAllStepsCompleted = completedSteps.length >= sentences.length;
 
   return (
     <div
@@ -312,9 +322,7 @@ const SentenceBuilder = ({
 
                 <button
                   onClick={handleNext}
-                  disabled={
-                    currentIndex === sentences.length - 1 || !canNavigateNext
-                  }
+                  disabled={!canNavigateNext}
                   className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors">
                   Next <ArrowRight className="w-4 h-4" />
                 </button>

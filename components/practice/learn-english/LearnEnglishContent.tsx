@@ -33,12 +33,12 @@ interface TaskData {
 
 // Interface for step completion
 interface StepCompletion {
-  task1: number[]; // Array of completed step indices for each task
-  task2: number[];
-  task3: number[];
-  task4: number[];
-  task5: number[];
-  task6: number[];
+  task1: number; // Current completed step count for each task
+  task2: number;
+  task3: number;
+  task4: number;
+  task5: number;
+  task6: number;
 }
 
 const LearnEnglishContent = () => {
@@ -72,12 +72,12 @@ const LearnEnglishContent = () => {
 
   // Track completed steps for each task
   const [stepCompletion, setStepCompletion] = useState<StepCompletion>({
-    task1: [],
-    task2: [],
-    task3: [],
-    task4: [],
-    task5: [],
-    task6: [],
+    task1: 0,
+    task2: 0,
+    task3: 0,
+    task4: 0,
+    task5: 0,
+    task6: 0,
   });
 
   // Track total steps per task
@@ -338,31 +338,47 @@ const LearnEnglishContent = () => {
     fetchTask6Data();
   }, [taskCompleted.task5, accessToken, user?.id]);
 
-  // Step completion handlers
-  const handleStepComplete = (
-    taskName: keyof StepCompletion,
-    stepIndex: number
-  ) => {
+  // Step completion handlers - update when a step is completed
+  const handleTask1StepComplete = () => {
     setStepCompletion((prev) => ({
       ...prev,
-      [taskName]: [...prev[taskName], stepIndex].sort((a, b) => a - b),
+      task1: prev.task1 + 1,
     }));
   };
 
-  // Check if all steps are completed for a task
-  const isTaskAllStepsCompleted = (taskName: keyof StepCompletion) => {
-    const totalSteps = taskTotalSteps[taskName];
-    const completedSteps = stepCompletion[taskName];
+  const handleTask2StepComplete = () => {
+    setStepCompletion((prev) => ({
+      ...prev,
+      task2: prev.task2 + 1,
+    }));
+  };
 
-    if (totalSteps === 0) return false;
+  const handleTask3StepComplete = () => {
+    setStepCompletion((prev) => ({
+      ...prev,
+      task3: prev.task3 + 1,
+    }));
+  };
 
-    // Check if we have completed steps for all indices from 0 to totalSteps-1
-    for (let i = 0; i < totalSteps; i++) {
-      if (!completedSteps.includes(i)) {
-        return false;
-      }
-    }
-    return true;
+  const handleTask4StepComplete = () => {
+    setStepCompletion((prev) => ({
+      ...prev,
+      task4: prev.task4 + 1,
+    }));
+  };
+
+  const handleTask5StepComplete = () => {
+    setStepCompletion((prev) => ({
+      ...prev,
+      task5: prev.task5 + 1,
+    }));
+  };
+
+  const handleTask6StepComplete = () => {
+    setStepCompletion((prev) => ({
+      ...prev,
+      task6: prev.task6 + 1,
+    }));
   };
 
   // Task completion handlers
@@ -420,6 +436,15 @@ const LearnEnglishContent = () => {
         });
       }, 500);
     }
+  };
+
+  // Check if all steps are completed for a task
+  const isTaskAllStepsCompleted = (taskName: keyof StepCompletion) => {
+    const totalSteps = taskTotalSteps[taskName];
+    const completedSteps = stepCompletion[taskName];
+
+    if (totalSteps === 0) return false;
+    return completedSteps >= totalSteps;
   };
 
   // Check if tasks are locked based on previous task completion
@@ -546,12 +571,12 @@ const LearnEnglishContent = () => {
     });
 
     setStepCompletion({
-      task1: [],
-      task2: [],
-      task3: [],
-      task4: [],
-      task5: [],
-      task6: [],
+      task1: 0,
+      task2: 0,
+      task3: 0,
+      task4: 0,
+      task5: 0,
+      task6: 0,
     });
 
     setTaskTotalSteps({
@@ -650,10 +675,8 @@ const LearnEnglishContent = () => {
               isFetching={isLoadingAPIs.task1}
               taskResult={taskResults.task1}
               onTaskComplete={handleTask1Complete}
-              currentStepIndex={stepCompletion.task1.length}
-              onStepComplete={(stepIndex) =>
-                handleStepComplete("task1", stepIndex)
-              }
+              currentStepIndex={stepCompletion.task1}
+              onStepComplete={handleTask1StepComplete}
               totalSteps={taskTotalSteps.task1}
             />
             <PhonemeGraphemeMapping
@@ -662,10 +685,8 @@ const LearnEnglishContent = () => {
               isLocked={isTask2Locked}
               taskResult={taskResults.task2}
               onTaskComplete={handleTask2Complete}
-              currentStepIndex={stepCompletion.task2.length}
-              onStepComplete={(stepIndex) =>
-                handleStepComplete("task2", stepIndex)
-              }
+              currentStepIndex={stepCompletion.task2}
+              onStepComplete={handleTask2StepComplete}
               totalSteps={taskTotalSteps.task2}
             />
             <WordFlash
@@ -674,10 +695,8 @@ const LearnEnglishContent = () => {
               isLocked={isTask3Locked}
               taskResult={taskResults.task3}
               onTaskComplete={handleTask3Complete}
-              currentStepIndex={stepCompletion.task3.length}
-              onStepComplete={(stepIndex) =>
-                handleStepComplete("task3", stepIndex)
-              }
+              currentStepIndex={stepCompletion.task3}
+              onStepComplete={handleTask3StepComplete}
               totalSteps={taskTotalSteps.task3}
             />
             <WordPartsWorkshop
@@ -686,10 +705,8 @@ const LearnEnglishContent = () => {
               isLocked={isTask4Locked}
               taskResult={taskResults.task4}
               onTaskComplete={handleTask4Complete}
-              currentStepIndex={stepCompletion.task4.length}
-              onStepComplete={(stepIndex) =>
-                handleStepComplete("task4", stepIndex)
-              }
+              currentStepIndex={stepCompletion.task4}
+              onStepComplete={handleTask4StepComplete}
               totalSteps={taskTotalSteps.task4}
             />
             <PhraseMaker
@@ -698,10 +715,8 @@ const LearnEnglishContent = () => {
               isLocked={isTask5Locked}
               taskResult={taskResults.task5}
               onTaskComplete={handleTask5Complete}
-              currentStepIndex={stepCompletion.task5.length}
-              onStepComplete={(stepIndex) =>
-                handleStepComplete("task5", stepIndex)
-              }
+              currentStepIndex={stepCompletion.task5}
+              onStepComplete={handleTask5StepComplete}
               totalSteps={taskTotalSteps.task5}
             />
             <SentenceBuilder
@@ -710,10 +725,8 @@ const LearnEnglishContent = () => {
               isLocked={isTask6Locked}
               taskResult={taskResults.task6}
               onTaskComplete={handleTask6Complete}
-              currentStepIndex={stepCompletion.task6.length}
-              onStepComplete={(stepIndex) =>
-                handleStepComplete("task6", stepIndex)
-              }
+              currentStepIndex={stepCompletion.task6}
+              onStepComplete={handleTask6StepComplete}
               totalSteps={taskTotalSteps.task6}
             />
           </div>

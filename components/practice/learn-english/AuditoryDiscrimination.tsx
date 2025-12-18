@@ -27,7 +27,7 @@ interface AuditoryDiscriminationProps {
   taskResult: TaskResult | null;
   onTaskComplete: (result: TaskResult | null) => void;
   currentStepIndex: number;
-  onStepComplete: (stepIndex: number) => void;
+  onStepComplete: () => void;
   totalSteps: number;
 }
 
@@ -63,7 +63,20 @@ const AuditoryDiscrimination = ({
   const isStepCompleted = completedSteps.includes(currentIndex);
 
   // Check if we can navigate to next step
-  const canNavigateNext = isStepCompleted || currentIndex >= currentStepIndex;
+  // Only allow navigation to next step if current step is completed OR if we're trying to go to a step that's already been completed
+  const canNavigateNext =
+    currentIndex < wordPairs.length - 1 &&
+    (isStepCompleted || completedSteps.includes(currentIndex + 1));
+
+  // Check if we can navigate to this step
+  const canNavigateToStep = (stepIndex: number) => {
+    // Allow current step, completed steps, or the immediate next step if current is completed
+    return (
+      stepIndex === currentIndex ||
+      completedSteps.includes(stepIndex) ||
+      (stepIndex === currentIndex + 1 && isStepCompleted)
+    );
+  };
 
   // Play audio
   const playAudio = (audioUrl: string) => {
@@ -82,7 +95,7 @@ const AuditoryDiscrimination = ({
 
   // Handle next
   const handleNext = () => {
-    if (currentIndex < wordPairs.length - 1 && canNavigateNext) {
+    if (canNavigateNext) {
       setCurrentIndex(currentIndex + 1);
       setSelectedAnswer(null);
       setShowResult(false);
@@ -104,27 +117,33 @@ const AuditoryDiscrimination = ({
         setCorrectAnswers((prev) => prev + 1);
       }
 
-      // Mark step as completed
+      // Mark step as completed if not already
       if (!completedSteps.includes(currentIndex)) {
-        setCompletedSteps([...completedSteps, currentIndex]);
-        onStepComplete(currentIndex);
+        const newCompletedSteps = [...completedSteps, currentIndex];
+        setCompletedSteps(newCompletedSteps);
+        onStepComplete();
       }
 
       setShowResult(true);
       setIsLoading(false);
 
-      // If this is the last pair, complete the task
+      // If this is the last pair and all steps are completed, complete the task
       if (currentIndex === wordPairs.length - 1) {
-        const marks = Math.round((correctAnswers / wordPairs.length) * 100);
-
-        const result: TaskResult = {
-          isAnswer: true,
-          marks: marks,
-        };
-        onTaskComplete(result);
+        const allStepsCompleted = completedSteps.length + 1 >= wordPairs.length;
+        if (allStepsCompleted) {
+          const marks = Math.round((correctAnswers / wordPairs.length) * 100);
+          const result: TaskResult = {
+            isAnswer: true,
+            marks: marks,
+          };
+          onTaskComplete(result);
+        }
       }
     }, 1000);
   };
+
+  // Check if all steps are completed
+  const isAllStepsCompleted = completedSteps.length >= wordPairs.length;
 
   if (isFetching) {
     return (
@@ -272,9 +291,7 @@ const AuditoryDiscrimination = ({
 
               <button
                 onClick={handleNext}
-                disabled={
-                  currentIndex === wordPairs.length - 1 || !canNavigateNext
-                }
+                disabled={!canNavigateNext}
                 className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors">
                 Next <ArrowRight className="w-4 h-4" />
               </button>

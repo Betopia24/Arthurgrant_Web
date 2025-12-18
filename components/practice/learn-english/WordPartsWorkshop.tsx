@@ -23,7 +23,7 @@ interface WordPartsWorkshopProps {
   taskResult: TaskResult | null;
   onTaskComplete: (result: TaskResult | null) => void;
   currentStepIndex: number;
-  onStepComplete: (stepIndex: number) => void;
+  onStepComplete: () => void;
   totalSteps: number;
 }
 
@@ -39,7 +39,6 @@ const WordPartsWorkshop = ({
 }: WordPartsWorkshopProps) => {
   const [wordParts, setWordParts] = useState<WordPartsType | null>(taskData);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
   // Update wordParts when taskData changes
@@ -49,20 +48,25 @@ const WordPartsWorkshop = ({
 
   // Check if current step is already completed
   const isStepCompleted = completedSteps.includes(currentIndex);
-
-  // Check if we can navigate to next step
-  const canNavigateNext = isStepCompleted || currentIndex >= currentStepIndex;
-
-  const handleNext = useCallback(() => {
-    if (!wordParts) return;
-
-    const maxLength = Math.max(
+  const getMaxLength = () => {
+    if (!wordParts) return 15;
+    return Math.max(
       wordParts.prefix.length,
       wordParts.root.length,
       wordParts.suffix.length
     );
+  };
+  // Check if we can navigate to next step
+  const canNavigateNext =
+    currentIndex < getMaxLength() - 1 &&
+    (isStepCompleted || completedSteps.includes(currentIndex + 1));
 
-    if (currentIndex < maxLength - 1 && canNavigateNext) {
+  const handleNext = useCallback(() => {
+    if (!wordParts) return;
+
+    const maxLength = getMaxLength();
+
+    if (canNavigateNext) {
       setCurrentIndex((prev) => prev + 1);
     }
   }, [currentIndex, wordParts, canNavigateNext]);
@@ -94,31 +98,29 @@ const WordPartsWorkshop = ({
     };
   };
 
-  const getMaxLength = () => {
-    if (!wordParts) return 15;
-    return Math.max(
-      wordParts.prefix.length,
-      wordParts.root.length,
-      wordParts.suffix.length
-    );
-  };
-
   const isFirstItem = currentIndex === 0;
   const isLastItem = currentIndex >= getMaxLength() - 1;
   const currentMeanings = getCurrentMeanings();
 
   const handleSubmitComplete = () => {
-    // Mark current step as completed
+    // Mark current step as completed if not already
     if (!completedSteps.includes(currentIndex)) {
-      setCompletedSteps([...completedSteps, currentIndex]);
-      onStepComplete(currentIndex);
+      const newCompletedSteps = [...completedSteps, currentIndex];
+      setCompletedSteps(newCompletedSteps);
+      onStepComplete();
     }
 
-    // If this is the last item, complete the task
+    // If this is the last item and all steps are completed, complete the task
     if (isLastItem) {
-      onTaskComplete({ isAnswer: true, marks: 100 });
+      const allStepsCompleted = completedSteps.length + 1 >= getMaxLength();
+      if (allStepsCompleted) {
+        onTaskComplete({ isAnswer: true, marks: 100 });
+      }
     }
   };
+
+  // Check if all steps are completed
+  const isAllStepsCompleted = completedSteps.length >= getMaxLength();
 
   return (
     <div className="p-5 md:p-8 bg-[#FFFFFF1F] border border-white/15 rounded-2xl flex flex-col gap-6 w-full">
@@ -184,10 +186,19 @@ const WordPartsWorkshop = ({
             </div>
           </div>
 
+          {/* Step Completion Indicator */}
+          <div className="flex items-center justify-center gap-2">
+            {isStepCompleted && (
+              <div className="flex items-center gap-2 bg-green-500/20 px-3 py-1 rounded-full">
+                <span className="text-green-500 text-sm">Step Completed</span>
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center justify-between">
             <button
               onClick={handlePrevious}
-              disabled={isFirstItem || isLoading}
+              disabled={isFirstItem}
               className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors">
               <ArrowLeft className="w-4 h-4" /> Previous
             </button>
@@ -205,7 +216,7 @@ const WordPartsWorkshop = ({
 
             <button
               onClick={handleNext}
-              disabled={isLastItem || isLoading || !canNavigateNext}
+              disabled={isLastItem || !canNavigateNext}
               className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors">
               Next <ArrowRight className="w-4 h-4" />
             </button>
@@ -215,7 +226,7 @@ const WordPartsWorkshop = ({
 
       <button
         onClick={handleSubmitComplete}
-        disabled={isLoading || taskResult !== null || isStepCompleted}
+        disabled={taskResult !== null || isStepCompleted}
         className="p-3 sm:p-4 inline-flex items-center justify-center gap-2 bg-gradient-brand rounded-2xl font-semibold text-sm sm:text-base text-white hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
         {taskResult !== null
           ? "Task Completed"
