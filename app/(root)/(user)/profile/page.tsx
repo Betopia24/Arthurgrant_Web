@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import Tabs from "@/components/ui/Tabs";
 import { CgProfile } from "react-icons/cg";
 import FamilyMembersManager from "@/components/profile/FamilyMembersManager";
+import Cookies from "js-cookie";
 
 // Minimal ProfileSection component used inside Tabs to avoid "Cannot find name 'ProfileSection'"
 // You can replace this with the real component import later.
@@ -35,8 +36,7 @@ const ProfileSection: React.FC<any> = ({
           <button
             onClick={handleUpdateProfile}
             disabled={isUpdatingProfile}
-            className="flex items-center justify-center gap-2 bg-gradient-brand text-xs sm:text-sm font-semibold tracking-wide py-2.5 px-4 rounded-xl hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+            className="flex items-center justify-center gap-2 bg-gradient-brand text-xs sm:text-sm font-semibold tracking-wide py-2.5 px-4 rounded-xl hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
             <FaUserEdit className="w-5 h-5" />
             <span>{isUpdatingProfile ? "Saving..." : "Save Profile"}</span>
           </button>
@@ -271,6 +271,7 @@ function ProfilePage() {
   }, []);
 
   const handleLogout = () => {
+    Cookies.remove("access_token");
     storeLogout();
     console.log("Logout Successful.");
     router.push("/signin");
@@ -427,8 +428,7 @@ function ProfilePage() {
                           <button
                             onClick={handleUpdateProfile}
                             disabled={isUpdatingProfile}
-                            className="flex items-center justify-center gap-2 bg-gradient-brand text-xs sm:text-sm font-semibold tracking-wide py-2.5 px-4 rounded-xl hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
+                            className="flex items-center justify-center gap-2 bg-gradient-brand text-xs sm:text-sm font-semibold tracking-wide py-2.5 px-4 rounded-xl hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                             <FaUserEdit className="w-5 h-5" />
                             <span>
                               {isUpdatingProfile ? "Saving..." : "Save Profile"}
@@ -442,8 +442,7 @@ function ProfilePage() {
                             <div className="flex flex-col gap-2">
                               <label
                                 htmlFor="firstName"
-                                className="text-sm text-gray-300"
-                              >
+                                className="text-sm text-gray-300">
                                 First Name
                               </label>
                               <input
@@ -458,8 +457,7 @@ function ProfilePage() {
                             <div className="flex flex-col gap-2">
                               <label
                                 htmlFor="lastName"
-                                className="text-sm text-gray-300"
-                              >
+                                className="text-sm text-gray-300">
                                 Last Name
                               </label>
                               <input
@@ -477,8 +475,7 @@ function ProfilePage() {
                             <div className="flex flex-col gap-2">
                               <label
                                 htmlFor="language"
-                                className="text-sm text-gray-300"
-                              >
+                                className="text-sm text-gray-300">
                                 Language Preference
                               </label>
                               <input
@@ -493,8 +490,7 @@ function ProfilePage() {
                             <div className="flex flex-col gap-2">
                               <label
                                 htmlFor="hobby"
-                                className="text-sm text-gray-300"
-                              >
+                                className="text-sm text-gray-300">
                                 Hobby
                               </label>
                               <input
@@ -548,8 +544,7 @@ function ProfilePage() {
                                 {userPlanData.features.map((feature, index) => (
                                   <li
                                     key={index}
-                                    className="flex items-center gap-2 text-gray-200"
-                                  >
+                                    className="flex items-center gap-2 text-gray-200">
                                     <FaCheck className="text-green-500" />{" "}
                                     {feature}
                                   </li>
@@ -560,16 +555,14 @@ function ProfilePage() {
                                 {/* Current Plan Button - Non clickable */}
                                 <button
                                   disabled
-                                  className="py-2.5 rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold opacity-70 cursor-not-allowed"
-                                >
+                                  className="py-2.5 rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold opacity-70 cursor-not-allowed">
                                   Current Plan
                                 </button>
 
                                 {/* Manage Subscription - Still clickable */}
                                 <button
                                   onClick={handleManageSubscription}
-                                  className="py-2.5 rounded-xl border border-gray-600 bg-transparent text-gray-300 flex items-center justify-center gap-2 font-semibold hover:bg-gray-700 transition cursor-pointer"
-                                >
+                                  className="py-2.5 rounded-xl border border-gray-600 bg-transparent text-gray-300 flex items-center justify-center gap-2 font-semibold hover:bg-gray-700 transition cursor-pointer">
                                   Manage Subscription
                                 </button>
                               </div>
@@ -588,8 +581,7 @@ function ProfilePage() {
                                 {userPlanData.features.map((feature, index) => (
                                   <li
                                     key={index}
-                                    className="flex items-center gap-2 text-gray-200"
-                                  >
+                                    className="flex items-center gap-2 text-gray-200">
                                     <FaCheck className="text-green-500" />{" "}
                                     {feature}
                                   </li>
@@ -599,8 +591,7 @@ function ProfilePage() {
                               <div className="mt-8">
                                 <button
                                   onClick={handleUpgradePlan}
-                                  className="w-full py-2.5 rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer"
-                                >
+                                  className="w-full py-2.5 rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer">
                                   Upgrade to Premium
                                 </button>
                               </div>
@@ -622,8 +613,7 @@ function ProfilePage() {
                             <div className="flex flex-col gap-1.5">
                               <label
                                 htmlFor="currentPassword"
-                                className="text-sm text-gray-300"
-                              >
+                                className="text-sm text-gray-300">
                                 Current Password
                               </label>
                               <input
@@ -640,8 +630,7 @@ function ProfilePage() {
                             <div className="flex flex-col gap-1.5">
                               <label
                                 htmlFor="newPassword"
-                                className="text-sm text-gray-300"
-                              >
+                                className="text-sm text-gray-300">
                                 New Password
                               </label>
                               <input
@@ -656,8 +645,7 @@ function ProfilePage() {
                             <div className="flex flex-col gap-1.5">
                               <label
                                 htmlFor="confirmPassword"
-                                className="text-sm text-gray-300"
-                              >
+                                className="text-sm text-gray-300">
                                 Confirm Password
                               </label>
                               <input
@@ -674,8 +662,7 @@ function ProfilePage() {
                             <button
                               onClick={handleChangePassword}
                               disabled={isChangingPassword}
-                              className="mt-4 py-2.5 w-full rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
+                              className="mt-4 py-2.5 w-full rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                               {isChangingPassword
                                 ? "Updating..."
                                 : "Update Password"}
@@ -710,8 +697,7 @@ function ProfilePage() {
                 <button
                   onClick={handleUpdateProfile}
                   disabled={isUpdatingProfile}
-                  className="flex items-center justify-center gap-2 bg-gradient-brand text-xs sm:text-sm font-semibold tracking-wide py-2.5 px-4 rounded-xl hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                  className="flex items-center justify-center gap-2 bg-gradient-brand text-xs sm:text-sm font-semibold tracking-wide py-2.5 px-4 rounded-xl hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                   <FaUserEdit className="w-5 h-5" />
                   <span>
                     {isUpdatingProfile ? "Saving..." : "Save Profile"}
@@ -725,8 +711,7 @@ function ProfilePage() {
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="firstName"
-                      className="text-sm text-gray-300"
-                    >
+                      className="text-sm text-gray-300">
                       First Name
                     </label>
                     <input
@@ -820,8 +805,7 @@ function ProfilePage() {
                       {userPlanData.features.map((feature, index) => (
                         <li
                           key={index}
-                          className="flex items-center gap-2 text-gray-200"
-                        >
+                          className="flex items-center gap-2 text-gray-200">
                           <FaCheck className="text-green-500" /> {feature}
                         </li>
                       ))}
@@ -831,16 +815,14 @@ function ProfilePage() {
                       {/* Current Plan Button - Non clickable */}
                       <button
                         disabled
-                        className="py-2.5 rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold opacity-70 cursor-not-allowed"
-                      >
+                        className="py-2.5 rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold opacity-70 cursor-not-allowed">
                         Current Plan
                       </button>
 
                       {/* Manage Subscription - Still clickable */}
                       <button
                         onClick={handleManageSubscription}
-                        className="py-2.5 rounded-xl border border-gray-600 bg-transparent text-gray-300 flex items-center justify-center gap-2 font-semibold hover:bg-gray-700 transition cursor-pointer"
-                      >
+                        className="py-2.5 rounded-xl border border-gray-600 bg-transparent text-gray-300 flex items-center justify-center gap-2 font-semibold hover:bg-gray-700 transition cursor-pointer">
                         Manage Subscription
                       </button>
                     </div>
@@ -859,8 +841,7 @@ function ProfilePage() {
                       {userPlanData.features.map((feature, index) => (
                         <li
                           key={index}
-                          className="flex items-center gap-2 text-gray-200"
-                        >
+                          className="flex items-center gap-2 text-gray-200">
                           <FaCheck className="text-green-500" /> {feature}
                         </li>
                       ))}
@@ -869,8 +850,7 @@ function ProfilePage() {
                     <div className="mt-8">
                       <button
                         onClick={handleUpgradePlan}
-                        className="w-full py-2.5 rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer"
-                      >
+                        className="w-full py-2.5 rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer">
                         Upgrade to Premium
                       </button>
                     </div>
@@ -892,8 +872,7 @@ function ProfilePage() {
                   <div className="flex flex-col gap-1.5">
                     <label
                       htmlFor="currentPassword"
-                      className="text-sm text-gray-300"
-                    >
+                      className="text-sm text-gray-300">
                       Current Password
                     </label>
                     <input
@@ -908,8 +887,7 @@ function ProfilePage() {
                   <div className="flex flex-col gap-1.5">
                     <label
                       htmlFor="newPassword"
-                      className="text-sm text-gray-300"
-                    >
+                      className="text-sm text-gray-300">
                       New Password
                     </label>
                     <input
@@ -924,8 +902,7 @@ function ProfilePage() {
                   <div className="flex flex-col gap-1.5">
                     <label
                       htmlFor="confirmPassword"
-                      className="text-sm text-gray-300"
-                    >
+                      className="text-sm text-gray-300">
                       Confirm Password
                     </label>
                     <input
@@ -940,8 +917,7 @@ function ProfilePage() {
                   <button
                     onClick={handleChangePassword}
                     disabled={isChangingPassword}
-                    className="mt-4 py-2.5 w-full rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
+                    className="mt-4 py-2.5 w-full rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                     {isChangingPassword ? "Updating..." : "Update Password"}
                   </button>
                 </div>
@@ -954,8 +930,7 @@ function ProfilePage() {
         {/* Logout */}
         <button
           onClick={handleLogout}
-          className="w-full px-6 py-3 sm:py-4 border border-red-500/20 bg-red-500/10 text-red-400 text-xl font-semibold rounded-2xl hover:bg-red-500/20 transition cursor-pointer"
-        >
+          className="w-full px-6 py-3 sm:py-4 border border-red-500/20 bg-red-500/10 text-red-400 text-xl font-semibold rounded-2xl hover:bg-red-500/20 transition cursor-pointer">
           Logout
         </button>
       </div>
