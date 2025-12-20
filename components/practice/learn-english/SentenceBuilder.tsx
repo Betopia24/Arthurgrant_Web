@@ -2,7 +2,7 @@
 
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { FaCheckCircle, FaLock } from "react-icons/fa";
+import { FaCheckCircle } from "react-icons/fa";
 import { useAuthStore } from "@/stores/authStore";
 import TaskLoadingLock from "../TaskLoadingLock";
 
@@ -12,9 +12,14 @@ interface TaskResult {
 }
 
 interface SentenceBuilderProps {
+  taskData: any[] | null;
+  isFetching: boolean;
   taskResult: TaskResult | null;
   onTaskComplete: (result: TaskResult | null) => void;
   isLocked: boolean;
+  currentStepIndex: number;
+  onStepComplete: () => void;
+  totalSteps: number;
 }
 
 interface Sentence {
@@ -23,62 +28,53 @@ interface Sentence {
 }
 
 const SentenceBuilder = ({
+  taskData,
+  isFetching,
   taskResult,
   onTaskComplete,
   isLocked,
+  currentStepIndex,
+  onStepComplete,
+  totalSteps,
 }: SentenceBuilderProps) => {
-  const { accessToken,user } = useAuthStore();
+  const { accessToken, user } = useAuthStore();
 
-  const [sentences, setSentences] = useState<Sentence[]>([]);
+  const [sentences, setSentences] = useState<Sentence[]>(taskData || []);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [availableWords, setAvailableWords] = useState<string[]>([]);
   const [selectedWords, setSelectedWords] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(true);
   const [showResult, setShowResult] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState<number>(0);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
-  // Fetch data from API
+  // Update sentences when taskData changes
   useEffect(() => {
-    const fetchSentences = async () => {
-      if (isLocked) return;
-      setIsFetching(true);
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_AI_API}/adult/sentence-builder/get_sentences?user_id=${user?.id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              authtoken: `${accessToken}`,
-            },
-          }
-        );
-        const data = await res.json();
-
-        setSentences(data.sentences || []);
-
-        // Initialize first sentence (already shuffled from API)
-        if (data.sentences && data.sentences.length > 0) {
-          setAvailableWords(data.sentences[0].sentence_options);
-        }
-      } catch (error) {
-        console.error("Failed to load sentences", error);
-      } finally {
-        setIsFetching(false);
-      }
-    };
-
-    if (accessToken && !isLocked) {
-      fetchSentences();
+    if (taskData) {
+      setSentences(taskData);
     }
-  }, [accessToken, isLocked]);
+  }, [taskData]);
+
+  // Initialize first sentence when sentences change
+  useEffect(() => {
+    if (sentences.length > 0) {
+      setAvailableWords(sentences[0].sentence_options);
+    }
+  }, [sentences]);
+
+  // Check if current step is already completed
+  const isStepCompleted = completedSteps.includes(currentIndex);
+
+  // Check if we can navigate to next step
+  const canNavigateNext =
+    currentIndex < sentences.length - 1 &&
+    (isStepCompleted || completedSteps.includes(currentIndex + 1));
 
   const currentSentence = sentences[currentIndex];
 
   // Handle word selection
   const handleWordClick = (word: string) => {
-    if (taskResult !== null) return;
+    if (taskResult !== null || isStepCompleted) return;
 
     setSelectedWords([...selectedWords, word]);
 
@@ -87,7 +83,7 @@ const SentenceBuilder = ({
 
   // Handle word removal (click on selected word to remove it)
   const handleRemoveWord = (index: number) => {
-    if (taskResult !== null) return;
+    if (taskResult !== null || isStepCompleted) return;
 
     const wordToRemove = selectedWords[index];
 
@@ -118,7 +114,7 @@ const SentenceBuilder = ({
 
   // Handle next
   const handleNext = () => {
-    if (currentIndex < sentences.length - 1) {
+    if (canNavigateNext) {
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
       setAvailableWords(sentences[nextIndex].sentence_options);
@@ -143,21 +139,35 @@ const SentenceBuilder = ({
         setCorrectAnswers((prev) => prev + 1);
       }
 
+      // Mark step as completed
+      if (!completedSteps.includes(currentIndex)) {
+        const newCompletedSteps = [...completedSteps, currentIndex];
+        setCompletedSteps(newCompletedSteps);
+        onStepComplete();
+      }
+
       setShowResult(true);
       setIsLoading(false);
 
+      // If this is the last sentence and all steps are completed, complete the task
       if (currentIndex === sentences.length - 1) {
-        const totalCorrect = isCorrect ? correctAnswers + 1 : correctAnswers;
-        const marks = Math.round((totalCorrect / sentences.length) * 100);
+        const allStepsCompleted = completedSteps.length + 1 >= sentences.length;
+        if (allStepsCompleted) {
+          const totalCorrect = isCorrect ? correctAnswers + 1 : correctAnswers;
+          const marks = Math.round((totalCorrect / sentences.length) * 100);
 
-        const result: TaskResult = {
-          isAnswer: true,
-          marks: marks,
-        };
-        onTaskComplete(result);
+          const result: TaskResult = {
+            isAnswer: true,
+            marks: marks,
+          };
+          onTaskComplete(result);
+        }
       }
     }, 1000);
   };
+
+  // Check if all steps are completed
+  const isAllStepsCompleted = completedSteps.length >= sentences.length;
 
   return (
     <div
@@ -199,9 +209,9 @@ const SentenceBuilder = ({
                       <button
                         key={index}
                         onClick={() => handleWordClick(word)}
-                        disabled={taskResult !== null}
+                        disabled={taskResult !== null || isStepCompleted}
                         className={`gradient-button w-fit ${
-                          taskResult !== null
+                          taskResult !== null || isStepCompleted
                             ? "opacity-50 cursor-not-allowed"
                             : ""
                         }`}>
@@ -226,9 +236,9 @@ const SentenceBuilder = ({
                         <button
                           key={index}
                           onClick={() => handleRemoveWord(index)}
-                          disabled={taskResult !== null}
+                          disabled={taskResult !== null || isStepCompleted}
                           className={`px-4 py-2 bg-gradient-brand rounded-lg font-semibold text-white text-lg hover:brightness-110 transition ${
-                            taskResult !== null
+                            taskResult !== null || isStepCompleted
                               ? "opacity-50 cursor-not-allowed"
                               : "cursor-pointer"
                           }`}>
@@ -242,6 +252,18 @@ const SentenceBuilder = ({
                     </p>
                   )}
                 </div>
+              </div>
+
+              {/* Step Completion Indicator */}
+              <div className="flex items-center justify-center gap-2">
+                {isStepCompleted && (
+                  <div className="flex items-center gap-2 bg-green-500/20 px-3 py-1 rounded-full">
+                    <FaCheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-green-500 text-sm">
+                      Step Completed
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Result Message */}
@@ -277,14 +299,22 @@ const SentenceBuilder = ({
                 </button>
 
                 <div className="flex items-center gap-4">
-                  <h2 className="text-gradient font-semibold text-lg">
-                    {currentIndex + 1} of {sentences.length}
-                  </h2>
+                  <div className="flex flex-col items-center">
+                    <h2 className="text-gradient font-semibold text-lg">
+                      {currentIndex + 1} of {sentences.length}
+                    </h2>
+                    <p className="text-gray-400 text-sm">
+                      Steps completed: {completedSteps.length}/
+                      {sentences.length}
+                    </p>
+                  </div>
                   <button
                     onClick={handleReset}
-                    disabled={taskResult !== null}
+                    disabled={taskResult !== null || isStepCompleted}
                     className={`text-sm text-gray-400 hover:text-white transition ${
-                      taskResult !== null ? "opacity-50 cursor-not-allowed" : ""
+                      taskResult !== null || isStepCompleted
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
                     }`}>
                     Reset
                   </button>
@@ -292,7 +322,7 @@ const SentenceBuilder = ({
 
                 <button
                   onClick={handleNext}
-                  disabled={currentIndex === sentences.length - 1}
+                  disabled={!canNavigateNext}
                   className="bg-[#FFFFFF1F] rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors">
                   Next <ArrowRight className="w-4 h-4" />
                 </button>
@@ -306,7 +336,10 @@ const SentenceBuilder = ({
       <button
         onClick={handleCheckWithAI}
         disabled={
-          selectedWords.length === 0 || isLoading || taskResult !== null
+          selectedWords.length === 0 ||
+          isLoading ||
+          taskResult !== null ||
+          isStepCompleted
         }
         className="p-4 inline-flex items-center justify-center gap-2 bg-gradient-brand rounded-2xl font-semibold text-base text-white hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed">
         {isLoading ? (
@@ -318,6 +351,11 @@ const SentenceBuilder = ({
           <>
             <FaCheckCircle className="w-5 h-5" />
             Task Completed
+          </>
+        ) : isStepCompleted ? (
+          <>
+            <FaCheckCircle className="w-5 h-5" />
+            Step Completed
           </>
         ) : (
           <>
