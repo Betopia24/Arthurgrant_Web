@@ -5,7 +5,7 @@ import Heading from "@/components/shared/Heading";
 import { useAuthStore } from "@/stores/authStore";
 import { useEffect, useRef, useState } from "react";
 import PracticeHero from "../PracticeHero2";
-import AuditoryDiscrimination from "./AuditoryDiscrimination";
+import Task1PhonemeFlashcards from "../Reading/TaskOne";
 import PhonemeGraphemeMapping from "./PhonemeGraphemeMapping";
 import PhraseMaker from "./PhraseMaker";
 import SentenceBuilder from "./SentenceBuilder";
@@ -113,7 +113,7 @@ const LearnEnglishContent = () => {
 
   // Track API loading states
   const [isLoadingAPIs, setIsLoadingAPIs] = useState({
-    task1: true,
+    task1: false,
     task2: false,
     task3: false,
     task4: false,
@@ -129,40 +129,6 @@ const LearnEnglishContent = () => {
 
     return () => clearInterval(interval);
   }, []);
-
-  // Fetch Task 1 API on initial load
-  useEffect(() => {
-    const fetchTask1Data = async () => {
-      if (!accessToken || !user?.id) return;
-
-      try {
-        setIsLoadingAPIs((prev) => ({ ...prev, task1: true }));
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_AI_API}/adult/auditory-discrimination/get_auditory_discrimination?user_id=${user?.id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              authtoken: `${accessToken}`,
-            },
-          }
-        );
-        const data = await res.json();
-        console.log("Task 1 API Response:", data);
-        setTaskData((prev) => ({ ...prev, task1: data.word_pairs || [] }));
-        setTaskTotalSteps((prev) => ({
-          ...prev,
-          task1: data.word_pairs?.length || 0,
-        }));
-      } catch (error) {
-        console.error("Failed to load Task 1 data", error);
-      } finally {
-        setIsLoadingAPIs((prev) => ({ ...prev, task1: false }));
-      }
-    };
-
-    fetchTask1Data();
-  }, [accessToken, user?.id]);
 
   // Fetch Task 2 API when Task 1 is completed
   useEffect(() => {
@@ -489,7 +455,7 @@ const LearnEnglishContent = () => {
       sessionName: "Adult",
       tasks: [
         {
-          taskName: "Auditory Discrimination",
+          taskName: "Phoneme Flashcards",
           isAnswer: taskResults.task1?.isAnswer || false,
           marks: taskResults.task1?.marks || 0,
         },
@@ -522,9 +488,6 @@ const LearnEnglishContent = () => {
       timeSpent: finalTimeSpent,
     };
 
-    console.log("===== SUBMISSION DATA =====");
-    console.log(JSON.stringify(submissionData, null, 2));
-    console.log("===========================");
 
     try {
       const res = await apiRequest(
@@ -602,38 +565,6 @@ const LearnEnglishContent = () => {
     // Reset timer
     startTimeRef.current = Date.now();
     setTimeSpent(0);
-
-    // Trigger Task 1 API fetch again
-    const fetchTask1Data = async () => {
-      if (!accessToken || !user?.id) return;
-
-      try {
-        setIsLoadingAPIs((prev) => ({ ...prev, task1: true }));
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_AI_API}/adult/auditory-discrimination/get_auditory_discrimination?user_id=${user?.id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              authtoken: `${accessToken}`,
-            },
-          }
-        );
-        const data = await res.json();
-        console.log("Task 1 API Response (Retry):", data);
-        setTaskData((prev) => ({ ...prev, task1: data.word_pairs || [] }));
-        setTaskTotalSteps((prev) => ({
-          ...prev,
-          task1: data.word_pairs?.length || 0,
-        }));
-      } catch (error) {
-        console.error("Failed to load Task 1 data on retry", error);
-      } finally {
-        setIsLoadingAPIs((prev) => ({ ...prev, task1: false }));
-      }
-    };
-
-    fetchTask1Data();
   };
 
   return (
@@ -670,14 +601,9 @@ const LearnEnglishContent = () => {
 
           {/* Tasks Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-            <AuditoryDiscrimination
-              taskData={taskData.task1}
-              isFetching={isLoadingAPIs.task1}
+            <Task1PhonemeFlashcards
               taskResult={taskResults.task1}
               onTaskComplete={handleTask1Complete}
-              currentStepIndex={stepCompletion.task1}
-              onStepComplete={handleTask1StepComplete}
-              totalSteps={taskTotalSteps.task1}
             />
             <PhonemeGraphemeMapping
               taskData={taskData.task2}

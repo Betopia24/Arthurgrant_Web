@@ -223,7 +223,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import {
-  FaLock,
   FaCheckCircle,
   FaArrowRight,
   FaArrowLeft,
@@ -242,7 +241,6 @@ interface TaskResult {
 interface Task2Props {
   taskResult: TaskResult | null;
   onTaskComplete: (result: TaskResult | null) => void;
-  isLocked: boolean;
 }
 
 interface SightWordItem {
@@ -254,11 +252,7 @@ interface SightWordItem {
   audio_url: string;
 }
 
-const Task2SightWordPractice = ({
-  taskResult,
-  onTaskComplete,
-  isLocked,
-}: Task2Props) => {
+const Task2SightWordPractice = ({ taskResult, onTaskComplete }: Task2Props) => {
   const { user, accessToken } = useAuthStore();
   const [items, setItems] = useState<SightWordItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -288,8 +282,6 @@ const Task2SightWordPractice = ({
 
   useEffect(() => {
     const fetchSightWords = async () => {
-      if (isLocked) return;
-
       setIsLoading(true);
       try {
         const res = await fetch(
@@ -320,10 +312,10 @@ const Task2SightWordPractice = ({
       }
     };
 
-    if (user?.age && accessToken && !isLocked) {
+    if (user?.age && accessToken) {
       fetchSightWords();
     }
-  }, [user?.age, accessToken, isLocked, user?.id]);
+  }, [user?.age, accessToken, user?.id]);
 
   const currentItem = items[currentIndex];
 
@@ -391,29 +383,14 @@ const Task2SightWordPractice = ({
   };
 
   return (
-    <div
-      className={`w-full bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-8 rounded-xl shadow-lg flex flex-col gap-6 relative ${
-        isLocked ? "opacity-60" : ""
-      }`}
-    >
-      {isLocked && (
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
-          <div className="flex flex-col items-center gap-4">
-            <FaLock className="w-12 h-12 text-gray-400" />
-            <p className="text-xl font-semibold text-gray-300">
-              Complete Task 1 to unlock this task
-            </p>
-          </div>
-        </div>
-      )}
-
+    <div className="w-full bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-8 rounded-xl shadow-lg flex flex-col gap-6 relative">
       <TaskHeader
         title="Sight Word Practice"
         description="Learn sight words with definitions and practice with quizzes"
-        taskNumber={2}
+        taskNumber={1}
       />
 
-      {isLoading && !isLocked ? (
+      {isLoading ? (
         <TaskLoadingLockError variant="loading" title="Sight Word Loading.." />
       ) : (
         <>
