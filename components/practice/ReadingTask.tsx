@@ -5,11 +5,12 @@ import toast from "react-hot-toast";
 import { FaCheckCircle } from "react-icons/fa";
 import Heading from "../shared/Heading";
 import PracticeHero from "./PracticeHero2";
-import Task3ReadingComprehension from "./Reading/TaskFour";
-import Task2DragMatch from "./Reading/TaskThree";
-import Task1SightWordPractice from "./Reading/TaskTwo";
-import { usePathname } from "next/navigation";
+import Task4ReadingComprehension from "./Reading/TaskFour";
+import Task1PhonemeFlashcards from "./Reading/TaskOne";
+import Task3DragMatch from "./Reading/TaskThree";
 import Task2SightWordPractice from "./Reading/TaskTwo";
+import { usePathname } from "next/navigation";
+import Task1PhonemeFlashcardsForReading from "./Reading/Task1PhonemeFlashcardsForReading";
 
 interface TaskResult {
   isAnswer: boolean;
@@ -26,22 +27,25 @@ const ReadingTask = () => {
   const [timeSpent, setTimeSpent] = useState<number>(0);
   const submitButtonRef = useRef<HTMLDivElement>(null);
 
-  // ALL TASKS RESULTS STATE with marks (now only 3 tasks)
+  // ALL TASKS RESULTS STATE with marks
   const [taskResults, setTaskResults] = useState<{
     task1: TaskResult | null;
     task2: TaskResult | null;
     task3: TaskResult | null;
+    task4: TaskResult | null;
   }>({
     task1: null,
     task2: null,
     task3: null,
+    task4: null,
   });
 
-  // Track which tasks have been completed (now only 3 tasks)
+  // Track which tasks have been completed
   const [taskCompleted, setTaskCompleted] = useState({
     task1: false,
     task2: false,
     task3: false,
+    task4: false,
   });
 
   // Submission state
@@ -76,8 +80,15 @@ const ReadingTask = () => {
     setTaskResults((prev) => ({ ...prev, task3: result }));
     if (result !== null) {
       setTaskCompleted((prev) => ({ ...prev, task3: true }));
+    }
+  };
 
-      // Scroll to submit button when task 3 is completed
+  const handleTask4Complete = (result: TaskResult | null) => {
+    setTaskResults((prev) => ({ ...prev, task4: result }));
+    if (result !== null) {
+      setTaskCompleted((prev) => ({ ...prev, task4: true }));
+
+      // Scroll to submit button when task 4 is completed
       setTimeout(() => {
         submitButtonRef.current?.scrollIntoView({
           behavior: "smooth",
@@ -90,12 +101,14 @@ const ReadingTask = () => {
   // Check if tasks are locked
   const isTask2Locked = !taskCompleted.task1;
   const isTask3Locked = !taskCompleted.task2;
+  const isTask4Locked = !taskCompleted.task3;
 
   // Check if all tasks are completed
   const allTasksCompleted =
     taskCompleted.task1 &&
     taskCompleted.task2 &&
-    taskCompleted.task3;
+    taskCompleted.task3 &&
+    taskCompleted.task4;
 
   // Format time for display (MM:SS)
   const formatTime = (seconds: number) => {
@@ -119,19 +132,24 @@ const ReadingTask = () => {
     const submissionData = {
       tasks: [
         {
-          taskName: "Sight Word Practice",
+          taskName: "Phoneme Flashcards",
           isAnswer: taskResults.task1?.isAnswer || false,
           marks: taskResults.task1?.mark || 0,
         },
         {
-          taskName: "Drag & Match Words",
+          taskName: "Sight Word Practice",
           isAnswer: taskResults.task2?.isAnswer || false,
           marks: taskResults.task2?.mark || 0,
         },
         {
-          taskName: "Reading Comprehension",
+          taskName: "Drag & Match Words",
           isAnswer: taskResults.task3?.isAnswer || false,
           marks: taskResults.task3?.mark || 0,
+        },
+        {
+          taskName: "Reading Comprehension",
+          isAnswer: taskResults.task4?.isAnswer || false,
+          marks: taskResults.task4?.mark || 0,
         },
       ],
       timeSpent: finalTimeSpent,
@@ -178,11 +196,11 @@ const ReadingTask = () => {
         sessionTime={formatTime(timeSpent)}
         progressValue={`${
           Object.values(taskCompleted).filter((t) => t === true).length
-        }/3`}
+        }/4`}
         goalValue="75%"
         sessionProgressWidth="60%"
         progressWidth={`${
-          (Object.values(taskCompleted).filter((t) => t === true).length / 3) *
+          (Object.values(taskCompleted).filter((t) => t === true).length / 4) *
           100
         }%`}
         goalWidth="70%"
@@ -196,26 +214,33 @@ const ReadingTask = () => {
           align="left"
         />
 
-        <Task2SightWordPractice
+        <Task1PhonemeFlashcardsForReading
           taskResult={taskResults.task1}
           onTaskComplete={handleTask1Complete}
         />
 
-        <Task2DragMatch
+        <Task2SightWordPractice
           taskResult={taskResults.task2}
           onTaskComplete={handleTask2Complete}
           isLocked={isTask2Locked}
         />
 
-        <Task3ReadingComprehension
+        <Task3DragMatch
           taskResult={taskResults.task3}
           onTaskComplete={handleTask3Complete}
           isLocked={isTask3Locked}
         />
 
+        <Task4ReadingComprehension
+          taskResult={taskResults.task4}
+          onTaskComplete={handleTask4Complete}
+          isLocked={isTask4Locked}
+        />
+
         <div
           ref={submitButtonRef}
-          className="w-full flex flex-col items-center justify-center gap-4">
+          className="w-full flex flex-col items-center justify-center gap-4"
+        >
           <button
             onClick={handleSubmitAllAnswers}
             type="submit"
@@ -224,7 +249,8 @@ const ReadingTask = () => {
               !allTasksCompleted || isSubmitting || isSubmitted
                 ? "bg-[#828882] opacity-50 cursor-not-allowed"
                 : "bg-gradient-to-r from-yellow-400 to-pink-500 text-white cursor-pointer hover:opacity-90 transition-opacity"
-            }`}>
+            }`}
+          >
             {isSubmitting
               ? "Submitting..."
               : isSubmitted
@@ -233,9 +259,14 @@ const ReadingTask = () => {
           </button>
           {!allTasksCompleted && (
             <p className="text-gray-400 text-sm">
-              Complete all 3 tasks to submit your answers
+              Complete all 4 tasks to submit your answers
             </p>
           )}
+          {/* {isSubmitted && (
+            <p className="text-green-400 text-sm">
+              Time taken: {formatTime(timeSpent)}
+            </p>
+          )} */}
         </div>
 
         {isSubmitted && (
