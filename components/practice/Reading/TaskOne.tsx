@@ -9,7 +9,7 @@ import TaskLoadingLockError from "../TaskLoadingLock";
 
 interface TaskResult {
   isAnswer: boolean;
-  mark: number;
+  marks: number;
 }
 
 interface Task1Props {
@@ -84,7 +84,7 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
     // Task 1: Either 100 or 0
     const result: TaskResult = {
       isAnswer: true,
-      mark: isCorrect ? 100 : 0,
+      marks: isCorrect ? 100 : 0,
     };
 
     setShowResult(true);
@@ -166,7 +166,7 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
               </div>
             )}
 
-            {showResult && taskResult && taskResult.mark === 100 && (
+            {showResult && taskResult && taskResult.marks === 100 && (
               <div className="flex flex-col items-center gap-4">
                 <div className="flex items-center gap-3 bg-green-500/20 border-2 border-green-500 rounded-xl px-6 py-3">
                   <FaCheckCircle className="w-6 h-6 text-green-500" />
@@ -177,7 +177,7 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
               </div>
             )}
 
-            {showResult && taskResult && taskResult.mark === 0 && (
+            {showResult && taskResult && taskResult.marks === 0 && (
               <div className="flex flex-col items-center gap-4">
                 <div className="flex items-center gap-3 bg-yellow-500/20 border-2 border-yellow-500 rounded-xl px-6 py-3">
                   <span className="text-yellow-500 font-semibold text-lg">
