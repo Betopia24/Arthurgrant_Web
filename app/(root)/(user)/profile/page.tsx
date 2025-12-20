@@ -301,7 +301,7 @@ function ProfilePage() {
   // Determine user plan status
   const getUserPlanStatus = () => {
     const currentPlan = getUserCurrentPlan();
-    console.log(currentPlan, "");
+    // console.log(currentPlan, "");
 
     return currentPlan?.planName || "Free Trial";
   };

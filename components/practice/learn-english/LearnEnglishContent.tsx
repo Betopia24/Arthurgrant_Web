@@ -734,36 +734,32 @@ const LearnEnglishContent = () => {
           {/* Submit All Button and Retry */}
           <div
             ref={submitButtonRef}
-            className="w-full flex flex-col items-center justify-center gap-4">
-            {isSubmitted ? (
-              <>
-                <button
-                  onClick={handleRetrySession}
-                  className="px-12 py-4 font-semibold text-lg rounded-2xl bg-gradient-brand text-white cursor-pointer hover:brightness-110 transition-all">
-                  Retry Session
-                </button>
-                <p className="text-green-400 text-sm">
-                  Time taken: {formatTime(timeSpent)}
-                </p>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={handleSubmitAllAnswers}
-                  disabled={!allTasksCompleted || isSubmitting}
-                  className={`px-12 py-4 font-semibold text-lg rounded-2xl ${
-                    !allTasksCompleted || isSubmitting
-                      ? "bg-[#828882] opacity-50 cursor-not-allowed"
-                      : "bg-gradient-brand text-white cursor-pointer hover:brightness-110 transition-all"
-                  }`}>
-                  {isSubmitting ? "Submitting..." : "Submit All Answers"}
-                </button>
-                {!allTasksCompleted && (
-                  <p className="text-gray-400 text-sm">
-                    Complete all 6 tasks to submit your answers
-                  </p>
-                )}
-              </>
+            className="w-full flex flex-col items-center justify-center gap-4"
+          >
+            <button
+              onClick={handleSubmitAllAnswers}
+              disabled={!allTasksCompleted || isSubmitting || isSubmitted}
+              className={`px-12 py-4 font-semibold text-lg rounded-2xl ${
+                !allTasksCompleted || isSubmitting || isSubmitted
+                  ? "bg-[#828882] opacity-50 cursor-not-allowed"
+                  : "bg-gradient-brand text-white cursor-pointer hover:brightness-110 transition-all"
+              }`}
+            >
+              {isSubmitting
+                ? "Submitting..."
+                : isSubmitted
+                ? "Submitted!"
+                : "Submit All Answers"}
+            </button>
+            {!allTasksCompleted && (
+              <p className="text-gray-400 text-sm">
+                Complete all 6 tasks to submit your answers
+              </p>
+            )}
+            {isSubmitted && (
+              <p className="text-green-400 text-sm">
+                Time taken: {formatTime(timeSpent)}
+              </p>
             )}
           </div>
 
