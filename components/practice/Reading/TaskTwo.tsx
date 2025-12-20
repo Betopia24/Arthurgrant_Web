@@ -220,10 +220,15 @@
 
 // export default Task2SightWordPractice;
 
-
 "use client";
 import React, { useEffect, useState } from "react";
-import { FaLock, FaCheckCircle, FaArrowRight, FaArrowLeft } from "react-icons/fa";
+import {
+  FaLock,
+  FaCheckCircle,
+  FaArrowRight,
+  FaArrowLeft,
+  FaVolumeUp,
+} from "react-icons/fa";
 import TaskHeader from "@/components/shared/TaskHeader";
 import { useAuthStore } from "@/stores/authStore";
 import toast from "react-hot-toast";
@@ -246,6 +251,7 @@ interface SightWordItem {
   sentence: string;
   quiz: string[];
   answer: string;
+  audio_url: string;
 }
 
 const Task2SightWordPractice = ({
@@ -263,22 +269,20 @@ const Task2SightWordPractice = ({
 
   // Helper function to normalize and create pattern from sentence
   const createPattern = (str: string) => {
-    // Remove the sight word and any punctuation, create a pattern
-    // Convert to lowercase and remove extra spaces
     return str
       .toLowerCase()
-      .replace(/[.,!?;:]/g, '')
-      .replace(/\s+/g, ' ')
+      .replace(/[.,!?;:]/g, "")
+      .replace(/\s+/g, " ")
       .trim();
   };
 
   // Helper function to remove underscores and normalize
   const normalizeWithoutBlanks = (str: string) => {
     return str
-      .replace(/_{2,}/g, '')
+      .replace(/_{2,}/g, "")
       .toLowerCase()
-      .replace(/[.,!?;:]/g, '')
-      .replace(/\s+/g, ' ')
+      .replace(/[.,!?;:]/g, "")
+      .replace(/\s+/g, " ")
       .trim();
   };
 
@@ -307,7 +311,9 @@ const Task2SightWordPractice = ({
       } catch (error: any) {
         console.error("Failed to load sight words", error);
         toast.error(
-          error?.data?.errorMessages?.[0]?.message || error?.data?.message || "Failed to load sight words"
+          error?.data?.errorMessages?.[0]?.message ||
+            error?.data?.message ||
+            "Failed to load sight words"
         );
       } finally {
         setIsLoading(false);
@@ -330,11 +336,14 @@ const Task2SightWordPractice = ({
     // Remove blanks and sight word, then compare the remaining pattern
     const selectedNormalized = normalizeWithoutBlanks(quizOption);
     const correctAnswer = createPattern(currentItem.answer);
-    const correctWithoutWord = correctAnswer.replace(currentItem.word.toLowerCase(), '').replace(/\s+/g, ' ').trim();
-    
+    const correctWithoutWord = correctAnswer
+      .replace(currentItem.word.toLowerCase(), "")
+      .replace(/\s+/g, " ")
+      .trim();
+
     console.log("Selected (normalized):", selectedNormalized);
     console.log("Correct pattern:", correctWithoutWord);
-    
+
     const isCorrect = selectedNormalized === correctWithoutWord;
 
     if (isCorrect) {
@@ -362,7 +371,8 @@ const Task2SightWordPractice = ({
     } else {
       // Last item - complete the task
       const totalItems = items.length;
-      const mark = totalItems > 0 ? Math.round((correctAnswers / totalItems) * 100) : 0;
+      const mark =
+        totalItems > 0 ? Math.round((correctAnswers / totalItems) * 100) : 0;
 
       const result: TaskResult = {
         isAnswer: true,
@@ -370,6 +380,13 @@ const Task2SightWordPractice = ({
       };
 
       onTaskComplete(result);
+    }
+  };
+
+  const handlePlayAudio = () => {
+    if (currentItem) {
+      const audio = new Audio(currentItem.audio_url);
+      audio.play();
     }
   };
 
@@ -406,9 +423,19 @@ const Task2SightWordPractice = ({
               <div className="bg-[#363851] p-6 rounded-xl space-y-4">
                 <div>
                   <h3 className="text-gray-400 text-sm mb-2">Sight Word:</h3>
-                  <p className="text-yellow-400 font-bold text-3xl capitalize">
-                    {currentItem.word}
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <p className="text-yellow-400 font-bold text-3xl capitalize">
+                      {currentItem.word}
+                    </p>
+
+                    {/* voice icon */}
+                    <button
+                      onClick={handlePlayAudio}
+                      className="cursor-pointer"
+                    >
+                      <FaVolumeUp className=" text-white mt-1" size={24} />
+                    </button>
+                  </div>
                 </div>
 
                 <div>
@@ -423,8 +450,12 @@ const Task2SightWordPractice = ({
                 </div>
 
                 <div>
-                  <h3 className="text-gray-400 text-sm mb-2">Example Sentence:</h3>
-                  <p className="text-white text-lg italic">"{currentItem.sentence}"</p>
+                  <h3 className="text-gray-400 text-sm mb-2">
+                    Example Sentence:
+                  </h3>
+                  <p className="text-white text-lg italic">
+                    "{currentItem.sentence}"
+                  </p>
                 </div>
               </div>
 
@@ -437,9 +468,13 @@ const Task2SightWordPractice = ({
                 <div className="space-y-3">
                   {currentItem.quiz.map((quizOption, idx) => {
                     const isSelected = selectedAnswer === quizOption;
-                    const selectedNormalized = normalizeWithoutBlanks(quizOption);
+                    const selectedNormalized =
+                      normalizeWithoutBlanks(quizOption);
                     const correctAnswer = createPattern(currentItem.answer);
-                    const correctWithoutWord = correctAnswer.replace(currentItem.word.toLowerCase(), '').replace(/\s+/g, ' ').trim();
+                    const correctWithoutWord = correctAnswer
+                      .replace(currentItem.word.toLowerCase(), "")
+                      .replace(/\s+/g, " ")
+                      .trim();
                     const isCorrect = selectedNormalized === correctWithoutWord;
 
                     let bgClass = "bg-[#363851] hover:bg-[#4a4d6e]";
@@ -471,11 +506,15 @@ const Task2SightWordPractice = ({
               {showResult && selectedAnswer && (
                 <div className="flex items-center justify-center">
                   {(() => {
-                    const selectedNormalized = normalizeWithoutBlanks(selectedAnswer);
+                    const selectedNormalized =
+                      normalizeWithoutBlanks(selectedAnswer);
                     const correctAnswer = createPattern(currentItem.answer);
-                    const correctWithoutWord = correctAnswer.replace(currentItem.word.toLowerCase(), '').replace(/\s+/g, ' ').trim();
+                    const correctWithoutWord = correctAnswer
+                      .replace(currentItem.word.toLowerCase(), "")
+                      .replace(/\s+/g, " ")
+                      .trim();
                     const isCorrect = selectedNormalized === correctWithoutWord;
-                    
+
                     return isCorrect ? (
                       <div className="flex items-center gap-3 bg-green-500/20 border-2 border-green-500 rounded-xl px-6 py-3">
                         <FaCheckCircle className="w-6 h-6 text-green-500" />
@@ -540,7 +579,8 @@ const Task2SightWordPractice = ({
               ) : (
                 <div className="flex items-center gap-3 bg-yellow-500/20 border-2 border-yellow-500 rounded-xl px-6 py-3">
                   <span className="text-yellow-500 font-semibold text-lg">
-                    You got {correctAnswers} out of {items.length} correct ({taskResult.mark}/100)
+                    You got {correctAnswers} out of {items.length} correct (
+                    {taskResult.mark}/100)
                   </span>
                 </div>
               )}
