@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
-import { authApi, plansApi } from "@/lib/api";
+import { plansApi } from "@/lib/api";
 import { useSubscription } from "@/hooks/useSubscription";
 import PricingStep from "@/components/subscription/PricingStep";
 import ConfirmStep from "@/components/subscription/ConfirmStep";

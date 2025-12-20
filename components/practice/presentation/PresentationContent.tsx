@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import PowerWordsPulse from "./PowerWordsPulse";
 import PrecisionDrill from "./PrecisionDrill";
@@ -55,6 +55,7 @@ const PresentationContent = () => {
   const [contextData, setContextData] = useState<ContextDataType | null>(null);
   const [flowChainData, setFlowChainData] = useState<string[]>([]);
   const [isSubmit, setIsSubmit] = useState(false);
+  const [showRetry, setShowRetry] = useState(false);
 
   const [loading, setLoading] = useState<LoadingState>({
     powerWords: false,
@@ -175,6 +176,21 @@ const PresentationContent = () => {
     }
   };
 
+  // Fetch all data when component mounts or when retry is triggered
+  const fetchAllData = useCallback(async () => {
+    try {
+      // Fetch all data in parallel
+      await Promise.all([
+        fetchPowerWords(),
+        fetchScenarios(),
+        fetchContext(),
+        fetchFlowChainData(),
+      ]);
+    } catch (error) {
+      console.error("Error fetching all data:", error);
+    }
+  }, [fetchPowerWords, fetchScenarios, fetchContext, fetchFlowChainData]);
+
   useEffect(() => {
     // Fetch initial data
     fetchPowerWords();
@@ -214,9 +230,11 @@ const PresentationContent = () => {
       const res = await apiRequest("/presentation/submit", "POST", body);
       console.log("check presentation submit", res);
       setIsSubmit(true);
+      setShowRetry(true);
       toast.success(res.message || "Presentation submitted successfully");
     } catch (error: any) {
       setIsSubmit(false);
+      setShowRetry(false);
 
       console.error(error);
       setErrors((prev) => ({
@@ -228,6 +246,35 @@ const PresentationContent = () => {
       setLoading((prev) => ({ ...prev, submit: false }));
     }
   };
+
+  const handleRetry = useCallback(async () => {
+    // Reset all state to initial values
+    setPowerWords([]);
+    setScenarios(null);
+    setContextData(null);
+    setFlowChainData([]);
+    setIsSubmit(false);
+    setShowRetry(false);
+
+    setLoading({
+      powerWords: false,
+      scenarios: false,
+      contextData: false,
+      flowChainData: false,
+      submit: false,
+    });
+
+    setErrors({
+      powerWords: null,
+      scenarios: null,
+      contextData: null,
+      flowChainData: null,
+      submit: null,
+    });
+
+    // Fetch all data again
+    await fetchAllData();
+  }, [fetchAllData]);
 
   return (
     <div className="min-h-screen bg-section-dark">
@@ -292,18 +339,29 @@ const PresentationContent = () => {
             />
           </div>
 
-          <button
-            onClick={handleSubmit}
-            disabled={loading.submit || !allCompleted}
-            className={`px-12 py-4 font-semibold text-lg rounded-xl ${
-              !allCompleted || loading.submit
-                ? "bg-[#828882] opacity-50 cursor-not-allowed"
-                : "bg-gradient-to-r from-yellow-400 to-pink-500 text-white cursor-pointer hover:opacity-90 transition-opacity"
-            }`}>
-            {loading.submit
-              ? "Submitting presentation..."
-              : " Submit All Answers"}
-          </button>
+          {/* Submit and Retry Buttons */}
+          <div className="flex flex-col gap-4">
+            {!showRetry ? (
+              <button
+                onClick={handleSubmit}
+                disabled={loading.submit || !allCompleted}
+                className={`px-12 py-4 font-semibold text-lg w-full rounded-xl ${
+                  !allCompleted || loading.submit
+                    ? "bg-[#828882] opacity-50 cursor-not-allowed"
+                    : "bg-gradient-to-r from-yellow-400 to-pink-500 text-white cursor-pointer hover:opacity-90 transition-opacity"
+                }`}>
+                {loading.submit
+                  ? "Submitting presentation..."
+                  : " Submit All Answers"}
+              </button>
+            ) : (
+              <button
+                onClick={handleRetry}
+                className="px-12 py-4 font-semibold text-lg w-full rounded-xl bg-gradient-to-r from-blue-400 to-purple-500 text-white cursor-pointer hover:opacity-90 transition-opacity">
+                Retry Presentation Practice
+              </button>
+            )}
+          </div>
 
           {allCompleted && isSubmit && (
             <CompletePageFooterMessage

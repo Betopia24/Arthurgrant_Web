@@ -135,9 +135,10 @@ const baseQueryWithReauth: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
-
   // Check if request failed due to unauthorized access
   if (result.error?.status === UNAUTHORIZED_STATUS) {
+    console.log("API Request:", result);
+
     try {
       const state = api.getState() as RootState;
       const refreshToken = state.auth.refresh_token;

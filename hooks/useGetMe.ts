@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { authApi } from "@/lib/api";
+import { useAuthStore } from "@/stores/authStore";
 
 // --------------------- Types ---------------------
 interface SubscriptionPlan {
@@ -80,13 +81,14 @@ const useGetMe = (): {
   loading: boolean;
   error: any;
 } => {
+  const { accessToken } = useAuthStore();
   const [data, setData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<any>(null);
 
   useEffect(() => {
     let isMounted = true;
-
+    if (!accessToken) return;
     const fetchData = async () => {
       setLoading(true);
       try {
