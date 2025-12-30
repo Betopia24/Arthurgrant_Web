@@ -14,15 +14,29 @@ const Hero = ({
   onVideoModalOpen,
   onVideoModalClose,
 }: HeroProps) => {
-  const [showVideoPopup, setShowVideoPopup] = useState(true);
+  // 🔹 LOGIC CHANGE: start closed
+  const [showVideoPopup, setShowVideoPopup] = useState(false);
   const [showVideoTooltip, setShowVideoTooltip] = useState(true);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Use the language store
+  const videoRef = useRef<HTMLVideoElement>(null);
   const { preferredLang } = useLanguageStore();
 
-  // Function to get video source based on selected language
+  /* ===============================
+     OPTION-1: FIRST VISIT ONLY
+  =============================== */
+  useEffect(() => {
+    const hasSeenHeroVideo = localStorage.getItem(
+      "manifex_has_seen_hero_video"
+    );
+
+    if (!hasSeenHeroVideo) {
+      setShowVideoPopup(true);
+      onVideoModalOpen();
+    }
+  }, []);
+
+  // Video source by language (UNCHANGED)
   const getVideoSource = () => {
     const videoMap: { [key: string]: string } = {
       en: "/intros/manifex-intro-english.mp4",
@@ -38,12 +52,12 @@ const Hero = ({
       de: "/intros/manifex-intro-german.mp4",
     };
 
-    return videoMap[preferredLang] || "/intros/manifex-intro-english.mp4"; // Use preferredLang from store
+    return videoMap[preferredLang] || "/intros/manifex-intro-english.mp4";
   };
 
   const handlePlayVideo = () => {
     if (videoRef.current) {
-      videoRef.current.muted = false; // Enable sound
+      videoRef.current.muted = false;
       videoRef.current
         .play()
         .then(() => {
@@ -56,35 +70,27 @@ const Hero = ({
     }
   };
 
-  const handleVideoEnd = () => {
+  const closeVideo = () => {
+    localStorage.setItem("manifex_has_seen_hero_video", "true");
+
     setShowVideoPopup(false);
     setIsVideoPlaying(false);
-    onVideoEnd(); // Notify parent
-    onVideoModalClose(); // Notify parent that modal is closed
+
+    onVideoEnd();
+    onVideoModalClose();
   };
 
-  const handleCloseVideoPopup = () => {
-    setShowVideoPopup(false);
-    setIsVideoPlaying(false);
-    onVideoEnd(); // Notify parent
-    onVideoModalClose(); // Notify parent that modal is closed
-  };
+  const handleVideoEnd = closeVideo;
+  const handleCloseVideoPopup = closeVideo;
 
   const handleOpenVideoPopup = () => {
     setShowVideoPopup(true);
     setShowVideoTooltip(true);
     setIsVideoPlaying(false);
-    onVideoModalOpen(); // Notify parent that modal is opening
+    onVideoModalOpen();
   };
 
-  // Notify parent when modal opens initially
-  useEffect(() => {
-    if (showVideoPopup) {
-      onVideoModalOpen();
-    }
-  }, []);
-
-  // Disable scroll when video popup is open
+  // Disable scroll when modal open (UNCHANGED)
   useEffect(() => {
     if (showVideoPopup) {
       document.body.style.overflow = "hidden";
@@ -105,17 +111,14 @@ const Hero = ({
       {showVideoPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
           <div className="relative rounded-2xl mx-4 max-w-4xl w-full">
-            {/* Header with close button only */}
             <div className="flex justify-end items-center py-4 px-0">
               <button
                 onClick={handleCloseVideoPopup}
-                className="p-2 bg-gradient-brand-btn hover:bg-white/20 border-2 border-gray-700 rounded-full transition-colors cursor-pointer"
-              >
+                className="p-2 bg-gradient-brand-btn hover:bg-white/20 border-2 border-gray-700 rounded-full transition-colors cursor-pointer">
                 <X className="w-6 h-6 text-white" />
               </button>
             </div>
 
-            {/* Video Container */}
             <div className="p-2 relative border border-white/20 bg-black/90 overflow-hidden rounded-2xl">
               <video
                 ref={videoRef}
@@ -123,29 +126,23 @@ const Hero = ({
                 muted={true}
                 onEnded={handleVideoEnd}
                 className="w-full h-[500px] object-contain rounded-2xl"
-                key={videoSource} // Important: forces video reload when source changes
-              >
+                key={videoSource}>
                 <source src={videoSource} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
 
-              {/* Video Tooltip Overlay */}
               {showVideoTooltip && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg px-4">
                   <div
                     className="bg-gradient-to-br from-[#28284A] to-[#12122A] text-white rounded-lg 
-      p-4 sm:p-6 md:p-8 
-      w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl 
-      text-center shadow-xl"
-                  >
+                    p-4 sm:p-6 md:p-8 
+                    w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl 
+                    text-center shadow-xl">
                     <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold mb-2 sm:mb-3 md:mb-4">
                       Welcome to Mercury AI English Tutor
                     </h3>
 
-                    <p
-                      className="text-gray-300 mb-3 sm:mb-4 md:mb-6 
-        text-xs sm:text-sm md:text-base lg:text-lg"
-                    >
+                    <p className="text-gray-300 mb-3 sm:mb-4 md:mb-6 text-xs sm:text-sm md:text-base lg:text-lg">
                       Watch our introduction to discover how Mercury makes
                       learning English fun and effective with AI-powered
                       personalized lessons.
@@ -154,11 +151,10 @@ const Hero = ({
                     <button
                       onClick={handlePlayVideo}
                       className="flex items-center justify-center gap-2 
-          px-4 py-2 sm:px-6 sm:py-2.5 md:px-8 md:py-3 
-          bg-gradient-brand text-white rounded-xl font-semibold 
-          hover:opacity-90 transition-opacity mx-auto cursor-pointer 
-          text-xs sm:text-sm md:text-base lg:text-lg"
-                    >
+                      px-4 py-2 sm:px-6 sm:py-2.5 md:px-8 md:py-3 
+                      bg-gradient-brand text-white rounded-xl font-semibold 
+                      hover:opacity-90 transition-opacity mx-auto cursor-pointer 
+                      text-xs sm:text-sm md:text-base lg:text-lg">
                       <Play
                         className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5"
                         fill="white"
@@ -177,19 +173,14 @@ const Hero = ({
       <div
         className={`app-container flex flex-col md:flex-row items-center gap-10 lg:gap-16 xl:gap-20 transition-all duration-300 ${
           showVideoPopup ? "filter blur-md" : ""
-        }`}
-      >
-        {/* Left Part (60%) */}
+        }`}>
+        {/* LEFT PART */}
         <div className="w-full md:w-3/5 flex flex-col items-center md:items-start text-white">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-[80px] font-bold leading-tight md:leading-tight mb-5 sm:mb-6 md:mb-6 text-center md:text-left uppercase">
             Let's Speak&nbsp;
             <br />
             <span className="text-gradient-minor italic mt-0.5">Energy.</span>
           </h1>
-          {/* <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-[80px] font-bold leading-tight md:leading-tight mb-5 sm:mb-6 md:mb-6 text-center md:text-left uppercase">
-            Let's Speak&nbsp;
-            <span className="text-gradient-minor italic mt-0.5">Energy.</span>
-          </h1> */}
 
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-2xl mb-6 sm:mb-8 text-gray-300 max-w-full md:max-w-3xl text-center md:text-left">
             New innovative way to practice reading, writing, speaking, and LERAN
@@ -200,25 +191,21 @@ const Hero = ({
             Just 10-15 minutes a day!
           </p>
 
-          {/* Buttons */}
           <div className="mt-4 lg:mt-8 flex flex-wrap gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8 justify-center md:justify-start">
             <button className="flex items-center justify-center px-5 py-2 sm:px-6 sm:py-3 md:px-8 md:py-3.5 xl:px-10 gap-2 rounded-3xl bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to font-bold text-white text-sm sm:text-base md:text-lg xl:text-xl shadow-lg transition">
-              <Rocket className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" /> Start
-              Free Today
+              <Rocket className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+              Start Free Today
             </button>
 
             <button
               onClick={handleOpenVideoPopup}
-              className="flex items-center justify-center px-5 py-2 sm:px-6 sm:py-3 md:px-8 md:py-3.5 xl:px-10 gap-2 rounded-3xl border border-gray-500 text-white hover:bg-white/10 transition font-semibold text-sm sm:text-base md:text-lg xl:text-xl"
-            >
-              <Play className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" /> Watch
-              Mercury in Action
+              className="flex items-center justify-center px-5 py-2 sm:px-6 sm:py-3 md:px-8 md:py-3.5 xl:px-10 gap-2 rounded-3xl border border-gray-500 text-white hover:bg-white/10 transition font-semibold text-sm sm:text-base md:text-lg xl:text-xl">
+              <Play className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+              Watch Mercury in Action
             </button>
           </div>
 
-          {/* Learners + Rating */}
           <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 lg:gap-8 justify-center md:justify-start">
-            {/* Overlapping Avatars */}
             <div className="flex -space-x-3 sm:-space-x-4 self-center sm:self-auto">
               {[1, 2, 3].map((i) => (
                 <Image
@@ -232,7 +219,6 @@ const Hero = ({
               ))}
             </div>
 
-            {/* Text + Stars */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
               <p className="font-semibold text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl text-center md:text-left">
                 100,000+ Learners
@@ -253,9 +239,8 @@ const Hero = ({
           </div>
         </div>
 
-        {/* Right Part (40%) */}
+        {/* RIGHT PART */}
         <div className="w-full md:w-2/5 flex flex-col items-center mt-10 md:mt-0 pb-16">
-          {/* Image with Blur Background */}
           <div className="flex justify-center mb-4 sm:mb-6 relative">
             <div className="absolute w-[250px] sm:w-[300px] md:w-[350px] xl:w-[500px] h-[250px] sm:h-[300px] md:h-[350px] xl:h-[500px] rounded-full bg-gradient-to-t from-[#05061E] via-[#2C3E50] to-transparent blur-xl opacity-40"></div>
             <div className="relative w-[250px] sm:w-[300px] md:w-[350px] xl:w-[500px] h-[250px] sm:h-[300px] md:h-[350px] xl:h-[500px] rounded-full overflow-hidden">
@@ -270,10 +255,8 @@ const Hero = ({
             </div>
           </div>
 
-          {/* Name styled like button with dual diagonal border */}
           <h1 className="relative inline-block mt-8 px-8 md:px-10 xl:px-20 py-2 sm:py-3 md:py-4 text-white font-semibold text-sm sm:text-base md:text-lg xl:text-xl rounded-full text-center notranslate">
             Mercury
-            {/* Top-left triangle (lighter border) */}
             <div
               className="absolute inset-0 rounded-full pointer-events-none border-[2px]"
               style={{
@@ -281,7 +264,6 @@ const Hero = ({
                 borderColor: "#9CA3AF",
               }}
             />
-            {/* Bottom-right triangle (darker border) */}
             <div
               className="absolute inset-0 rounded-full pointer-events-none border-[2px]"
               style={{
