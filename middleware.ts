@@ -12,6 +12,8 @@ const PUBLIC_ROUTES = [
   "/signup",
   "/forgot-password",
   "/verify-otp",
+  '/policy',
+  '/terms'
 ];
 
 interface DecodedToken {
