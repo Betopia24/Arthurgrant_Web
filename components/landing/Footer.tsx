@@ -27,8 +27,8 @@ const Footer = () => {
 
           {/* Contact Info + Social */}
           <div className="flex-1 flex flex-col items-center md:items-end text-center md:text-right gap-2">
-            <p className="text-gray-300">info@DFTJunkei.com</p>
-            <p className="text-gray-300">Whatsapp: +8899036154</p>
+            {/* <p className="text-gray-300">info@DFTJunkei.com</p>
+            <p className="text-gray-300">Whatsapp: +8899036154</p> */}
             <div className="flex gap-4 mt-2 justify-center md:justify-end">
               <a href="#">
                 <img src="/facebook.png" alt="Facebook" className="w-7 h-7" />
