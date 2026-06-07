@@ -24,6 +24,7 @@ const navLinks = [
   { href: "/rewards", label: "Rewards" },
   { href: "/about", label: "About" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/contact", label: "Contact Us" },
 ];
 
 const Navbar = () => {
@@ -94,7 +95,9 @@ const Navbar = () => {
   const filteredNavLinks = navLinks.filter((link) => {
     if (
       !isAuthenticated &&
-      (link.label === "Practice" || link.label === "Progress" || link.label === "Rewards")
+      (link.label === "Practice" ||
+        link.label === "Progress" ||
+        link.label === "Rewards")
     ) {
       return false;
     }
@@ -140,14 +143,14 @@ const Navbar = () => {
                     <button
                       className={clsx(
                         "flex items-center gap-1 text-base lg:text-lg xl:text-lg font-semibold transition-colors hover:text-white whitespace-nowrap",
-                        isActive ? "text-gradient" : "text-gray-300"
+                        isActive ? "text-gradient" : "text-gray-300",
                       )}
                     >
                       {link.label}
                       <ChevronDown
                         className={clsx(
                           "w-4 h-4 lg:w-5 lg:h-5 font-bold transition-transform",
-                          hoveredDropdown === link.label ? "rotate-180" : ""
+                          hoveredDropdown === link.label ? "rotate-180" : "",
                         )}
                       />
                     </button>
@@ -157,7 +160,7 @@ const Navbar = () => {
                       href={link.href!}
                       className={clsx(
                         "flex items-center gap-1 text-base lg:text-lg xl:text-lg font-semibold transition-colors hover:text-white whitespace-nowrap",
-                        isActive ? "text-gradient" : "text-gray-300"
+                        isActive ? "text-gradient" : "text-gray-300",
                       )}
                     >
                       {link.label}
@@ -182,7 +185,7 @@ const Navbar = () => {
                               "py-3 lg:py-4 text-sm lg:text-base font-medium tracking-wide transition-colors border-b-[1px] border-gray-700 last:border-b-0",
                               isItemActive
                                 ? "text-gradient"
-                                : "text-gray-300 hover:text-white"
+                                : "text-gray-300 hover:text-white",
                             )}
                           >
                             {item.label}
@@ -235,7 +238,7 @@ const Navbar = () => {
                     <ChevronDown
                       className={clsx(
                         "w-4 h-4 lg:w-5 lg:h-5 z-10 transition-transform",
-                        hoveredDropdown === "language" ? "rotate-180" : ""
+                        hoveredDropdown === "language" ? "rotate-180" : "",
                       )}
                     />
                     <div
@@ -311,7 +314,7 @@ const Navbar = () => {
       <div
         className={clsx(
           "fixed top-0 right-0 h-full z-50 w-4/5 max-w-xs bg-gradient-to-br from-brand-dark to-brand-darker transform transition-transform duration-300 overflow-y-auto",
-          sidebarOpen ? "translate-x-0" : "translate-x-full"
+          sidebarOpen ? "translate-x-0" : "translate-x-full",
         )}
       >
         <div className="flex flex-col min-h-full p-6">
@@ -348,7 +351,7 @@ const Navbar = () => {
                     <button
                       className={clsx(
                         "flex justify-between items-center text-lg font-semibold text-gray-300 hover:text-white py-2 transition-colors",
-                        isActive && "text-gradient"
+                        isActive && "text-gradient",
                       )}
                       onClick={() => setMobileDropdownOpen((prev) => !prev)}
                     >
@@ -356,7 +359,7 @@ const Navbar = () => {
                       <ChevronDown
                         className={clsx(
                           "w-5 h-5 transition-transform",
-                          mobileDropdownOpen ? "rotate-180" : ""
+                          mobileDropdownOpen ? "rotate-180" : "",
                         )}
                       />
                     </button>
@@ -367,7 +370,7 @@ const Navbar = () => {
                         "overflow-hidden transition-all duration-300 ease-in-out",
                         mobileDropdownOpen
                           ? "max-h-60 opacity-100"
-                          : "max-h-0 opacity-0"
+                          : "max-h-0 opacity-0",
                       )}
                     >
                       <div className="flex flex-col pl-4 mt-1 border-l-2 border-gray-700">
@@ -381,7 +384,7 @@ const Navbar = () => {
                                 "py-2 text-base font-semibold tracking-wide transition-colors",
                                 isItemActive
                                   ? "text-gradient"
-                                  : "text-gray-300 hover:text-white"
+                                  : "text-gray-300 hover:text-white",
                               )}
                               onClick={() => {
                                 setSidebarOpen(false);
@@ -404,7 +407,7 @@ const Navbar = () => {
                   href={link.href!}
                   className={clsx(
                     "text-lg font-semibold hover:text-white py-2 transition-colors",
-                    isActive ? "text-gradient" : "text-gray-300"
+                    isActive ? "text-gradient" : "text-gray-300",
                   )}
                   onClick={() => setSidebarOpen(false)}
                 >
@@ -431,7 +434,7 @@ const Navbar = () => {
                     "p-2 text-sm font-semibold rounded-lg border transition-colors text-left",
                     preferredLang === language.code
                       ? "bg-white/10 text-white border-blue-500"
-                      : "text-gray-300 border-gray-600 hover:bg-white/5 hover:text-white"
+                      : "text-gray-300 border-gray-600 hover:bg-white/5 hover:text-white",
                   )}
                 >
                   <div className="font-semibold">{language.name}</div>

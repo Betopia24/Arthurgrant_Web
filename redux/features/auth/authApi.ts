@@ -80,7 +80,17 @@ const authApi = baseApi.injectEndpoints({
       }),
       providesTags: ["User"],
     }),
+
+    contact: builder.mutation({
+      query: (contactData) => {
+        return {
+          url: "/contacts/send-email",
+          method: "POST",
+          body: contactData,
+        };
+      },
+    }),
   }),
 });
 
-export const {} = authApi;
+export const { useContactMutation } = authApi;
