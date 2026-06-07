@@ -7,10 +7,13 @@ const generateRandomToken = () => {
 
 const chatbotApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    sendChatbotMessage: builder.mutation<{ chatbot_reply: string }, { message: string }>({
+    sendChatbotMessage: builder.mutation<
+      { chatbot_reply: string },
+      { message: string }
+    >({
       async queryFn({ message }) {
         try {
-          const res = await fetch("http://72.244.153.17:8061/api/v1/chatbot/web", {
+          const res = await fetch("https://ai.manifex.org/api/v1/chatbot/web", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
