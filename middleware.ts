@@ -12,8 +12,9 @@ const PUBLIC_ROUTES = [
   "/signup",
   "/forgot-password",
   "/verify-otp",
-  '/policy',
-  '/terms'
+  "/policy",
+  "/terms",
+  "/contact",
 ];
 
 interface DecodedToken {
@@ -33,7 +34,7 @@ export function middleware(req: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon.ico") ||
     pathname.match(
-      /\.(png|jpg|jpeg|gif|svg|webp|ico|mp4|webm|ogg|mp3|wav|woff2?|ttf|eot)$/
+      /\.(png|jpg|jpeg|gif|svg|webp|ico|mp4|webm|ogg|mp3|wav|woff2?|ttf|eot)$/,
     )
   ) {
     return NextResponse.next();
