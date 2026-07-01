@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { authApi } from "@/lib/api";
@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
 import { ProtectedAuthRoute } from "@/components/shared/ProtectedAuthRoute";
 import Cookies from "js-cookie";
+import toast from "react-hot-toast";
 
 // Zod schema for form validation
 const signInSchema = z.object({
@@ -35,6 +36,16 @@ function SignInPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [apiError, setApiError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("session_expired") === "true") {
+        toast.error("Your session has expired. Please log in again.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

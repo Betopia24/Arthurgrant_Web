@@ -1,5 +1,8 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/authStore";
+import Cookies from "js-cookie";
+import { store } from "@/redux/store";
+import { logout } from "@/redux/features/auth/authSlice";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API;
 
@@ -40,14 +43,23 @@ api.interceptors.response.use(
   (error) => {
     // Don't intercept login errors
     const isLoginRequest = error.config?.url?.includes("/auth/login");
-    const isTokenExpired = error.response?.data?.message?.includes("token");
+    const isTokenExpired =
+      error.response?.data?.message?.toLowerCase().includes("token") ||
+      error.response?.data?.message?.toLowerCase().includes("expired") ||
+      error.response?.data?.message?.toLowerCase().includes("session") ||
+      (error.response?.data?.errorMessages &&
+        error.response.data.errorMessages.some(
+          (msg: any) =>
+            msg.path === "token" || msg.message?.toLowerCase().includes("expired")
+        ));
 
     if (error.response?.status === 401 && !isLoginRequest && isTokenExpired) {
       useAuthStore.getState().logout();
+      store.dispatch(logout());
+      Cookies.remove("access_token");
       if (typeof window !== "undefined") {
-        window.location.href = "/signin";
+        window.location.href = "/signin?session_expired=true";
       }
-      
     }
     return Promise.reject(error);
   }

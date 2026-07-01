@@ -109,6 +109,8 @@ import {
 } from "@reduxjs/toolkit/query/react";
 import { RootState } from "../store";
 import { setUser, logout } from "../features/auth/authSlice";
+import Cookies from "js-cookie";
+import { useAuthStore } from "@/stores/authStore";
 
 // Constants
 const UNAUTHORIZED_STATUS = 401;
@@ -162,14 +164,24 @@ const baseQueryWithReauth: BaseQueryFn<
 
         if (responseData.success) {
           const user = state.auth.user;
+          const newToken = responseData.data.token;
+
           // Update store with new token
           api.dispatch(
             setUser({
               user,
-              token: responseData.data.token,
+              access_token: newToken,
               refresh_token: refreshToken,
             })
           );
+
+          // Sync Zustand store and cookie
+          useAuthStore.getState().setToken(newToken);
+          Cookies.set("access_token", newToken, {
+            expires: 30,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "Strict",
+          });
 
           // Retry the original request with new token
           result = await baseQuery(args, api, extraOptions);
@@ -193,9 +205,10 @@ const baseQueryWithReauth: BaseQueryFn<
 // Helper function to handle logout
 const handleLogout = (dispatch: any) => {
   dispatch(logout());
-  // Optional: Redirect to login page or show notification
+  useAuthStore.getState().logout();
+  Cookies.remove("access_token");
   if (typeof window !== "undefined") {
-    window.location.href = "/auth/login";
+    window.location.href = "/signin?session_expired=true";
   }
 };
 
