@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Volume2 } from "lucide-react";
 import React, { useEffect, useState, useCallback } from "react";
 import TaskLoadingLockError from "../TaskLoadingLock";
 
@@ -102,6 +102,34 @@ const WordPartsWorkshop = ({
   const isLastItem = currentIndex >= getMaxLength() - 1;
   const currentMeanings = getCurrentMeanings();
 
+  const speakWord = useCallback((word: string) => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.lang = "en-US";
+      utterance.pitch = 1;
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
+  }, []);
+
+  // Pronounce the word automatically when the index changes or tasks load
+  useEffect(() => {
+    if (!isLocked && !isFetching && wordParts) {
+      const currentWord = getCurrentWord();
+      speakWord(currentWord);
+    }
+  }, [currentIndex, isLocked, isFetching, wordParts, speakWord]);
+
+  // Cancel speech synthesis on unmount
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
   const handleSubmitComplete = () => {
     // Mark current step as completed if not already
     if (!completedSteps.includes(currentIndex)) {
@@ -142,10 +170,17 @@ const WordPartsWorkshop = ({
             </h3>
           </div>
 
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-4 flex items-center justify-center gap-3">
             <h1 className="text-white text-2xl font-semibold">
               "{getCurrentWord()}"
             </h1>
+            <button
+              onClick={() => speakWord(getCurrentWord())}
+              className="text-gray-300 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer flex items-center justify-center"
+              title="Listen to pronunciation"
+            >
+              <Volume2 className="w-6 h-6" />
+            </button>
           </div>
 
           <div className="flex items-center gap-6">
