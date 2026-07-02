@@ -165,6 +165,18 @@ export default function Home() {
     };
   }, [showIntroVideo, showLanguagePopup, isVideoModalOpen, showIntroLogo]);
 
+  /* Auto-play music on mount or after overlays are closed */
+  useEffect(() => {
+    if (
+      !showIntroVideo &&
+      !showLanguagePopup &&
+      !showIntroLogo &&
+      !isVideoModalOpen
+    ) {
+      playMusic();
+    }
+  }, [showIntroVideo, showLanguagePopup, showIntroLogo, isVideoModalOpen]);
+
   return (
     <>
       {/* Hidden audio */}
