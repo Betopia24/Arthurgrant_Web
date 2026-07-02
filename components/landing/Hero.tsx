@@ -27,7 +27,7 @@ const Hero = ({
   =============================== */
   useEffect(() => {
     const hasSeenHeroVideo = localStorage.getItem(
-      "manifex_has_seen_hero_video"
+      "manifex_has_seen_hero_video",
     );
 
     if (!hasSeenHeroVideo) {
@@ -114,7 +114,8 @@ const Hero = ({
             <div className="flex justify-end items-center py-4 px-0">
               <button
                 onClick={handleCloseVideoPopup}
-                className="p-2 bg-gradient-brand-btn hover:bg-white/20 border-2 border-gray-700 rounded-full transition-colors cursor-pointer">
+                className="p-2 bg-gradient-brand-btn hover:bg-white/20 border-2 border-gray-700 rounded-full transition-colors cursor-pointer"
+              >
                 <X className="w-6 h-6 text-white" />
               </button>
             </div>
@@ -126,7 +127,8 @@ const Hero = ({
                 muted={true}
                 onEnded={handleVideoEnd}
                 className="w-full h-[500px] object-contain rounded-2xl"
-                key={videoSource}>
+                key={videoSource}
+              >
                 <source src={videoSource} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
@@ -137,7 +139,8 @@ const Hero = ({
                     className="bg-gradient-to-br from-[#28284A] to-[#12122A] text-white rounded-lg 
                     p-4 sm:p-6 md:p-8 
                     w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl 
-                    text-center shadow-xl">
+                    text-center shadow-xl"
+                  >
                     <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold mb-2 sm:mb-3 md:mb-4">
                       Welcome to Mercury AI English Tutor
                     </h3>
@@ -154,7 +157,8 @@ const Hero = ({
                       px-4 py-2 sm:px-6 sm:py-2.5 md:px-8 md:py-3 
                       bg-gradient-brand text-white rounded-xl font-semibold 
                       hover:opacity-90 transition-opacity mx-auto cursor-pointer 
-                      text-xs sm:text-sm md:text-base lg:text-lg">
+                      text-xs sm:text-sm md:text-base lg:text-lg"
+                    >
                       <Play
                         className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5"
                         fill="white"
@@ -173,7 +177,8 @@ const Hero = ({
       <div
         className={`app-container flex flex-col md:flex-row items-center gap-10 lg:gap-16 xl:gap-20 transition-all duration-300 ${
           showVideoPopup ? "filter blur-md" : ""
-        }`}>
+        }`}
+      >
         {/* LEFT PART */}
         <div className="w-full md:w-3/5 flex flex-col items-center md:items-start text-white">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-[80px] font-bold leading-tight md:leading-tight mb-5 sm:mb-6 md:mb-6 text-center md:text-left uppercase">
@@ -183,7 +188,7 @@ const Hero = ({
           </h1>
 
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-2xl mb-6 sm:mb-8 text-gray-300 max-w-full md:max-w-3xl text-center md:text-left">
-            New innovative way to practice reading, writing, speaking, and LERAN
+            New innovative way to practice reading, writing, speaking, and LEARN
             ENGLISH!{" "}
             <span className="text-gradient-minor font-semibold">
               Guided, Sequenced, Engaging, Rewarding.
@@ -199,7 +204,8 @@ const Hero = ({
 
             <button
               onClick={handleOpenVideoPopup}
-              className="flex items-center justify-center px-5 py-2 sm:px-6 sm:py-3 md:px-8 md:py-3.5 xl:px-10 gap-2 rounded-3xl border border-gray-500 text-white hover:bg-white/10 transition font-semibold text-sm sm:text-base md:text-lg xl:text-xl">
+              className="flex items-center justify-center px-5 py-2 sm:px-6 sm:py-3 md:px-8 md:py-3.5 xl:px-10 gap-2 rounded-3xl border border-gray-500 text-white hover:bg-white/10 transition font-semibold text-sm sm:text-base md:text-lg xl:text-xl"
+            >
               <Play className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
               Watch Mercury in Action
             </button>
