@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
-import { useLanguageStore } from "@/stores/languageStore";
+import { useLanguageStore, languages } from "@/stores/languageStore";
+import { useAuthStore } from "@/stores/authStore";
 
 declare global {
   interface Window {
@@ -10,7 +11,22 @@ declare global {
 }
 
 export default function GoogleTranslateWrapper({ children }: { children: React.ReactNode }) {
-  const { preferredLang, initializeGoogleTranslate } = useLanguageStore();
+  const { preferredLang, initializeGoogleTranslate, setLanguage } = useLanguageStore();
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    if (user && user.language) {
+      const userLang = user.language;
+      const langObj = languages.find(
+        (l) =>
+          l.name.toLowerCase() === userLang.toLowerCase() ||
+          l.code.toLowerCase() === userLang.toLowerCase()
+      );
+      if (langObj && langObj.code !== preferredLang) {
+        setLanguage(langObj.code);
+      }
+    }
+  }, [user, preferredLang, setLanguage]);
 
   useEffect(() => {
     // completely hide Google Translate elements function

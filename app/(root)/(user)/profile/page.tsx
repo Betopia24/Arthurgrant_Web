@@ -13,6 +13,7 @@ import Tabs from "@/components/ui/Tabs";
 import { CgProfile } from "react-icons/cg";
 import FamilyMembersManager from "@/components/profile/FamilyMembersManager";
 import Cookies from "js-cookie";
+import { useLanguageStore, languages } from "@/stores/languageStore";
 
 // Minimal ProfileSection component used inside Tabs to avoid "Cannot find name 'ProfileSection'"
 // You can replace this with the real component import later.
@@ -77,14 +78,18 @@ const ProfileSection: React.FC<any> = ({
               <label htmlFor="language" className="text-sm text-gray-300">
                 Language Preference
               </label>
-              <input
+              <select
                 id="language"
-                type="text"
-                placeholder="English"
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="p-2.5 text-sm border border-gray-600 bg-[#35364E] rounded-xl text-white"
-              />
+                className="p-2.5 text-sm border border-gray-600 bg-[#35364E] rounded-xl text-white notranslate"
+              >
+                {languages.map((lang) => (
+                  <option key={lang.code} value={lang.name}>
+                    {lang.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="hobby" className="text-sm text-gray-300">
@@ -203,6 +208,14 @@ function ProfilePage() {
           profilePic: result.data.profilePic || user.profilePic,
         };
         setUser(updatedUser);
+
+        // Find the language code and update the language store to reload page
+        const langObj = languages.find(
+          (l) => l.name === (result.data.language || language.trim())
+        );
+        if (langObj) {
+          useLanguageStore.getState().setLanguage(langObj.code);
+        }
       }
 
       toast.success("Profile updated successfully!");
@@ -478,14 +491,18 @@ function ProfilePage() {
                                 className="text-sm text-gray-300">
                                 Language Preference
                               </label>
-                              <input
+                              <select
                                 id="language"
-                                type="text"
-                                placeholder="English"
                                 value={language}
                                 onChange={(e) => setLanguage(e.target.value)}
-                                className="p-2.5 text-sm border border-gray-600 bg-[#35364E] rounded-xl text-white"
-                              />
+                                className="p-2.5 text-sm border border-gray-600 bg-[#35364E] rounded-xl text-white notranslate"
+                              >
+                                {languages.map((lang) => (
+                                  <option key={lang.code} value={lang.name}>
+                                    {lang.name}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
                             <div className="flex flex-col gap-2">
                               <label
@@ -743,14 +760,18 @@ function ProfilePage() {
                     <label htmlFor="language" className="text-sm text-gray-300">
                       Language Preference
                     </label>
-                    <input
+                    <select
                       id="language"
-                      type="text"
-                      placeholder="English"
                       value={language}
                       onChange={(e) => setLanguage(e.target.value)}
-                      className="p-2.5 text-sm border border-gray-600 bg-[#35364E] rounded-xl text-white"
-                    />
+                      className="p-2.5 text-sm border border-gray-600 bg-[#35364E] rounded-xl text-white notranslate"
+                    >
+                      {languages.map((lang) => (
+                        <option key={lang.code} value={lang.name}>
+                          {lang.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="flex flex-col gap-2">
                     <label htmlFor="hobby" className="text-sm text-gray-300">

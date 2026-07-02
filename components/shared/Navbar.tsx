@@ -7,6 +7,7 @@ import React, { useState, useEffect } from "react";
 import clsx from "clsx";
 import { useAuthStore } from "@/stores/authStore";
 import { useLanguageStore, languages } from "@/stores/languageStore";
+import { usersApi } from "@/lib/api";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -71,9 +72,32 @@ const Navbar = () => {
   }, []);
 
   // Language selection handler
-  const handleLanguageSelect = (languageCode: string) => {
+  const handleLanguageSelect = async (languageCode: string) => {
     setLanguage(languageCode);
     setHoveredDropdown(null);
+
+    if (isAuthenticated && user) {
+      try {
+        const langObj = languages.find((lang) => lang.code === languageCode);
+        if (langObj) {
+          const formData = new FormData();
+          formData.append("firstName", user.firstName || "");
+          formData.append("lastName", user.lastName || "");
+          formData.append("hobbies", user.hobbies || "");
+          formData.append("language", langObj.name);
+
+          const result = await usersApi.updateProfile(formData);
+          if (result.success && result.data) {
+            useAuthStore.getState().setUser({
+              ...user,
+              language: result.data.language || langObj.name,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Failed to update language on backend:", error);
+      }
+    }
   };
 
   // Check if a link or its dropdown items are active
@@ -216,79 +240,77 @@ const Navbar = () => {
                 </div>
               </Link>
             ) : (
-              <>
-                <Link
-                  href="/signin"
-                  className="text-gray-300 text-base lg:text-lg font-semibold hover:text-white whitespace-nowrap"
-                >
-                  Login
-                </Link>
-
-                {/* Language Switcher Dropdown */}
-                <div
-                  className="relative"
-                  onMouseEnter={() => setHoveredDropdown("language")}
-                  onMouseLeave={() => setHoveredDropdown(null)}
-                >
-                  <button className="relative inline-flex items-center gap-2 px-4 lg:px-5 py-2 lg:py-3 text-base lg:text-lg font-semibold text-white bg-transparent rounded-2xl">
-                    <Globe className="w-4 h-4 lg:w-5 lg:h-5 z-10" />
-                    <span className="z-10 whitespace-nowrap">
-                      {isMounted ? currentLanguageName : "English"}
-                    </span>
-                    <ChevronDown
-                      className={clsx(
-                        "w-4 h-4 lg:w-5 lg:h-5 z-10 transition-transform",
-                        hoveredDropdown === "language" ? "rotate-180" : "",
-                      )}
-                    />
-                    <div
-                      className="absolute inset-0 rounded-2xl pointer-events-none border-[2px]"
-                      style={{
-                        clipPath: "polygon(0 0, 100% 0, 0 100%)",
-                        borderColor: "#9CA3AF",
-                      }}
-                    />
-                    <div
-                      className="absolute inset-0 rounded-2xl pointer-events-none border-[2px]"
-                      style={{
-                        clipPath: "polygon(100% 100%, 0 100%, 100% 0)",
-                        borderColor: "#4B5563",
-                      }}
-                    />
-                  </button>
-
-                  {/* Invisible buffer to avoid flicker */}
-                  {hoveredDropdown === "language" && (
-                    <div className="absolute left-0 top-full w-full h-3 bg-transparent"></div>
-                  )}
-
-                  {/* Language Dropdown Menu */}
-                  {hoveredDropdown === "language" && (
-                    <div className="absolute top-[calc(100%+0.5rem)] right-0 w-48 lg:w-56 bg-gradient-to-br from-[#28284A] via-[#28284A] to-[#12122A] border border-gray-700 rounded-xl shadow-lg flex flex-col py-2 px-2 z-50 notranslate">
-                      {languages.map((language) => (
-                        <button
-                          key={language.code}
-                          onClick={() => handleLanguageSelect(language.code)}
-                          className="flex items-center justify-between px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 text-sm font-semibold tracking-wide rounded-lg text-left"
-                        >
-                          <div>
-                            <div className="font-semibold text-xs lg:text-sm">
-                              {language.name}
-                            </div>
-                            <div className="text-xs text-gray-400">
-                              {language.nativeName}
-                            </div>
-                          </div>
-                          {preferredLang === language.code && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </>
+              <Link
+                href="/signin"
+                className="text-gray-300 text-base lg:text-lg font-semibold hover:text-white whitespace-nowrap"
+              >
+                Login
+              </Link>
             )}
+
+            {/* Language Switcher Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setHoveredDropdown("language")}
+              onMouseLeave={() => setHoveredDropdown(null)}
+            >
+              <button className="relative inline-flex items-center gap-2 px-4 lg:px-5 py-2 lg:py-3 text-base lg:text-lg font-semibold text-white bg-transparent rounded-2xl">
+                <Globe className="w-4 h-4 lg:w-5 lg:h-5 z-10" />
+                <span className="z-10 whitespace-nowrap">
+                  {isMounted ? currentLanguageName : "English"}
+                </span>
+                <ChevronDown
+                  className={clsx(
+                    "w-4 h-4 lg:w-5 lg:h-5 z-10 transition-transform",
+                    hoveredDropdown === "language" ? "rotate-180" : "",
+                  )}
+                />
+                <div
+                  className="absolute inset-0 rounded-2xl pointer-events-none border-[2px]"
+                  style={{
+                    clipPath: "polygon(0 0, 100% 0, 0 100%)",
+                    borderColor: "#9CA3AF",
+                  }}
+                />
+                <div
+                  className="absolute inset-0 rounded-2xl pointer-events-none border-[2px]"
+                  style={{
+                    clipPath: "polygon(100% 100%, 0 100%, 100% 0)",
+                    borderColor: "#4B5563",
+                  }}
+                />
+              </button>
+
+              {/* Invisible buffer to avoid flicker */}
+              {hoveredDropdown === "language" && (
+                <div className="absolute left-0 top-full w-full h-3 bg-transparent"></div>
+              )}
+
+              {/* Language Dropdown Menu */}
+              {hoveredDropdown === "language" && (
+                <div className="absolute top-[calc(100%+0.5rem)] right-0 w-48 lg:w-56 bg-gradient-to-br from-[#28284A] via-[#28284A] to-[#12122A] border border-gray-700 rounded-xl shadow-lg flex flex-col py-2 px-2 z-50 notranslate">
+                  {languages.map((language) => (
+                    <button
+                      key={language.code}
+                      onClick={() => handleLanguageSelect(language.code)}
+                      className="flex items-center justify-between px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 text-sm font-semibold tracking-wide rounded-lg text-left"
+                    >
+                      <div>
+                        <div className="font-semibold text-xs lg:text-sm">
+                          {language.name}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {language.nativeName}
+                        </div>
+                      </div>
+                      {preferredLang === language.code && (
+                        <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mobile Hamburger */}
