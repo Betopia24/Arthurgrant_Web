@@ -63,12 +63,13 @@ const RewardVideo = () => {
       setLoading((prev) => ({ ...prev, rewardVideos: true }));
       setError((prev) => ({ ...prev, rewardVideos: false }));
 
-      const res = await apiRequest("/reward-video", "GET");
+      const res = await apiRequest("/reward-video/my/rewards", "GET");
       if (res.success) {
-        const videos: RewardVideoItemsType[] = res.data;
-
+        const rewards = res.data?.rewards || [];
         // Filter only active videos
-        const activeVideos = videos.filter((video) => video.isActive);
+        const activeVideos = rewards
+          .map((item: any) => item.video)
+          .filter((video: any) => video && video.isActive);
         setRewardVideos(activeVideos);
 
         // Set initial video if not already set and there are active videos
@@ -87,19 +88,13 @@ const RewardVideo = () => {
     }
   };
 
-  // Fetch initial video (first video) on component mount
+  // Fetch initial video (today's video) on component mount
   const fetchInitialVideo = async () => {
     try {
       setLoading((prev) => ({ ...prev, rewardVideos: true }));
-      const res = await apiRequest("/reward-video", "GET");
-      if (res.success) {
-        const videos: RewardVideoItemsType[] = res.data;
-        const activeVideos = videos.filter((video) => video.isActive);
-
-        if (activeVideos.length > 0) {
-          // Set the first video as selected initially
-          setSelectedVideo(activeVideos[0]);
-        }
+      const res = await apiRequest("/reward-video/todays/reward", "GET");
+      if (res.success && res.data?.todaysReward) {
+        setSelectedVideo(res.data.todaysReward);
       }
     } catch (error) {
       console.error("Error fetching initial video:", error);
