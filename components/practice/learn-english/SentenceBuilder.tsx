@@ -27,6 +27,28 @@ interface Sentence {
   sentence_options: string[];
 }
 
+const shuffleArray = (array: string[]) => {
+  if (array.length <= 1) return array;
+
+  const shuffled = [...array];
+  let attempts = 0;
+
+  while (attempts < 10) {
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    // Ensure the shuffled array is different from the original correct sentence sequence
+    const isDifferent = shuffled.some((val, idx) => val !== array[idx]);
+    if (isDifferent) {
+      break;
+    }
+    attempts++;
+  }
+  return shuffled;
+};
+
 const SentenceBuilder = ({
   taskData,
   isFetching,
@@ -39,7 +61,15 @@ const SentenceBuilder = ({
 }: SentenceBuilderProps) => {
   const { accessToken, user } = useAuthStore();
 
-  const [sentences, setSentences] = useState<Sentence[]>(taskData || []);
+  const [sentences, setSentences] = useState<Sentence[]>(() => {
+    if (taskData) {
+      return taskData.map((s) => ({
+        ...s,
+        sentence_options: shuffleArray(s.sentence_options),
+      }));
+    }
+    return [];
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [availableWords, setAvailableWords] = useState<string[]>([]);
   const [selectedWords, setSelectedWords] = useState<string[]>([]);
@@ -51,7 +81,11 @@ const SentenceBuilder = ({
   // Update sentences when taskData changes
   useEffect(() => {
     if (taskData) {
-      setSentences(taskData);
+      const shuffledData = taskData.map((s) => ({
+        ...s,
+        sentence_options: shuffleArray(s.sentence_options),
+      }));
+      setSentences(shuffledData);
     }
   }, [taskData]);
 
@@ -73,12 +107,12 @@ const SentenceBuilder = ({
   const currentSentence = sentences[currentIndex];
 
   // Handle word selection
-  const handleWordClick = (word: string) => {
+  const handleWordClick = (word: string, index: number) => {
     if (taskResult !== null || isStepCompleted) return;
 
     setSelectedWords([...selectedWords, word]);
 
-    setAvailableWords(availableWords.filter((w) => w !== word));
+    setAvailableWords(availableWords.filter((_, i) => i !== index));
   };
 
   // Handle word removal (click on selected word to remove it)
@@ -208,7 +242,7 @@ const SentenceBuilder = ({
                     availableWords.map((word, index) => (
                       <button
                         key={index}
-                        onClick={() => handleWordClick(word)}
+                        onClick={() => handleWordClick(word, index)}
                         disabled={taskResult !== null || isStepCompleted}
                         className={`gradient-button w-fit ${
                           taskResult !== null || isStepCompleted
