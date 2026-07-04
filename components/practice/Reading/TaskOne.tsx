@@ -17,35 +17,6 @@ interface Task1Props {
   onTaskComplete: (result: TaskResult | null) => void;
 }
 
-const phonemeSounds: { [key: string]: string } = {
-  a: "ah",
-  b: "buh",
-  c: "kuh",
-  d: "duh",
-  e: "eh",
-  f: "fuh",
-  g: "guh",
-  h: "huh",
-  i: "ih",
-  j: "juh",
-  k: "kuh",
-  l: "luh",
-  m: "muh",
-  n: "nuh",
-  o: "ah",
-  p: "puh",
-  q: "kwuh",
-  r: "ruh",
-  s: "ss",
-  t: "tuh",
-  u: "uh",
-  v: "vuh",
-  w: "wuh",
-  x: "ks",
-  y: "yuh",
-  z: "zuh",
-};
-
 const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
   const { user, accessToken } = useAuthStore();
   const [letters, setLetters] = useState<string[]>([]);
@@ -94,10 +65,7 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
   const handlePlayLetter = (letter: string) => {
     if (taskResult !== null) return;
 
-    const lowerLetter = letter.toLowerCase();
-    const sound = phonemeSounds[lowerLetter] || letter;
-
-    const utterance = new SpeechSynthesisUtterance(sound);
+    const utterance = new SpeechSynthesisUtterance(letter);
     utterance.lang = "en-US";
     utterance.pitch = 1;
     utterance.rate = 1;
@@ -127,7 +95,7 @@ const Task1PhonemeFlashcards = ({ taskResult, onTaskComplete }: Task1Props) => {
     <div className="w-full bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-8 rounded-xl shadow-lg flex flex-col gap-6">
       <TaskHeader
         title="Phoneme Flashcards"
-        description="Click the cards to hear the sound"
+        description="Click the cards to hear the letter"
         taskNumber={1}
       />
 
