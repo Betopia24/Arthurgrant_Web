@@ -22,6 +22,7 @@ import {
   DailyCheckRewardResponseType,
   RewardVideoItemsType,
 } from "@/types/rewardTypes";
+import { useAuthStore } from "@/stores/authStore";
 import {
   TaskListSkeleton,
   VideoInfoSkeleton,
@@ -30,6 +31,7 @@ import {
 } from "./RewardSkeletons";
 
 const RewardVideo = () => {
+  const { user } = useAuthStore();
   const [data, setData] = useState<DailyCheckRewardResponseType | null>(null);
   const [rewardVideos, setRewardVideos] = useState<RewardVideoItemsType[]>([]);
   const [selectedVideo, setSelectedVideo] =
@@ -46,6 +48,15 @@ const RewardVideo = () => {
     data: false,
     rewardVideos: false,
   });
+
+  const isCurrentVideoLocked = () => {
+    if (allCompleted) return false;
+    if (!selectedVideo) return true;
+
+    // If the selected video is in the archive list, it is already unlocked in the past
+    const isArchived = rewardVideos.some((v) => v.id === selectedVideo.id);
+    return !isArchived;
+  };
 
   // Format views count
   const formatViews = (views: number): string => {
@@ -103,22 +114,20 @@ const RewardVideo = () => {
     }
   };
 
-  // Handle "See All Video" button click
+  // Handle "Archive Rewards" button click
   const handleSeeAllVideos = async () => {
-    if (!allCompleted) return;
+    const nextShowState = !showVideoList;
+    setShowVideoList(nextShowState);
 
-    // If video list is not shown, fetch and show videos
-    if (!showVideoList) {
+    // If we are opening the list, fetch the videos
+    if (nextShowState) {
       await fetchAllRewardVideo();
     }
-    setShowVideoList((prev) => !prev);
   };
 
   // Handle video item click
   const handleVideoClick = (video: RewardVideoItemsType) => {
-    if (allCompleted) {
-      setSelectedVideo(video);
-    }
+    setSelectedVideo(video);
   };
 
   // Fetch daily reward check on component mount
@@ -134,7 +143,19 @@ const RewardVideo = () => {
         );
 
         if (res.success) {
-          setData(res.data);
+          // Filter out "Interactive Writing" task
+          const filteredTasks = res.data?.progress?.tasks?.filter(
+            (task: any) => task.name !== "Interactive Writing"
+          ) || [];
+          
+          const filteredData = {
+            ...res.data,
+            progress: {
+              ...res.data.progress,
+              tasks: filteredTasks,
+            },
+          };
+          setData(filteredData);
         }
       } catch (error) {
         console.error("Error fetching daily rewards:", error);
@@ -151,12 +172,16 @@ const RewardVideo = () => {
 
   useEffect(() => {
     if (data) {
-      const completed = data?.progress.tasks?.every((task) => task.completed);
+      const isAdult = user?.age === "18-40";
+      const tasks = data?.progress.tasks || [];
+      const completed = isAdult
+        ? tasks.some((task) => task.completed)
+        : tasks.every((task) => task.completed);
       setAllCompleted(completed || false);
     } else {
       setAllCompleted(false);
     }
-  }, [data]);
+  }, [data, user?.age]);
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -177,8 +202,8 @@ const RewardVideo = () => {
               title={selectedVideo?.title || "Reward Video"}
               src={selectedVideo?.videoUrl || "/videos/demo.mp4"}
               preload="auto"
-              controls={allCompleted}
-              hideControlsOnMouseLeave={allCompleted}
+              controls={!isCurrentVideoLocked()}
+              hideControlsOnMouseLeave={!isCurrentVideoLocked()}
               playsInline
               load="visible"
               posterLoad="visible"
@@ -192,13 +217,13 @@ const RewardVideo = () => {
                 />
               </MediaProvider>
 
-              {/* Default controls only if allComplete */}
-              {allCompleted && (
+              {/* Default controls only if not locked */}
+              {!isCurrentVideoLocked() && (
                 <DefaultVideoLayout icons={defaultLayoutIcons} />
               )}
 
               {/*  LOCK OVERLAY WHEN NOT COMPLETE */}
-              {!allCompleted && (
+              {isCurrentVideoLocked() && (
                 <div
                   className="
                     absolute inset-0 z-20 flex items-center justify-center 
@@ -231,7 +256,7 @@ const RewardVideo = () => {
               )}
 
               {/* Disable clicking/playing if locked */}
-              {!allCompleted && (
+              {isCurrentVideoLocked() && (
                 <div className="absolute inset-0 z-10 pointer-events-auto" />
               )}
             </MediaPlayer>
@@ -240,7 +265,7 @@ const RewardVideo = () => {
           {/* Video Info - Show when video is selected */}
           {loading.data ? (
             <VideoInfoSkeleton />
-          ) : selectedVideo && allCompleted ? (
+          ) : selectedVideo && !isCurrentVideoLocked() ? (
             <div className="mt-4 text-white">
               <h3 className="text-base sm:text-lg font-semibold">
                 {selectedVideo.title}
@@ -314,21 +339,18 @@ const RewardVideo = () => {
             </ul>
           )}
 
-          {/* See All Video Button */}
+          {/* Archive Rewards Button */}
           <button
-            disabled={!allCompleted || loading.data}
+            disabled={loading.data}
             onClick={handleSeeAllVideos}
-            className={`mt-2 xl:mt-4 inline-flex items-center gap-2 justify-center rounded-xl px-4 sm:px-6 py-2 text-sm sm:text-base font-semibold w-max bg-gradient-brand text-white transition-all duration-200 ${
-              allCompleted && !loading.data
-                ? "hover:opacity-90 cursor-pointer"
-                : "opacity-40 cursor-not-allowed"
-            } ${loading.data ? "animate-pulse" : ""}`}>
+            className={`mt-2 xl:mt-4 inline-flex items-center gap-2 justify-center rounded-xl px-4 sm:px-6 py-2 text-sm sm:text-base font-semibold w-max bg-gradient-brand text-white transition-all duration-200 hover:opacity-90 cursor-pointer ${
+              loading.data ? "opacity-40 cursor-not-allowed animate-pulse" : ""
+            }`}>
             {loading.data ? (
               <>Loading...</>
             ) : (
               <>
-                {!allCompleted && <FaLock className="w-3 h-3 sm:w-4 sm:h-4" />}
-                {showVideoList ? "Hide Videos" : "See All Videos"}
+                {showVideoList ? "Hide Videos" : "Archive Rewards"}
               </>
             )}
           </button>

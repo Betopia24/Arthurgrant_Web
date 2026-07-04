@@ -137,6 +137,7 @@ function ProfilePage() {
   const [lastName, setLastName] = useState("");
   const [language, setLanguage] = useState("");
   const [hobby, setHobby] = useState("");
+  const [age, setAge] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -154,6 +155,7 @@ function ProfilePage() {
       setLastName(user.lastName || "");
       setHobby(user.hobbies || "");
       setLanguage(user.language || "English");
+      setAge(user.age || "");
     }
   }, [user]);
 
@@ -194,6 +196,7 @@ function ProfilePage() {
       formData.append("lastName", lastName.trim());
       formData.append("hobbies", hobby.trim());
       formData.append("language", language.trim());
+      formData.append("age", age.trim());
 
       const result = await usersApi.updateProfile(formData);
 
@@ -205,6 +208,7 @@ function ProfilePage() {
           lastName: result.data.lastName || lastName.trim(),
           hobbies: result.data.hobbies || hobby.trim(),
           language: result.data.language || language.trim(),
+          age: result.data.age || age.trim(),
           profilePic: result.data.profilePic || user.profilePic,
         };
         setUser(updatedUser);
@@ -520,6 +524,30 @@ function ProfilePage() {
                               />
                             </div>
                           </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                            <div className="flex flex-col gap-2">
+                              <label
+                                htmlFor="age"
+                                className="text-sm text-gray-300">
+                                Age Group
+                              </label>
+                              <select
+                                id="age"
+                                value={age}
+                                onChange={(e) => setAge(e.target.value)}
+                                className="p-2.5 text-sm border border-gray-600 bg-[#35364E] rounded-xl text-white"
+                              >
+                                <option value="" disabled>
+                                  Select an age group
+                                </option>
+                                <option value="6-9">6-9</option>
+                                <option value="10-13">10-13</option>
+                                <option value="14-17">14-17</option>
+                                <option value="18-40">18-40</option>
+                              </select>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
@@ -785,6 +813,28 @@ function ProfilePage() {
                       onChange={(e) => setHobby(e.target.value)}
                       className="p-2.5 text-sm border border-gray-600 bg-[#35364E] rounded-xl text-white"
                     />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="age" className="text-sm text-gray-300">
+                      Age Group
+                    </label>
+                    <select
+                      id="age"
+                      value={age}
+                      onChange={(e) => setAge(e.target.value)}
+                      className="p-2.5 text-sm border border-gray-600 bg-[#35364E] rounded-xl text-white"
+                    >
+                      <option value="" disabled>
+                        Select an age group
+                      </option>
+                      <option value="6-9">6-9</option>
+                      <option value="10-13">10-13</option>
+                      <option value="14-17">14-17</option>
+                      <option value="18-40">18-40</option>
+                    </select>
                   </div>
                 </div>
               </div>
