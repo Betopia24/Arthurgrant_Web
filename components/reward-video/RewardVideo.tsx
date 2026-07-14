@@ -139,15 +139,16 @@ const RewardVideo = () => {
 
         const res = await apiRequest(
           "/reward-video/check/daily/rewards",
-          "GET"
+          "GET",
         );
 
         if (res.success) {
           // Filter out "Interactive Writing" task
-          const filteredTasks = res.data?.progress?.tasks?.filter(
-            (task: any) => task.name !== "Interactive Writing"
-          ) || [];
-          
+          const filteredTasks =
+            res.data?.progress?.tasks?.filter(
+              (task: any) => task.name !== "Interactive Writing",
+            ) || [];
+
           const filteredData = {
             ...res.data,
             progress: {
@@ -207,7 +208,8 @@ const RewardVideo = () => {
               playsInline
               load="visible"
               posterLoad="visible"
-              className="relative group overflow-hidden rounded-lg sm:rounded-md w-full">
+              className="relative group overflow-hidden rounded-lg sm:rounded-md w-full"
+            >
               <MediaProvider>
                 <Poster
                   className="absolute inset-0 block h-full w-full bg-black rounded-lg sm:rounded-md opacity-0 
@@ -276,7 +278,7 @@ const RewardVideo = () => {
               <div className="flex flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-400">
                 <span>Category: {selectedVideo.category}</span>
                 <span>Age: {selectedVideo.age}</span>
-                <span>Views: {formatViews(selectedVideo.views)}</span>
+                {/* <span>Views: {formatViews(selectedVideo.views)}</span> */}
               </div>
             </div>
           ) : null}
@@ -326,11 +328,13 @@ const RewardVideo = () => {
               {data?.progress.tasks.map((item, index) => (
                 <li
                   key={index}
-                  className="flex items-center gap-2 text-white text-sm sm:text-base">
+                  className="flex items-center gap-2 text-white text-sm sm:text-base"
+                >
                   <div
                     className={`w-5 h-5 flex items-center justify-center rounded-full text-white flex-shrink-0 ${
                       item.completed ? "bg-green-500" : "bg-gray-400"
-                    }`}>
+                    }`}
+                  >
                     <Check className="w-3 h-3" />
                   </div>
                   <span className="break-words">{item.name}</span>
@@ -345,13 +349,12 @@ const RewardVideo = () => {
             onClick={handleSeeAllVideos}
             className={`mt-2 xl:mt-4 inline-flex items-center gap-2 justify-center rounded-xl px-4 sm:px-6 py-2 text-sm sm:text-base font-semibold w-max bg-gradient-brand text-white transition-all duration-200 hover:opacity-90 cursor-pointer ${
               loading.data ? "opacity-40 cursor-not-allowed animate-pulse" : ""
-            }`}>
+            }`}
+          >
             {loading.data ? (
               <>Loading...</>
             ) : (
-              <>
-                {showVideoList ? "Hide Videos" : "Archive Rewards"}
-              </>
+              <>{showVideoList ? "Hide Videos" : "Archive Rewards"}</>
             )}
           </button>
 
@@ -382,7 +385,8 @@ const RewardVideo = () => {
                           selectedVideo?.id === video.id
                             ? "bg-brand-primary/20 border border-brand-primary"
                             : "bg-[#4C4F69] hover:bg-[#565973]"
-                        }`}>
+                        }`}
+                      >
                         <div className="w-12 h-9 sm:w-16 sm:h-12 bg-black rounded flex-shrink-0 overflow-hidden">
                           <img
                             src={"/reward-thumbnail.png"}
@@ -398,9 +402,9 @@ const RewardVideo = () => {
                             <span className="text-xs text-gray-400 bg-[#2B2E4E] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
                               {video.category}
                             </span>
-                            <span className="text-xs text-gray-400">
+                            {/* <span className="text-xs text-gray-400">
                               {formatViews(video.views)} views
-                            </span>
+                            </span> */}
                           </div>
                         </div>
                         {selectedVideo?.id === video.id && (
