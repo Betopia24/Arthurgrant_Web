@@ -9,24 +9,48 @@ import { useAuthStore } from "@/stores/authStore";
 import { useLanguageStore, languages } from "@/stores/languageStore";
 import { usersApi } from "@/lib/api";
 
-const navLinks = [
-  { href: "/", label: "Home" },
-  {
-    label: "Practice",
-    dropdown: [
+interface NavDropdownItem {
+  href: string;
+  label: string;
+}
+
+interface NavLinkItem {
+  href?: string;
+  label: string;
+  dropdown?: NavDropdownItem[];
+}
+
+const getPracticeDropdownItems = (age?: string): NavDropdownItem[] => {
+  if (age === "6-9") {
+    return [
       { href: "/practice/reading", label: "Reading Practice" },
-      { href: "/practice/speaking", label: "Speaking Practice" },
-      { href: "/practice/writing", label: "Writing Practice" },
+      { href: "/practice/speaking", label: "Native Speaking " },
+    ];
+  }
+  if (age === "10-13" || age === "14-17") {
+    return [
+      { href: "/practice/reading", label: "Interactive Reading" },
+      { href: "/practice/speaking", label: "Native Speaking" },
+      { href: "/practice/writing", label: "Smart Writing" },
+    ];
+  }
+  if (age === "18-40") {
+    return [
+      { href: "/practice/writing", label: "Smart Writing" },
       { href: "/practice/presentation", label: "Presentation Practice" },
       { href: "/practice/learn-english", label: "English for Adult Practice" },
-    ],
-  },
-  { href: "/progress", label: "Progress" },
-  { href: "/rewards", label: "Rewards" },
-  { href: "/about", label: "About" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/contact", label: "Contact Us" },
-];
+    ];
+  }
+
+  // Fallback default if age is not specified or user is logged out
+  return [
+    { href: "/practice/reading", label: "Reading Practice" },
+    { href: "/practice/speaking", label: "Speaking Practice" },
+    { href: "/practice/writing", label: "Writing Practice" },
+    { href: "/practice/presentation", label: "Presentation Practice" },
+    { href: "/practice/learn-english", label: "English for Adult Practice" },
+  ];
+};
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -101,7 +125,7 @@ const Navbar = () => {
   };
 
   // Check if a link or its dropdown items are active
-  const isLinkActive = (link: (typeof navLinks)[0]) => {
+  const isLinkActive = (link: NavLinkItem) => {
     if (link.href && pathname === link.href) {
       return true;
     }
@@ -115,6 +139,19 @@ const Navbar = () => {
   const isDropdownItemActive = (href: string) => {
     return pathname === href;
   };
+
+  const navLinks: NavLinkItem[] = [
+    { href: "/", label: "Home" },
+    {
+      label: "Practice",
+      dropdown: getPracticeDropdownItems(user?.age),
+    },
+    { href: "/progress", label: "Progress" },
+    { href: "/rewards", label: "Rewards" },
+    { href: "/about", label: "About" },
+    { href: "/pricing", label: "Pricing" },
+    { href: "/contact", label: "Contact Us" },
+  ];
 
   const filteredNavLinks = navLinks.filter((link) => {
     if (
@@ -199,7 +236,7 @@ const Navbar = () => {
                   {/* Dropdown Menu */}
                   {isDropdown && hoveredDropdown === link.label && (
                     <div className="absolute top-[calc(100%+0.5rem)] left-0 w-56 lg:w-60 bg-gradient-to-br from-[#28284A] via-[#28284A] to-[#12122A] border border-gray-700 rounded-lg shadow-lg flex flex-col px-4 z-50">
-                      {link.dropdown.map((item) => {
+                      {link.dropdown?.map((item) => {
                         const isItemActive = isDropdownItemActive(item.href);
                         return (
                           <Link
@@ -396,7 +433,7 @@ const Navbar = () => {
                       )}
                     >
                       <div className="flex flex-col pl-4 mt-1 border-l-2 border-gray-700">
-                        {link.dropdown.map((item) => {
+                        {link.dropdown?.map((item) => {
                           const isItemActive = isDropdownItemActive(item.href);
                           return (
                             <Link

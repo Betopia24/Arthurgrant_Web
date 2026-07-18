@@ -7,6 +7,7 @@ import LearningProgress from "@/components/landing/LearningProgress";
 import Pricing from "@/components/landing/Pricing";
 import Review from "@/components/landing/Review";
 import About from "@/components/landing/About";
+import DownloadApp from "@/components/landing/DownloadApp";
 import LanguagePopup from "@/components/shared/LanguagePopup";
 import { Volume2, VolumeOff } from "lucide-react";
 import { useLanguageStore } from "@/stores/languageStore";
@@ -244,6 +245,7 @@ export default function Home() {
           <Review />
           <Pricing />
           <FAQ />
+          <DownloadApp />
 
           {!isVideoModalOpen && (
             <div className="fixed bottom-4 right-4 z-50">

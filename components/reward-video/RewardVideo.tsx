@@ -146,7 +146,9 @@ const RewardVideo = () => {
           // Filter out "Interactive Writing" task
           const filteredTasks =
             res.data?.progress?.tasks?.filter(
-              (task: any) => task.name !== "Interactive Writing",
+              (task: any) =>
+                task.name !== "Hand Writing Practice" &&
+                task.name !== "Free Writing Practice",
             ) || [];
 
           const filteredData = {
