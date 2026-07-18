@@ -4,10 +4,6 @@ import Heading from "@/components/shared/Heading";
 import { useAuthStore } from "@/stores/authStore";
 import { FaCheck } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import Swal from "sweetalert2";
-import useGetMe from "@/hooks/useGetMe";
-import { useEffect, useState } from "react";
-import { authApi } from "@/lib/api";
 
 interface Plan {
   id: string;
@@ -33,13 +29,10 @@ interface PricingStepProps {
 }
 
 export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
-  const { data: users } = useGetMe();
-  console.log(users);
   const { isAuthenticated, user } = useAuthStore();
   const router = useRouter();
 
   // Format price for display
-  const Subscription = user?.Subscription;
   const formatPrice = (plan: Plan) => {
     if (plan.amount === 0) return "Free";
 
@@ -72,46 +65,15 @@ export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
   };
 
   const handlePlanClick = (plan: Plan) => {
-    if (plan.planName.toLowerCase() === "free") {
-      return;
-    }
+    const isFreePlan =
+      plan.amount === 0 || plan.planName.toLowerCase().includes("free");
+    if (isFreePlan) return;
+
     if (!isAuthenticated) {
       router.push("/signin");
       return;
     }
     onSelectPlan(plan);
-  };
-
-  const handlePlanStart = (plan: Plan) => {
-    if (users === null) {
-      Swal.fire({
-        title: `Start ${plan?.planName} Plan?`,
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Yes, start",
-        cancelButtonText: "Cancel",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          console.log("Start plan API call here");
-        }
-      });
-      return;
-    } else if (users?.isSubscribed === true) {
-      Swal.fire({
-        title: "You have an Active Subscription",
-        text: "You already have an active subscription with us.",
-        icon: "info",
-        draggable: true,
-        showCancelButton: true,
-        confirmButtonText: "Manage subscription",
-        cancelButtonText: "Close",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.href = "/profile";
-        }
-      });
-      return;
-    }
   };
 
   return (
@@ -123,75 +85,81 @@ export default function PricingStep({ plans, onSelectPlan }: PricingStepProps) {
         align="center"
       />
       <div className="mt-2 flex flex-col md:flex-row gap-6 w-full justify-center">
-        {plans.map((plan, idx) => (
-          <div
-            key={plan.id}
-            className={`flex-1 p-8 rounded-2xl flex flex-col justify-between cursor-pointer ${
-              idx === 1 // Always highlight the second plan
-                ? "relative z-0"
-                : "bg-gradient-to-br from-[#2B2E4E] to-[#12132F] border border-gray-700"
-            }`}
-            onClick={() => handlePlanClick(plan)}
-          >
-            {idx === 1 && (
-              <div className="absolute inset-0 rounded-2xl p-[2px] bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to z-[-1]">
-                <div className="bg-[#171045] rounded-2xl h-full w-full"></div>
-              </div>
-            )}
+        {plans.map((plan, idx) => {
+          const isFreePlan =
+            plan.amount === 0 || plan.planName.toLowerCase().includes("free");
+          const isUserPaid =
+            user?.isSubscribed || user?.isSubscriptionFree === false;
+          const isCurrentSubscribedPlan =
+            user?.Subscription?.planId === plan.id ||
+            user?.Subscription?.plan?.id === plan.id;
 
-            <div className="flex flex-col gap-4 relative z-10">
-              <div className="w-full flex items-center flex-col gap-2">
-                <h3 className="text-xl font-semibold">{plan.planName}</h3>
-                <p className="text-3xl font-bold">{formatPrice(plan)}</p>
-                <span className="text-sm font-normal">
-                  {formatDuration(plan)}
-                </span>
-              </div>
-              <ul className="flex flex-col gap-2 mt-4">
-                {plan.features.map((feature, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center gap-2 text-gray-200 tracking-wider"
-                  >
-                    <FaCheck className="text-green-500" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            {idx === 1 ? (
-              // Middle Plan Button
-              <button
-                onClick={() => handlePlanStart(plan)}
-                className={`mt-12 py-2.5 w-full rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer ${
-                  !isAuthenticated ? "opacity-70" : ""
-                }`}
-              >
-                Start With {plan.planName}
-              </button>
-            ) : (
-              // Other Plan Buttons
-              <button
-                onClick={
-                  handlePlanStart ? () => handlePlanStart(plan) : undefined
-                }
-                className={`relative mt-12 py-2.5 w-full rounded-xl bg-gradient-brand h-[44px] ${
-                  !isAuthenticated || plan?.planName === "free"
-                    ? "opacity-40 cursor-no-drop"
-                    : "cursor-pointer"
-                }`}
-              >
-                <div className="absolute inset-[1px] bg-gradient-to-br from-[#2E2E43] via-[#2C2C41] to-[#27273B] rounded-xl p-2 flex justify-center items-center">
-                  <h1 className="text-gradient font-semibold">
-                    Start With {plan.planName} Plan
-                  </h1>
+          const isCurrentPlan = isFreePlan
+            ? !isUserPaid
+            : isCurrentSubscribedPlan;
+
+          return (
+            <div
+              key={plan.id}
+              className={`flex-1 p-8 rounded-2xl flex flex-col justify-between ${
+                idx === 1
+                  ? "relative z-0"
+                  : "bg-gradient-to-br from-[#2B2E4E] to-[#12132F] border border-gray-700"
+              }`}
+            >
+              {idx === 1 && (
+                <div className="absolute inset-0 rounded-2xl p-[2px] bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to z-[-1]">
+                  <div className="bg-[#171045] rounded-2xl h-full w-full"></div>
                 </div>
-              </button>
-            )}
+              )}
 
-            {/* Buttons */}
-          </div>
-        ))}
+              <div className="flex flex-col gap-4 relative z-10">
+                <div className="w-full flex items-center flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-semibold">{plan.planName}</h3>
+                    {isCurrentPlan && (
+                      <span className="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2.5 py-0.5 rounded-full font-medium">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-3xl font-bold">{formatPrice(plan)}</p>
+                  <span className="text-sm font-normal">
+                    {formatDuration(plan)}
+                  </span>
+                </div>
+                <ul className="flex flex-col gap-2 mt-4">
+                  {plan.features.map((feature, i) => (
+                    <li
+                      key={i}
+                      className="flex items-center gap-2 text-gray-200 tracking-wider"
+                    >
+                      <FaCheck className="text-green-500" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Plan Action Button */}
+              {isFreePlan || isCurrentPlan ? (
+                <button
+                  disabled
+                  className="mt-12 py-3 w-full rounded-xl bg-gray-700/40 border border-gray-600/50 text-gray-400 font-semibold cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  Current Plan
+                </button>
+              ) : (
+                <button
+                  onClick={() => handlePlanClick(plan)}
+                  className="mt-12 py-3 w-full rounded-xl bg-gradient-brand text-white font-semibold hover:opacity-90 transition cursor-pointer shadow-lg"
+                >
+                  Start With {plan.planName} Plan
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
     </>
   );

@@ -10,48 +10,22 @@ const stripePromise = loadStripe(
 
 interface BillingWrapperProps {
   selectedPlan: any;
-  paymentIntent: any;
+  subscriptionData: any;
   onBack: () => void;
-  onPaymentSuccess: () => void;
+  onPaymentSuccess: (successData?: any) => void;
 }
 
 export default function BillingWrapper({
   selectedPlan,
-  paymentIntent,
+  subscriptionData,
   onBack,
   onPaymentSuccess,
 }: BillingWrapperProps) {
-  if (!paymentIntent?.clientSecret) {
-    return (
-      <div className="w-full max-w-7xl mx-auto flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
-          <p className="mt-4 text-lg">Loading payment form...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <Elements
-      stripe={stripePromise}
-      options={{
-        clientSecret: paymentIntent.clientSecret,
-        appearance: {
-          theme: "night",
-          variables: {
-            colorPrimary: "#6366f1",
-            colorBackground: "#232339",
-            colorText: "#ffffff",
-            colorDanger: "#ef4444",
-            fontFamily: "Inter, system-ui, sans-serif",
-          },
-        },
-      }}
-    >
+    <Elements stripe={stripePromise}>
       <BillingStep
         selectedPlan={selectedPlan}
-        paymentIntent={paymentIntent}
+        subscriptionData={subscriptionData}
         onBack={onBack}
         onPaymentSuccess={onPaymentSuccess}
       />

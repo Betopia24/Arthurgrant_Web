@@ -221,9 +221,57 @@ export const subscriptionApi = {
     return response.data;
   },
 
+  // Create Stripe Payment Method
+  createStripePaymentMethod: async (cardData: {
+    number: string;
+    exp_month: string;
+    exp_year: string;
+    cvc: string;
+  }) => {
+    const params = new URLSearchParams();
+    params.append("type", "card");
+    params.append("card[number]", cardData.number.replace(/\s/g, ""));
+    params.append("card[exp_month]", cardData.exp_month);
+    params.append("card[exp_year]", cardData.exp_year);
+    params.append("card[cvc]", cardData.cvc);
+
+    const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+    const response = await axios.post(
+      "https://api.stripe.com/v1/payment_methods",
+      params,
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${stripeKey}`,
+        },
+      }
+    );
+    return response.data;
+  },
+
+  // Confirm payment
+  confirmPayment: async (paymentMethodId: string) => {
+    const response = await api.post("/subscriptions/confirm-payment", {
+      paymentMethodId,
+    });
+    return response.data;
+  },
+
   // Get user's current subscription
   getMySubscription: async () => {
     const response = await api.get("/subscriptions/my-subscription");
+    return response.data;
+  },
+
+  // Cancel subscription
+  cancelSubscription: async () => {
+    const response = await api.post("/subscriptions/cancel-subscription");
+    return response.data;
+  },
+
+  // Reactivate subscription
+  reactivateSubscription: async () => {
+    const response = await api.post("/subscriptions/reactivate-subscription");
     return response.data;
   },
 

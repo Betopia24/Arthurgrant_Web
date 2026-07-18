@@ -29,6 +29,8 @@ interface Plan {
   updatedAt: string;
 }
 
+import toast from "react-hot-toast";
+
 export default function SubscriptionPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
@@ -40,7 +42,7 @@ export default function SubscriptionPage() {
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [paymentIntent, setPaymentIntent] = useState<any>(null);
+  const [subscriptionData, setSubscriptionData] = useState<any>(null);
 
   // Fetch plans from API
   useEffect(() => {
@@ -80,12 +82,13 @@ export default function SubscriptionPage() {
     if (!selectedPlan) return;
 
     try {
-      // Create subscription intent
+      // Step 1: Create subscription
       const result = await createSubscription(selectedPlan.id);
-      setPaymentIntent(result.data);
+      setSubscriptionData(result.data);
       setStep("billing");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create subscription:", error);
+      toast.error(error.message || "Failed to create subscription");
     }
   };
 
@@ -133,10 +136,10 @@ export default function SubscriptionPage() {
         )}
 
         {/* Step 3: Billing */}
-        {step === "billing" && selectedPlan && paymentIntent && (
+        {step === "billing" && selectedPlan && (
           <BillingWrapper
             selectedPlan={selectedPlan}
-            paymentIntent={paymentIntent}
+            subscriptionData={subscriptionData}
             onBack={handleBack}
             onPaymentSuccess={handlePaymentSuccess}
           />

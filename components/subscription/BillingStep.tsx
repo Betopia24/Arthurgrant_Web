@@ -1,12 +1,11 @@
 // components/subscription/BillingStep.tsx
 "use client";
 import { useState } from "react";
-import {
-  useStripe,
-  useElements,
-  PaymentElement,
-} from "@stripe/react-stripe-js";
-import { FaArrowRightLong } from "react-icons/fa6";
+import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+import { useSubscription } from "@/hooks/useSubscription";
+import { FaArrowRightLong, FaCreditCard, FaLock } from "react-icons/fa6";
+
+import toast from "react-hot-toast";
 
 interface Plan {
   id: string;
@@ -28,10 +27,29 @@ interface Plan {
 
 interface BillingStepProps {
   selectedPlan: Plan;
-  paymentIntent: any;
+  subscriptionData?: any;
   onBack: () => void;
-  onPaymentSuccess: () => void;
+  onPaymentSuccess: (successData?: any) => void;
 }
+
+const CARD_ELEMENT_OPTIONS = {
+  style: {
+    base: {
+      color: "#ffffff",
+      fontFamily: "Inter, system-ui, sans-serif",
+      fontSmoothing: "antialiased",
+      fontSize: "16px",
+      "::placeholder": {
+        color: "#9ca3af",
+      },
+      iconColor: "#a855f7",
+    },
+    invalid: {
+      color: "#ef4444",
+      iconColor: "#ef4444",
+    },
+  },
+};
 
 export default function BillingStep({
   selectedPlan,
@@ -40,21 +58,11 @@ export default function BillingStep({
 }: BillingStepProps) {
   const stripe = useStripe();
   const elements = useElements();
+  const { confirmPayment, refreshUserSubscription } = useSubscription();
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [billingDetails, setBillingDetails] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    address: {
-      line1: "",
-      line2: "",
-      city: "",
-      state: "",
-      postal_code: "",
-      country: "US", // Default country
-    },
-  });
+  const [name, setName] = useState("");
 
   const formatPrice = (plan: Plan) => {
     if (plan.amount === 0) return "Free";
@@ -65,7 +73,13 @@ export default function BillingStep({
     e.preventDefault();
 
     if (!stripe || !elements) {
-      setErrorMessage("Payment system is not ready. Please try again.");
+      setErrorMessage("Stripe has not loaded yet. Please refresh the page.");
+      return;
+    }
+
+    const cardElement = elements.getElement(CardElement);
+    if (!cardElement) {
+      setErrorMessage("Card component not found.");
       return;
     }
 
@@ -73,278 +87,97 @@ export default function BillingStep({
     setErrorMessage(null);
 
     try {
-      const { error } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/subscription`,
-          payment_method_data: {
-            billing_details: {
-              name: billingDetails.name || "Customer", // Fallback name
-              email: billingDetails.email,
-              phone: billingDetails.phone,
-              address: {
-                line1: billingDetails.address.line1,
-                line2: billingDetails.address.line2,
-                city: billingDetails.address.city,
-                state: billingDetails.address.state,
-                postal_code: billingDetails.address.postal_code,
-                country: billingDetails.address.country,
-              },
-            },
+      // Step 2: Create Stripe Payment Method using official Stripe CardElement
+      const { paymentMethod, error: stripeError } =
+        await stripe.createPaymentMethod({
+          type: "card",
+          card: cardElement,
+          billing_details: {
+            name: name || undefined,
           },
-        },
-        redirect: "if_required",
-      });
+        });
 
-      if (error) {
-        setErrorMessage(error.message || "Payment failed. Please try again.");
-        setIsProcessing(false);
+      if (stripeError || !paymentMethod) {
+        throw new Error(
+          stripeError?.message || "Failed to process card details."
+        );
+      }
+
+      // Step 3: Confirm Payment with backend using paymentMethod.id
+      const confirmRes = await confirmPayment(paymentMethod.id);
+
+      if (confirmRes.success) {
+        await refreshUserSubscription();
+        onPaymentSuccess(confirmRes.data);
       } else {
-        // Payment succeeded
-        onPaymentSuccess();
+        throw new Error(confirmRes.message || "Payment confirmation failed.");
       }
     } catch (error: any) {
-      setErrorMessage(error.message || "An unexpected error occurred.");
+      const msg = error.message || "An unexpected error occurred during payment.";
+      setErrorMessage(msg);
+      toast.error(msg);
+    } finally {
       setIsProcessing(false);
-    }
-  };
-
-  // Update billing details from form inputs
-  const handleBillingDetailChange = (field: string, value: string) => {
-    if (field.includes(".")) {
-      const [parent, child] = field.split(".");
-      if (parent === "address") {
-        setBillingDetails((prev) => ({
-          ...prev,
-          address: {
-            ...prev.address,
-            [child]: value,
-          },
-        }));
-      }
-    } else {
-      setBillingDetails((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
     }
   };
 
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
-      {/* Left Section - Billing & Payment Form */}
-      <div className="flex-1 bg-[#232339] p-8 rounded-xl">
-        <h2 className="text-xl sm:text-2xl font-semibold mb-8">
-          Billing Information
+      {/* Left Section - Payment Form */}
+      <div className="flex-1 bg-[#232339] p-8 rounded-xl border border-gray-700 shadow-xl">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-6 flex items-center justify-between">
+          <span className="flex items-center gap-3">
+            <FaCreditCard className="text-purple-400" />
+            Payment Information
+          </span>
+          <span className="flex items-center gap-1 text-xs font-normal text-gray-400 bg-white/5 px-3 py-1 rounded-full border border-white/10">
+            <FaLock className="text-green-400" /> Encrypted & Secure
+          </span>
         </h2>
 
         {errorMessage && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-xl text-red-200">
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200 text-sm">
             {errorMessage}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Billing Details Form */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="John Doe"
-                  className="w-full p-3 rounded-xl bg-[#2B2E4E] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                  value={billingDetails.name}
-                  onChange={(e) =>
-                    handleBillingDetailChange("name", e.target.value)
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  required
-                  placeholder="john@example.com"
-                  className="w-full p-3 rounded-xl bg-[#2B2E4E] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                  value={billingDetails.email}
-                  onChange={(e) =>
-                    handleBillingDetailChange("email", e.target.value)
-                  }
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                placeholder="+1 (555) 000-0000"
-                className="w-full p-3 rounded-xl bg-[#2B2E4E] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                value={billingDetails.phone}
-                onChange={(e) =>
-                  handleBillingDetailChange("phone", e.target.value)
-                }
-              />
-            </div>
-          </div>
-
-          {/* Address Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4">Address Information</h3>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Street Address *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="123 Main St"
-                className="w-full p-3 rounded-xl bg-[#2B2E4E] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                value={billingDetails.address.line1}
-                onChange={(e) =>
-                  handleBillingDetailChange("address.line1", e.target.value)
-                }
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Apartment, Suite, etc. (Optional)
-              </label>
-              <input
-                type="text"
-                placeholder="Apt 4B"
-                className="w-full p-3 rounded-xl bg-[#2B2E4E] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                value={billingDetails.address.line2}
-                onChange={(e) =>
-                  handleBillingDetailChange("address.line2", e.target.value)
-                }
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  City *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="New York"
-                  className="w-full p-3 rounded-xl bg-[#2B2E4E] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                  value={billingDetails.address.city}
-                  onChange={(e) =>
-                    handleBillingDetailChange("address.city", e.target.value)
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  State *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="NY"
-                  className="w-full p-3 rounded-xl bg-[#2B2E4E] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                  value={billingDetails.address.state}
-                  onChange={(e) =>
-                    handleBillingDetailChange("address.state", e.target.value)
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  ZIP Code *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="10001"
-                  className="w-full p-3 rounded-xl bg-[#2B2E4E] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                  value={billingDetails.address.postal_code}
-                  onChange={(e) =>
-                    handleBillingDetailChange(
-                      "address.postal_code",
-                      e.target.value
-                    )
-                  }
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Country *
-              </label>
-              <select
-                required
-                className="w-full p-3 rounded-xl bg-[#2B2E4E] border border-gray-600 text-white focus:outline-none focus:border-purple-500"
-                value={billingDetails.address.country}
-                onChange={(e) =>
-                  handleBillingDetailChange("address.country", e.target.value)
-                }>
-                <option value="US">United States</option>
-                <option value="CA">Canada</option>
-                <option value="GB">United Kingdom</option>
-                <option value="AU">Australia</option>
-                <option value="DE">Germany</option>
-                <option value="FR">France</option>
-                <option value="JP">Japan</option>
-                {/* Add more countries as needed */}
-              </select>
-            </div>
-          </div>
-
-          {/* Payment Element */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4">Payment Details</h3>
-            <PaymentElement
-              options={{
-                layout: "tabs",
-                fields: {
-                  billingDetails: {
-                    name: "never", // We collect name in our form
-                    email: "never", // We collect email in our form
-                    phone: "never", // We collect phone in our form
-                    address: {
-                      country: "never", // We collect country in our form
-                      line1: "never",
-                      line2: "never",
-                      city: "never",
-                      state: "never",
-                      postalCode: "never",
-                    },
-                  },
-                },
-              }}
+          {/* Cardholder Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Cardholder Name *
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="John Doe"
+              className="w-full p-3.5 rounded-xl bg-[#2B2E4E] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </div>
 
-          {/* Buttons */}
+          {/* Official Stripe Card Element */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Card Details *
+            </label>
+            <div className="p-4 rounded-xl bg-[#2B2E4E] border border-gray-600 focus-within:border-purple-500 transition">
+              <CardElement options={CARD_ELEMENT_OPTIONS} />
+            </div>
+          </div>
+
+          {/* Action Buttons */}
           <div className="flex flex-col gap-4 mt-8">
             <button
               type="submit"
               disabled={!stripe || isProcessing}
-              className="w-full py-3.5 rounded-xl bg-gradient-brand text-white font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              className="w-full py-3.5 rounded-xl bg-gradient-brand text-white font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
               {isProcessing ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  Processing...
+                  Confirming Payment...
                 </>
               ) : (
                 <>
@@ -358,7 +191,8 @@ export default function BillingStep({
               type="button"
               onClick={onBack}
               disabled={isProcessing}
-              className="relative py-2.5 w-full rounded-xl bg-gradient-brand h-12 cursor-pointer disabled:opacity-50">
+              className="relative py-2.5 w-full rounded-xl bg-gradient-brand h-12 cursor-pointer disabled:opacity-50"
+            >
               <div className="absolute inset-[1px] bg-[#3E3E51] rounded-xl p-2 flex justify-center items-center">
                 <h1 className="text-gradient font-semibold">Go Back</h1>
               </div>
@@ -368,7 +202,7 @@ export default function BillingStep({
       </div>
 
       {/* Right Section - Order Summary */}
-      <div className="flex-1 bg-[#232339] rounded-xl p-8">
+      <div className="flex-1 bg-[#232339] rounded-xl p-8 border border-gray-700 shadow-xl">
         <h2 className="text-xl sm:text-2xl font-semibold mb-8">
           Order Summary
         </h2>
@@ -425,7 +259,8 @@ export default function BillingStep({
               {selectedPlan.features.map((feature, index) => (
                 <li
                   key={index}
-                  className="flex items-center gap-2 text-gray-300 text-sm">
+                  className="flex items-center gap-2 text-gray-300 text-sm"
+                >
                   <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                   {feature}
                 </li>

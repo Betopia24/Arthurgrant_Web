@@ -21,23 +21,60 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     index: number
   ) => {
     const value = e.target.value;
+    const cleanValue = value.replace(/\D/g, "");
 
-    // Allow only numbers
-    if (/^\d?$/.test(value)) {
+    // If multiple digits entered (e.g. pasted directly)
+    if (cleanValue.length > 1) {
       const newOtp = [...otp];
-      newOtp[index] = value;
+      const digits = cleanValue.slice(0, 6 - index).split("");
+      digits.forEach((d, idx) => {
+        if (index + idx < 6) {
+          newOtp[index + idx] = d;
+        }
+      });
+      setOtp(newOtp);
+      const nextIndex = Math.min(index + digits.length, 5);
+      inputRefs.current[nextIndex]?.focus();
+      return;
+    }
+
+    // Single digit input
+    if (/^\d?$/.test(cleanValue)) {
+      const newOtp = [...otp];
+      newOtp[index] = cleanValue;
       setOtp(newOtp);
 
       // Move focus to next field only if a number was entered
-      if (value && index < 5) {
+      if (cleanValue && index < 5) {
         inputRefs.current[index + 1]?.focus();
       }
     }
+  };
+
+  // Handle Paste event for OTP input
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "");
+    if (!pastedData) return;
+
+    const newOtp = [...otp];
+    const digits = pastedData.slice(0, 6).split("");
+
+    digits.forEach((digit, i) => {
+      newOtp[i] = digit;
+    });
+
+    setOtp(newOtp);
+
+    // Focus the next empty input or last digit
+    const nextFocusIndex = Math.min(digits.length, 5);
+    inputRefs.current[nextFocusIndex]?.focus();
   };
 
   // Handle Backspace (when the user deletes a digit)
@@ -144,7 +181,8 @@ export default function Page() {
                     value={digit}
                     onChange={(e) => handleInputChange(e, index)}
                     onKeyDown={(e) => handleBackspace(e, index)}
-                    className="w-12 h-12 text-center bg-[#333450] text-white rounded-xl border border-gray-500 focus:outline-none"
+                    onPaste={handlePaste}
+                    className="w-12 h-12 text-center bg-[#333450] text-white rounded-xl border border-gray-500 focus:outline-none focus:border-purple-500 font-bold text-lg"
                   />
                 ))}
               </div>
@@ -155,6 +193,7 @@ export default function Page() {
                 <h1>
                   Didn't receive the code?{" "}
                   <button
+                    type="button"
                     onClick={handleResend}
                     className="text-gradient font-semibold"
                   >

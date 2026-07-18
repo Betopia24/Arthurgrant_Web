@@ -14,6 +14,7 @@ import { CgProfile } from "react-icons/cg";
 import FamilyMembersManager from "@/components/profile/FamilyMembersManager";
 import Cookies from "js-cookie";
 import { useLanguageStore, languages } from "@/stores/languageStore";
+import { SubscriptionStatus } from "@/components/profile/SubscriptionStatus";
 
 // Minimal ProfileSection component used inside Tabs to avoid "Cannot find name 'ProfileSection'"
 // You can replace this with the real component import later.
@@ -553,96 +554,11 @@ function ProfilePage() {
 
                       <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-8">
                         {/* Subscription Status */}
-                        <div className="bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-2xl">
-                          <h1 className="text-xl mb-2 sm:text-2xl font-semibold">
-                            Subscription Status
-                          </h1>
-
-                          {isLoadingPlans ? (
-                            <div className="flex justify-center py-8">
-                              <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
-                            </div>
-                          ) : userPlanData.isPaid ? (
-                            // PAID USER - Has active subscription
-                            <>
-                              <p className="text-lg sm:text-xl text-gradient inline-block font-semibold">
-                                {userPlanData.title} Plan
-                              </p>
-
-                              {/* Subscription details for paid users */}
-                              {subscriptionDetails && (
-                                <div className="mt-4 text-sm text-gray-300">
-                                  <p>
-                                    Start Date: {subscriptionDetails.startDate}
-                                  </p>
-                                  <p>End Date: {subscriptionDetails.endDate}</p>
-                                  <p>
-                                    Status:{" "}
-                                    <span className="text-green-400">
-                                      {subscriptionDetails.paymentStatus}
-                                    </span>
-                                  </p>
-                                </div>
-                              )}
-
-                              <ul className="flex flex-col gap-3 mt-6">
-                                {userPlanData.features.map((feature, index) => (
-                                  <li
-                                    key={index}
-                                    className="flex items-center gap-2 text-gray-200">
-                                    <FaCheck className="text-green-500" />{" "}
-                                    {feature}
-                                  </li>
-                                ))}
-                              </ul>
-
-                              <div className="mt-8 flex flex-col gap-3">
-                                {/* Current Plan Button - Non clickable */}
-                                <button
-                                  disabled
-                                  className="py-2.5 rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold opacity-70 cursor-not-allowed">
-                                  Current Plan
-                                </button>
-
-                                {/* Manage Subscription - Still clickable */}
-                                <button
-                                  onClick={handleManageSubscription}
-                                  className="py-2.5 rounded-xl border border-gray-600 bg-transparent text-gray-300 flex items-center justify-center gap-2 font-semibold hover:bg-gray-700 transition cursor-pointer">
-                                  Manage Subscription
-                                </button>
-                              </div>
-                            </>
-                          ) : (
-                            // FREE TRIAL USER
-                            <>
-                              <p className="text-lg sm:text-xl text-gray-400 inline-block font-semibold">
-                                {userPlanData.title}
-                              </p>
-                              <p className="text-gray-400 mt-2 text-sm">
-                                {userPlanData.duration}
-                              </p>
-
-                              <ul className="flex flex-col gap-3 mt-6">
-                                {userPlanData.features.map((feature, index) => (
-                                  <li
-                                    key={index}
-                                    className="flex items-center gap-2 text-gray-200">
-                                    <FaCheck className="text-green-500" />{" "}
-                                    {feature}
-                                  </li>
-                                ))}
-                              </ul>
-
-                              <div className="mt-8">
-                                <button
-                                  onClick={handleUpgradePlan}
-                                  className="w-full py-2.5 rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer">
-                                  Upgrade to Premium
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
+                        <SubscriptionStatus
+                          user={user}
+                          plans={plans}
+                          isLoadingPlans={isLoadingPlans}
+                        />
 
                         {/* Security Section */}
                         <div className="bg-gradient-to-br from-[#28284A] via-[#12122A] to-[#12122A] text-white p-6 rounded-2xl flex flex-col justify-between">
@@ -842,92 +758,11 @@ function ProfilePage() {
 
             <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-8">
               {/* Subscription Status */}
-              <div className="bg-gradient-to-br from-[#28284A] to-[#12122A] text-white p-6 rounded-2xl">
-                <h1 className="text-xl mb-2 sm:text-2xl font-semibold">
-                  Subscription Status
-                </h1>
-
-                {isLoadingPlans ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
-                  </div>
-                ) : userPlanData.isPaid ? (
-                  // PAID USER - Has active subscription
-                  <>
-                    <p className="text-lg sm:text-xl text-gradient inline-block font-semibold">
-                      {userPlanData.title} Plan
-                    </p>
-
-                    {/* Subscription details for paid users */}
-                    {subscriptionDetails && (
-                      <div className="mt-4 text-sm text-gray-300">
-                        <p>Start Date: {subscriptionDetails.startDate}</p>
-                        <p>End Date: {subscriptionDetails.endDate}</p>
-                        <p>
-                          Status:{" "}
-                          <span className="text-green-400">
-                            {subscriptionDetails.paymentStatus}
-                          </span>
-                        </p>
-                      </div>
-                    )}
-
-                    <ul className="flex flex-col gap-3 mt-6">
-                      {userPlanData.features.map((feature, index) => (
-                        <li
-                          key={index}
-                          className="flex items-center gap-2 text-gray-200">
-                          <FaCheck className="text-green-500" /> {feature}
-                        </li>
-                      ))}
-                    </ul>
-
-                    <div className="mt-8 flex flex-col gap-3">
-                      {/* Current Plan Button - Non clickable */}
-                      <button
-                        disabled
-                        className="py-2.5 rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold opacity-70 cursor-not-allowed">
-                        Current Plan
-                      </button>
-
-                      {/* Manage Subscription - Still clickable */}
-                      <button
-                        onClick={handleManageSubscription}
-                        className="py-2.5 rounded-xl border border-gray-600 bg-transparent text-gray-300 flex items-center justify-center gap-2 font-semibold hover:bg-gray-700 transition cursor-pointer">
-                        Manage Subscription
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  // FREE TRIAL USER
-                  <>
-                    <p className="text-lg sm:text-xl text-gray-400 inline-block font-semibold">
-                      {userPlanData.title}
-                    </p>
-                    <p className="text-gray-400 mt-2 text-sm">
-                      {userPlanData.duration}
-                    </p>
-
-                    <ul className="flex flex-col gap-3 mt-6">
-                      {userPlanData.features.map((feature, index) => (
-                        <li
-                          key={index}
-                          className="flex items-center gap-2 text-gray-200">
-                          <FaCheck className="text-green-500" /> {feature}
-                        </li>
-                      ))}
-                    </ul>
-
-                    <div className="mt-8">
-                      <button
-                        onClick={handleUpgradePlan}
-                        className="w-full py-2.5 rounded-xl bg-gradient-brand flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition cursor-pointer">
-                        Upgrade to Premium
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+              <SubscriptionStatus
+                user={user}
+                plans={plans}
+                isLoadingPlans={isLoadingPlans}
+              />
 
               {/* Security Section */}
               <div className="bg-gradient-to-br from-[#28284A] via-[#12122A] to-[#12122A] text-white p-6 rounded-2xl flex flex-col justify-between">
