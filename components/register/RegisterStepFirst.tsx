@@ -11,15 +11,22 @@ interface RegisterStepFirstProps {
   nextStep: () => void;
 }
 
-const RegisterStepFirst = ({ data, updateData, nextStep }: RegisterStepFirstProps) => {
-  const [selectedLanguage, setSelectedLanguage] = useState<string>(data.selectedLanguage);
-  const { preferredLang, setLanguage, getCurrentLanguageName } = useLanguageStore();
+const RegisterStepFirst = ({
+  data,
+  updateData,
+  nextStep,
+}: RegisterStepFirstProps) => {
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(
+    data.selectedLanguage,
+  );
+  const { preferredLang, setLanguage, getCurrentLanguageName } =
+    useLanguageStore();
   const [isMounted, setIsMounted] = useState(false);
 
   // Handle hydration - run only once on mount
   useEffect(() => {
     setIsMounted(true);
-    
+
     // Only initialize if we don't have a selected language yet
     if (!data.selectedLanguage || data.selectedLanguage === "English") {
       const currentLangName = getCurrentLanguageName();
@@ -32,9 +39,11 @@ const RegisterStepFirst = ({ data, updateData, nextStep }: RegisterStepFirstProp
     const selectedLanguageName = e.target.value;
     setSelectedLanguage(selectedLanguageName);
     updateData({ selectedLanguage: selectedLanguageName });
-    
+
     // Find the language code and update the language store
-    const selectedLang = languages.find(lang => lang.name === selectedLanguageName);
+    const selectedLang = languages.find(
+      (lang) => lang.name === selectedLanguageName,
+    );
     if (selectedLang) {
       setLanguage(selectedLang.code);
       // No need to call updateData again here - setLanguage will trigger page reload
@@ -61,7 +70,7 @@ const RegisterStepFirst = ({ data, updateData, nextStep }: RegisterStepFirstProp
           </div>
 
           <p className="text-center text-lg text-gray-300">
-            Welcome to MANIFEX! Let's start your language journey today.
+            Welcome to Manifex! Let’s Start your learning journey today!
           </p>
         </div>
 
@@ -85,7 +94,9 @@ const RegisterStepFirst = ({ data, updateData, nextStep }: RegisterStepFirstProp
           </div>
 
           <div className="w-full flex items-center justify-center flex-col gap-2">
-            <h1 className="text-white text-xl font-semibold">Please select your language</h1>
+            <h1 className="text-white text-xl font-semibold">
+              Please select your language
+            </h1>
 
             {/* Language Selector - Now using the actual language store languages */}
             <div>
@@ -104,7 +115,7 @@ const RegisterStepFirst = ({ data, updateData, nextStep }: RegisterStepFirstProp
                 ))}
               </select>
             </div>
-            
+
             {/* Show current selected language for confirmation */}
             <p className="text-gray-400 text-sm mt-2">
               Current: {currentLanguageName}
