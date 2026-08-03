@@ -44,23 +44,35 @@ const RegisterStepFour: React.FC<RegisterStepFourProps> = ({
 
     switch (ageGroup) {
       case "6-9":
-        filteredHobbies = ["Sports", "Dance", "Gaming"];
+        filteredHobbies = ["Animals", "Sports", "Dance"];
         break;
       case "10-13":
-        filteredHobbies = ["Sports", "Dance", "Gaming", "Art"];
+        filteredHobbies = ["Animals", "Sports", "Dance", "Music", "Gaming", "Art"];
         break;
       case "14-17":
         filteredHobbies = [
+          "Animals",
           "Sports",
           "Dance",
-          "Gaming",
-          "Art",
           "Music",
+          "Gaming",
           "Science",
+          "Art",
+          "Cooking",
         ];
         break;
-      case "18 or Older":
-        filteredHobbies = allHobbies;
+      case "18-40":
+        filteredHobbies = [
+          "Animals",
+          "Sports",
+          "Dance",
+          "Music",
+          "Gaming",
+          "Science",
+          "Art",
+          "Cooking",
+          "Meditation",
+        ];
         break;
       default:
         filteredHobbies = allHobbies;

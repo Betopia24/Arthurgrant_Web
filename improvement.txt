@@ -1,5 +1,38 @@
-1.Move the “Learn English Anywhere and Anytime” app section and details above the “Trusted By Families Worldwide” section. Also, add the actual MANIFEX logo (like the one in the header of this document) used in the app store, to the phone image.
+1.Please include the proper hobby selections for the appropriate age groups:
+
+Ages (6-9)
+Animals
+Sports
+Dance
+
+Ages (10-13)
+Animals
+Sports
+Dance
+Music
+Gaming
+Art
+
+Ages 14-17
+Animals
+Sports
+Dance
+Music
+Gaming
+Science
+Art
+Cooking 
 
 
+Adults
+Animals
+Sports
+Dance
+Music
+Gaming
+Science
+Art
+Cooking 
+Mediation
 REASONING:
-We prefer the user to use the app. This way they see the details sooner! Especially with users coming from clicking the ads. And the logo image (like the one in the header of this document) on the phone helps users recognize the app in the app stores. 
+I just created an account and right now the user, including adults, only have 3 of the 9 options to choose from: dance, sports, and gaming. It is VERY VERY important that logic is done correctly. This is a main attraction to the product. Parents will be trusting us by allowing their children to view social media content. In my test group, I am discovering that parents of young children are hesitant to try the product because they don’t allow their children to use on social media platforms. IT IS IMPERATIVE THAT WE GET THIS RIGHT TO ESTABLISH TRUST. The age categories and what hobbies and videos they are able to see have to be precise at all times! PLEASE PLEASE make sure the logic gets this right! We cannot allow a 6-year old child to get a Meditation or Science video meant for adults!
