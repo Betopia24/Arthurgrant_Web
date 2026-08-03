@@ -2,7 +2,7 @@ import { useAuthStore } from "@/stores/authStore";
 
 export const apiRequest = async (
   endpoint: string,
-  method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" = "GET",
   body?: any
 ) => {
   try {

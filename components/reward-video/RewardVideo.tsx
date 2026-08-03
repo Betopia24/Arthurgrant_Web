@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Heading2 } from "../shared/Heading";
 import Image from "next/image";
-import { Check } from "lucide-react";
+import { Check, Heart } from "lucide-react";
 import { FaLock } from "react-icons/fa";
 
 // Vidstack Styles
@@ -38,6 +38,11 @@ const RewardVideo = () => {
     useState<RewardVideoItemsType | null>(null);
   const [showVideoList, setShowVideoList] = useState(false);
   const [allCompleted, setAllCompleted] = useState<boolean>(false);
+  const [favoriteVideos, setFavoriteVideos] = useState<RewardVideoItemsType[]>([]);
+  const [favoriteVideoIds, setFavoriteVideoIds] = useState<string[]>([]);
+  const [showFavoritesList, setShowFavoritesList] = useState(false);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
+  const [togglingFavorite, setTogglingFavorite] = useState(false);
 
   const [loading, setLoading] = useState({
     data: true,
@@ -83,6 +88,13 @@ const RewardVideo = () => {
           .filter((video: any) => video && video.isActive);
         setRewardVideos(activeVideos);
 
+        // Track favorite IDs
+        const favIds = rewards
+          .filter((item: any) => item.isFavorite)
+          .map((item: any) => item.video?.id)
+          .filter(Boolean);
+        setFavoriteVideoIds(favIds);
+
         // Set initial video if not already set and there are active videos
         if (activeVideos.length > 0) {
           // Always set first video when fetching all videos
@@ -118,10 +130,72 @@ const RewardVideo = () => {
   const handleSeeAllVideos = async () => {
     const nextShowState = !showVideoList;
     setShowVideoList(nextShowState);
+    setShowFavoritesList(false); // hide favorites list
 
     // If we are opening the list, fetch the videos
     if (nextShowState) {
       await fetchAllRewardVideo();
+    }
+  };
+
+  // Fetch favorite reward videos
+  const fetchFavoriteRewardVideos = async () => {
+    try {
+      setLoadingFavorites(true);
+      const res = await apiRequest("/reward-video/my/favorites", "GET");
+      if (res.success) {
+        const favorites = res.data?.favorites || [];
+        const activeFavs = favorites
+          .map((item: any) => item.video)
+          .filter((video: any) => video && video.isActive);
+        setFavoriteVideos(activeFavs);
+
+        const favIds = favorites.map((item: any) => item.video?.id).filter(Boolean);
+        setFavoriteVideoIds(favIds);
+
+        if (activeFavs.length > 0 && !selectedVideo) {
+          setSelectedVideo(activeFavs[0]);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching favorite videos:", error);
+    } finally {
+      setLoadingFavorites(false);
+    }
+  };
+
+  // Toggle favorite status
+  const handleToggleFavorite = async (videoId: string) => {
+    try {
+      setTogglingFavorite(true);
+      const res = await apiRequest(`/reward-video/favorite/${videoId}`, "PATCH");
+      if (res && res.success) {
+        setFavoriteVideoIds((prev) => {
+          if (prev.includes(videoId)) {
+            return prev.filter((id) => id !== videoId);
+          } else {
+            return [...prev, videoId];
+          }
+        });
+
+        if (showFavoritesList) {
+          setFavoriteVideos((prev) => prev.filter((v) => v.id !== videoId));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to toggle favorite:", err);
+    } finally {
+      setTogglingFavorite(false);
+    }
+  };
+
+  const handleSeeFavorites = async () => {
+    const nextShowState = !showFavoritesList;
+    setShowFavoritesList(nextShowState);
+    setShowVideoList(false); // hide archive rewards list
+
+    if (nextShowState) {
+      await fetchFavoriteRewardVideos();
     }
   };
 
@@ -171,6 +245,21 @@ const RewardVideo = () => {
     fetchDailyRewardCheck();
     // Fetch initial video on component mount
     fetchInitialVideo();
+
+    // Fetch initial favorites on mount to show correct states
+    const initFavorites = async () => {
+      try {
+        const res = await apiRequest("/reward-video/my/favorites", "GET");
+        if (res && res.success) {
+          const favorites = res.data?.favorites || [];
+          const favIds = favorites.map((item: any) => item.video?.id).filter(Boolean);
+          setFavoriteVideoIds(favIds);
+        }
+      } catch (error) {
+        console.error("Error loading initial favorites:", error);
+      }
+    };
+    initFavorites();
   }, []);
 
   useEffect(() => {
@@ -270,18 +359,38 @@ const RewardVideo = () => {
           {loading.data ? (
             <VideoInfoSkeleton />
           ) : selectedVideo && !isCurrentVideoLocked() ? (
-            <div className="mt-4 text-white">
-              <h3 className="text-base sm:text-lg font-semibold">
-                {selectedVideo.title}
-              </h3>
-              <p className="text-gray-300 text-xs sm:text-sm mt-1 line-clamp-2">
-                {selectedVideo.description}
-              </p>
-              <div className="flex flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-400">
-                <span>Category: {selectedVideo.category}</span>
-                <span>Age: {selectedVideo.age}</span>
-                {/* <span>Views: {formatViews(selectedVideo.views)}</span> */}
+            <div className="mt-4 text-white flex justify-between items-start gap-4">
+              <div className="flex-1">
+                <h3 className="text-base sm:text-lg font-semibold">
+                  {selectedVideo.title}
+                </h3>
+                <p className="text-gray-300 text-xs sm:text-sm mt-1 line-clamp-2">
+                  {selectedVideo.description}
+                </p>
+                <div className="flex flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-400">
+                  <span>Category: {selectedVideo.category}</span>
+                  <span>Age: {selectedVideo.age}</span>
+                  {/* <span>Views: {formatViews(selectedVideo.views)}</span> */}
+                </div>
               </div>
+
+              {/* Toggle Favorite Heart Button */}
+              <button
+                disabled={togglingFavorite}
+                onClick={() => handleToggleFavorite(selectedVideo.id)}
+                className={`flex items-center justify-center p-2.5 rounded-xl border border-gray-600 transition hover:bg-[#3A3D57] bg-[#2B2E4E] ${
+                  togglingFavorite ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                }`}
+                title={favoriteVideoIds.includes(selectedVideo.id) ? "Remove from Favorites" : "Add to Favorites"}
+              >
+                <Heart
+                  className={`w-6 h-6 transition-all ${
+                    favoriteVideoIds.includes(selectedVideo.id)
+                      ? "text-red-500 fill-red-500 scale-110"
+                      : "text-gray-300 hover:text-white"
+                  }`}
+                />
+              </button>
             </div>
           ) : null}
         </div>
@@ -345,20 +454,91 @@ const RewardVideo = () => {
             </ul>
           )}
 
-          {/* Archive Rewards Button */}
-          <button
-            disabled={loading.data}
-            onClick={handleSeeAllVideos}
-            className={`mt-2 xl:mt-4 inline-flex items-center gap-2 justify-center rounded-xl px-4 sm:px-6 py-2 text-sm sm:text-base font-semibold w-max bg-gradient-brand text-white transition-all duration-200 hover:opacity-90 cursor-pointer ${
-              loading.data ? "opacity-40 cursor-not-allowed animate-pulse" : ""
-            }`}
-          >
-            {loading.data ? (
-              <>Loading...</>
-            ) : (
-              <>{showVideoList ? "Hide Videos" : "Archive Rewards"}</>
-            )}
-          </button>
+          {/* Action Buttons */}
+          <div className="mt-2 xl:mt-4 flex flex-wrap gap-3">
+            {/* Archive Rewards Button */}
+            <button
+              disabled={loading.data}
+              onClick={handleSeeAllVideos}
+              className={`inline-flex items-center gap-2 justify-center rounded-xl px-4 sm:px-6 py-2 text-sm sm:text-base font-semibold w-max bg-gradient-brand text-white transition-all duration-200 hover:opacity-90 cursor-pointer ${
+                loading.data ? "opacity-40 cursor-not-allowed animate-pulse" : ""
+              }`}
+            >
+              {loading.data ? (
+                <>Loading...</>
+              ) : (
+                <>{showVideoList ? "Hide Videos" : "Archive Rewards"}</>
+              )}
+            </button>
+
+            {/* Favorites Button */}
+            <button
+              disabled={loading.data || loadingFavorites}
+              onClick={handleSeeFavorites}
+              className={`inline-flex items-center gap-2 justify-center rounded-xl px-4 sm:px-6 py-2 text-sm sm:text-base font-semibold bg-[#3A3D57] border border-gray-500 text-white transition-all duration-200 hover:bg-[#4C4F69] cursor-pointer ${
+                loading.data || loadingFavorites ? "opacity-40 cursor-not-allowed animate-pulse" : ""
+              }`}
+            >
+              {loadingFavorites ? (
+                <>Loading...</>
+              ) : (
+                <>{showFavoritesList ? "Hide Favorites" : "Favorites"}</>
+              )}
+            </button>
+          </div>
+
+          {/* Favorites List */}
+          {showFavoritesList && (
+            <div className="mt-4 p-3 sm:p-4 bg-[#3A3D57] rounded-lg max-h-60 sm:max-h-80 overflow-y-auto">
+              {loadingFavorites ? (
+                <VideoListSkeleton />
+              ) : favoriteVideos.length === 0 ? (
+                <div className="text-gray-400 text-center py-4 text-sm sm:text-base">
+                  No favorite videos yet
+                </div>
+              ) : (
+                <>
+                  <h4 className="text-white font-semibold mb-3 text-sm sm:text-base">
+                    Favorite Videos ({favoriteVideos.length})
+                  </h4>
+                  <div className="space-y-3">
+                    {favoriteVideos.map((video) => (
+                      <div
+                        key={video.id}
+                        onClick={() => handleVideoClick(video)}
+                        className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all ${
+                          selectedVideo?.id === video.id
+                            ? "bg-brand-primary/20 border border-brand-primary"
+                            : "bg-[#4C4F69] hover:bg-[#565973]"
+                        }`}
+                      >
+                        <div className="w-12 h-9 sm:w-16 sm:h-12 bg-black rounded flex-shrink-0 overflow-hidden">
+                          <img
+                            src={"/reward-thumbnail.png"}
+                            alt={video.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-xs sm:text-sm font-medium line-clamp-2">
+                            {video.title}
+                          </p>
+                          <div className="flex flex-wrap gap-1 sm:gap-2 mt-1">
+                            <span className="text-xs text-gray-400 bg-[#2B2E4E] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+                              {video.category}
+                            </span>
+                          </div>
+                        </div>
+                        {selectedVideo?.id === video.id && (
+                          <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Video List */}
           {showVideoList && (
