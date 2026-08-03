@@ -42,7 +42,11 @@ function SignInPage() {
       const params = new URLSearchParams(window.location.search);
       if (params.get("session_expired") === "true") {
         toast.error("Your session has expired. Please log in again.");
-        window.history.replaceState({}, document.title, window.location.pathname);
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
       }
     }
   }, []);
@@ -74,7 +78,7 @@ function SignInPage() {
       // Call login API
       const loginResponse = await authApi.login(
         formData.email,
-        formData.password
+        formData.password,
       );
 
       if (loginResponse.success) {
@@ -112,7 +116,7 @@ function SignInPage() {
       console.error("Login error:", error);
       setApiError(
         error.response?.data?.message ||
-          "An error occurred. Please try again later."
+          "An error occurred. Please try again later.",
       );
     } finally {
       setLoading(false);
@@ -139,7 +143,7 @@ function SignInPage() {
           </div>
 
           <p className="text-center text-lg text-gray-300">
-            Welcome to MANIFEX! Let's start your language journey today.
+            Welcome to Manifex! Let’s Start your learning journey today!
           </p>
         </div>
 
@@ -166,7 +170,8 @@ function SignInPage() {
           <div>
             <label
               htmlFor="email"
-              className="block text-sm text-gray-200 mb-1.5">
+              className="block text-sm text-gray-200 mb-1.5"
+            >
               Email
             </label>
             <input
@@ -186,7 +191,8 @@ function SignInPage() {
           <div className="relative">
             <label
               htmlFor="password"
-              className="block text-sm text-gray-200 mb-1.5">
+              className="block text-sm text-gray-200 mb-1.5"
+            >
               Password
             </label>
             <input
@@ -206,7 +212,8 @@ function SignInPage() {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-[38px] text-gray-400 hover:text-gray-200 transition"
-              aria-label={showPassword ? "Hide password" : "Show password"}>
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
@@ -218,7 +225,8 @@ function SignInPage() {
             </label>
             <Link
               href="/forgot-password"
-              className="text-blue-300 underline decoration-blue-300 underline-offset-4 px-1 tracking-tight">
+              className="text-blue-300 underline decoration-blue-300 underline-offset-4 px-1 tracking-tight"
+            >
               Forgot Password?
             </Link>
           </div>
@@ -226,7 +234,8 @@ function SignInPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#FFBC6F] via-[#F176B7] to-[#3797CD] text-white font-semibold hover:opacity-90 transition flex justify-center items-center">
+            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#FFBC6F] via-[#F176B7] to-[#3797CD] text-white font-semibold hover:opacity-90 transition flex justify-center items-center"
+          >
             {loading ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
             {loading ? "Logging in..." : "Login"}
           </button>
@@ -243,7 +252,8 @@ function SignInPage() {
           New here?{" "}
           <Link
             href="/signup"
-            className="text-blue-300 underline decoration-blue-300 underline-offset-4 px-1 tracking-tight">
+            className="text-blue-300 underline decoration-blue-300 underline-offset-4 px-1 tracking-tight"
+          >
             Create new account
           </Link>{" "}
           to get started
