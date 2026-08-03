@@ -131,9 +131,25 @@ interface Plan {
   updatedAt: string;
 }
 
+const getAvailableHobbies = (currentAge: string): string[] => {
+  switch (currentAge) {
+    case "6-9":
+      return ["Animals", "Sports", "Dance"];
+    case "10-13":
+      return ["Animals", "Sports", "Dance", "Music", "Gaming", "Art"];
+    case "14-17":
+      return ["Animals", "Sports", "Dance", "Music", "Gaming", "Science", "Art", "Cooking"];
+    case "18-40":
+      return ["Animals", "Sports", "Dance", "Music", "Gaming", "Science", "Art", "Cooking", "Meditation"];
+    default:
+      return ["Animals", "Sports", "Dance", "Music", "Gaming", "Science", "Art", "Cooking", "Meditation"];
+  }
+};
+
 function ProfilePage() {
   const router = useRouter();
   const { user, logout: storeLogout, setUser } = useAuthStore();
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [language, setLanguage] = useState("");
@@ -148,6 +164,14 @@ function ProfilePage() {
   const [isLoadingPlans, setIsLoadingPlans] = useState(true);
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const handleAgeChange = (newAge: string) => {
+    setAge(newAge);
+    const allowed = getAvailableHobbies(newAge);
+    const currentList = hobby ? hobby.split(", ").map(item => item.trim()) : [];
+    const filtered = currentList.filter((h) => allowed.includes(h));
+    setHobby(filtered.join(", "));
+  };
 
   // Initialize form with user data
   useEffect(() => {
@@ -509,20 +533,42 @@ function ProfilePage() {
                                 ))}
                               </select>
                             </div>
-                            <div className="flex flex-col gap-2">
-                              <label
-                                htmlFor="hobby"
-                                className="text-sm text-gray-300">
-                                Hobby
+                             <div className="flex flex-col gap-2">
+                              <label className="text-sm text-gray-300">
+                                Hobby (Select max 2)
                               </label>
-                              <input
-                                id="hobby"
-                                type="text"
-                                placeholder="Photography"
-                                value={hobby}
-                                onChange={(e) => setHobby(e.target.value)}
-                                className="p-2.5 text-sm border border-gray-600 bg-[#35364E] rounded-xl text-white"
-                              />
+                              <div className="flex flex-wrap gap-2 mt-1">
+                                {getAvailableHobbies(age).map((h) => {
+                                  const currentList = hobby ? hobby.split(", ").map(item => item.trim()) : [];
+                                  const isSelected = currentList.includes(h);
+                                  return (
+                                    <button
+                                      key={h}
+                                      type="button"
+                                      onClick={() => {
+                                        if (isSelected) {
+                                          const newList = currentList.filter(item => item !== h);
+                                          setHobby(newList.join(", "));
+                                        } else {
+                                          if (currentList.length >= 2) {
+                                            toast.error("You can select maximum 2 hobbies");
+                                            return;
+                                          }
+                                          const newList = [...currentList, h];
+                                          setHobby(newList.join(", "));
+                                        }
+                                      }}
+                                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer ${
+                                        isSelected
+                                          ? "bg-gradient-brand border-transparent text-white"
+                                          : "bg-[#35364E] border-gray-600 text-gray-300 hover:text-white"
+                                      }`}
+                                    >
+                                      {h}
+                                    </button>
+                                  );
+                                })}
+                              </div>
                             </div>
                           </div>
 
@@ -536,7 +582,7 @@ function ProfilePage() {
                               <select
                                 id="age"
                                 value={age}
-                                onChange={(e) => setAge(e.target.value)}
+                                onChange={(e) => handleAgeChange(e.target.value)}
                                 className="p-2.5 text-sm border border-gray-600 bg-[#35364E] rounded-xl text-white"
                               >
                                 <option value="" disabled>
@@ -718,17 +764,41 @@ function ProfilePage() {
                     </select>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label htmlFor="hobby" className="text-sm text-gray-300">
-                      Hobby
+                    <label className="text-sm text-gray-300">
+                      Hobby (Select max 2)
                     </label>
-                    <input
-                      id="hobby"
-                      type="text"
-                      placeholder="Photography"
-                      value={hobby}
-                      onChange={(e) => setHobby(e.target.value)}
-                      className="p-2.5 text-sm border border-gray-600 bg-[#35364E] rounded-xl text-white"
-                    />
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {getAvailableHobbies(age).map((h) => {
+                        const currentList = hobby ? hobby.split(", ").map(item => item.trim()) : [];
+                        const isSelected = currentList.includes(h);
+                        return (
+                          <button
+                            key={h}
+                            type="button"
+                            onClick={() => {
+                              if (isSelected) {
+                                const newList = currentList.filter(item => item !== h);
+                                setHobby(newList.join(", "));
+                              } else {
+                                if (currentList.length >= 2) {
+                                  toast.error("You can select maximum 2 hobbies");
+                                  return;
+                                }
+                                const newList = [...currentList, h];
+                                setHobby(newList.join(", "));
+                              }
+                            }}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer ${
+                              isSelected
+                                ? "bg-gradient-brand border-transparent text-white"
+                                : "bg-[#35364E] border-gray-600 text-gray-300 hover:text-white"
+                            }`}
+                          >
+                            {h}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
@@ -740,7 +810,7 @@ function ProfilePage() {
                     <select
                       id="age"
                       value={age}
-                      onChange={(e) => setAge(e.target.value)}
+                      onChange={(e) => handleAgeChange(e.target.value)}
                       className="p-2.5 text-sm border border-gray-600 bg-[#35364E] rounded-xl text-white"
                     >
                       <option value="" disabled>
