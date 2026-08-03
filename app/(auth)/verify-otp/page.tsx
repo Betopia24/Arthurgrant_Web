@@ -164,6 +164,9 @@ export default function Page() {
               <p className="text-gray-300 text-sm mt-2">
                 Enter the 6-digit code sent to your email
               </p>
+              <p className="text-amber-300/80 text-xs mt-2 italic">
+                Please check SPAM folder for verification email
+              </p>
             </div>
 
             <form onSubmit={handleSubmit} className="mt-14">

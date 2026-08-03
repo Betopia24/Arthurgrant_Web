@@ -11,13 +11,11 @@ export default function Page() {
       <About />
       <div className="app-container py-20 bg-section-dark">
         {/* Heading */}
-        <Heading
-          heading="At the Core of Our Approach are 4 Key Foundations"
-          subheading="MANIFEX is here to redefine the way people learn English. For children with dyslexia, for students aiming to sharpen skills, for
-            professionals preparing for communication — learning should be adaptive, encouraging, and fun."
-          specialText="4 Key Foundations"
-          align="center"
-        />
+        <div className="w-full text-center max-w-5xl mx-auto mb-12">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight whitespace-nowrap sm:whitespace-normal">
+            At the Core of Our Approach are <span className="text-gradient">4 Key Foundations</span>
+          </h1>
+        </div>
 
         {/* Infos */}
         <div className="mt-20 flex flex-col gap-20">

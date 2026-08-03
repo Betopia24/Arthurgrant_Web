@@ -232,6 +232,9 @@ export default function RegisterStepOTP({
               <p className="text-gray-300 text-sm mt-2">
                 Enter the 6-digit code sent to {userData.step2.email}
               </p>
+              <p className="text-amber-300/80 text-xs mt-2 italic">
+                Please check SPAM folder for verification email
+              </p>
 
               {/* Success/Info Messages */}
               {message && (

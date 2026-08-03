@@ -139,16 +139,16 @@ export const aboutUsInfo = {
       imageUrl: "about-02.png",
     },
     {
-      title: "Dysgraphia Support",
+      title: "Dyslexia/Dysgraphia Support",
       description:
-        "Dysgraphia is a neurological condition that affects writing. Our tools offer structured practice to strengthen handwriting, written expression, and the motor skills that support the writing process.",
-      imageUrl: "about-2.jpg",
+        "Dyslexia, a neurobiological learning difference, can make reading, writing, and spelling difficult. We provide engaging activities that build fluency, comprehension, and language skills—helping learners overcome barriers with confidence. Dysgraphia is a neurological condition that affects writing. Our Handwriting and Free writing activities offer structured practice to strengthen writing, written expression, and the motor skills that support the writing process.",
+      imageUrl: "about-1.png",
     },
     {
-      title: "Dyslexia Support",
+      title: "Intrinsic Value",
       description:
-        "Dyslexia, a neurobiological learning difference, can make reading, writing, and spelling difficult. We provide engaging activities that build fluency, comprehension, and language skills—helping learners overcome barriers with confidence.",
-      imageUrl: "about-1.png",
+        "At MANIFEX, we believe learning is most effective when it ends with a positive emotional experience. That's why every completed practice session is followed by a hand selected social media reward video designed to reinforce motivation and make learners look forward to returning. Our rewards consist of brief, non-explicit social media videos that are free of profanity, nudity, and violence. Instead, they feature warm, funny, inspiring, and exciting moments that leave learners with a positive emotional connection to their effort!",
+      imageUrl: "about-2.jpg",
     },
   ],
 };

@@ -1,38 +1,11 @@
-1.Please include the proper hobby selections for the appropriate age groups:
+1. In the About section/tab where we have our 4 foundations, replace the We Created MANIFEX with One Mission information with the new details mentioned in item #4 of this document. On the title At the Core of Our Approach are 4 Key Foundations, make sure this sentence is all on one line instead of centered leaving the word “Foundation” hanging below. Remove this information entirely: MANIFEX is here to redefine the way people learn English. For children with dyslexia, for students aiming to sharpen skills, for professionals preparing for communication — learning should be adaptive, encouraging, and fun. 
 
-Ages (6-9)
-Animals
-Sports
-Dance
+Combine foundation 3. Dysgraphia Support and 4. Dyslexia support into one foundation below:
 
-Ages (10-13)
-Animals
-Sports
-Dance
-Music
-Gaming
-Art
+3. Dyslexia/Dysgraphia Support
+ Dyslexia, a neurobiological learning difference, can make reading, writing, and spelling difficult. We provide engaging activities that build fluency, comprehension, and language skills—helping learners overcome barriers with confidence. Dysgraphia is a neurological condition that affects writing. Our Handwriting and Free writing activities offer structured practice to strengthen writing, written expression, and the motor skills that support the writing process.
 
-Ages 14-17
-Animals
-Sports
-Dance
-Music
-Gaming
-Science
-Art
-Cooking 
+Foundation #4 will be tilted “Intrinsic Value”. Please use the information for this foundation below:
 
-
-Adults
-Animals
-Sports
-Dance
-Music
-Gaming
-Science
-Art
-Cooking 
-Mediation
-REASONING:
-I just created an account and right now the user, including adults, only have 3 of the 9 options to choose from: dance, sports, and gaming. It is VERY VERY important that logic is done correctly. This is a main attraction to the product. Parents will be trusting us by allowing their children to view social media content. In my test group, I am discovering that parents of young children are hesitant to try the product because they don’t allow their children to use on social media platforms. IT IS IMPERATIVE THAT WE GET THIS RIGHT TO ESTABLISH TRUST. The age categories and what hobbies and videos they are able to see have to be precise at all times! PLEASE PLEASE make sure the logic gets this right! We cannot allow a 6-year old child to get a Meditation or Science video meant for adults!
+4. Intrinsic Value
+At MANIFEX, we believe learning is most effective when it ends with a positive emotional experience. That's why every completed practice session is followed by a hand selected social media reward video designed to reinforce motivation and make learners look forward to returning. Our rewards consist of brief, non-explicit social media videos that are free of profanity, nudity, and violence. Instead, they feature warm, funny, inspiring, and exciting moments that leave learners with a positive emotional connection to their effort!
