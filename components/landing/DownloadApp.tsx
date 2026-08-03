@@ -39,16 +39,21 @@ const DownloadApp = () => {
                 </div>
               </div>
 
-              {/* Dynamic decorative screen element */}
-              <div className="my-auto space-y-4">
-                <div className="w-2/3 h-2 bg-gray-700/50 rounded-full" />
-                <div className="w-full h-8 bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to rounded-xl flex items-center px-3 justify-between">
-                  <div className="w-16 h-2 bg-white/50 rounded-full" />
-                  <div className="w-4 h-4 rounded-full bg-white/20" />
+              {/* Center App Icon Mockup */}
+              <div className="my-auto flex flex-col items-center justify-center gap-4 text-center">
+                <div className="relative w-24 h-24 rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+                  <Image
+                    src="/app-logo.png"
+                    alt="Manifex App Store Logo"
+                    fill
+                    className="object-cover"
+                  />
                 </div>
-                <div className="space-y-2">
-                  <div className="w-full h-2 bg-gray-700/50 rounded-full" />
-                  <div className="w-5/6 h-2 bg-gray-700/50 rounded-full" />
+                <div>
+                  <h3 className="text-white font-extrabold text-base tracking-wide uppercase">MANIFEX</h3>
+                  <p className="text-[10px] text-gray-400 mt-1 max-w-[160px] mx-auto leading-normal">
+                    AI English learning in your pocket
+                  </p>
                 </div>
               </div>
 

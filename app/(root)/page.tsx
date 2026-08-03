@@ -1,16 +1,14 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
-import FAQ from "@/components/landing/FAQ";
-import Hero from "@/components/landing/Hero";
-import LearningProgress from "@/components/landing/LearningProgress";
-import Pricing from "@/components/landing/Pricing";
-import Review from "@/components/landing/Review";
 import About from "@/components/landing/About";
 import DownloadApp from "@/components/landing/DownloadApp";
+import FAQ from "@/components/landing/FAQ";
+import Hero from "@/components/landing/Hero";
+import Pricing from "@/components/landing/Pricing";
+import Review from "@/components/landing/Review";
 import LanguagePopup from "@/components/shared/LanguagePopup";
-import { Volume2, VolumeOff } from "lucide-react";
 import { useLanguageStore } from "@/stores/languageStore";
-import Image from "next/image";
+import { Volume2, VolumeOff } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
   const { preferredLang, hasSelectedLanguage, setLanguage } =
@@ -204,19 +202,22 @@ export default function Home() {
       {showIntroVideo && (
         <div
           className="fixed inset-0 z-50 bg-black flex items-center justify-center cursor-pointer"
-          onClick={handleSkipIntro}>
+          onClick={handleSkipIntro}
+        >
           <video
             ref={introVideoRef}
             autoPlay
             muted
             onEnded={handleIntroVideoEnd}
-            className="w-full h-full object-cover">
+            className="w-full h-full object-cover"
+          >
             <source src="/intro-01.mp4" type="video/mp4" />
           </video>
 
           <button
             className="absolute top-4 right-4 bg-black/50 text-white px-4 py-2 rounded-lg hover:bg-black/70 transition-colors"
-            onClick={handleSkipIntro}>
+            onClick={handleSkipIntro}
+          >
             Skip
           </button>
         </div>
@@ -240,10 +241,10 @@ export default function Home() {
             onVideoModalClose={handleVideoModalClose}
           />
           <About />
+          <DownloadApp />
           <Review />
           <Pricing />
           <FAQ />
-          <DownloadApp />
 
           {!isVideoModalOpen && (
             <div className="fixed bottom-4 right-4 z-50">
@@ -257,7 +258,8 @@ export default function Home() {
 
               <button
                 onClick={toggleMusic}
-                className="bg-gradient-brand-btn text-white p-2 border rounded-full shadow-lg">
+                className="bg-gradient-brand-btn text-white p-2 border rounded-full shadow-lg"
+              >
                 {isMusicPlaying ? <Volume2 /> : <VolumeOff />}
               </button>
             </div>

@@ -1,43 +1,5 @@
-1.The home page of the website needs realigning. Remove the “Practice Smarter not Harder” section and activity tiles entirely. Move the “About Manifex” section up into its place. Keep this portion of the “About Manifex” section: We Created MANIFEX with One Mission Make English learning simple, engaging, and accessible. For anyone who wants to master the energy of communicating English, this is a revolution powered by AI. 100k + Learners 24/7 Support
+1.Move the “Learn English Anywhere and Anytime” app section and details above the “Trusted By Families Worldwide” section. Also, add the actual MANIFEX logo (like the one in the header of this document) used in the app store, to the phone image.
 
-Add the information below to the “About Manifex” section on the homepage: 
-Ages 6–9:			
-Interactive Reading
-Handwriting Practice
-Free Writing Practice
-Native Speaking
-
-Ages 14–17:
-Interactive Reading
-Smart Writing
-Native Speaking
-
-Ages 18–40:
-Smart Writing
-Presentation Practice
-English for Adult Practice
-
-INTERACTIVE READING
-Phoneme recognition and word games with visual cues (Also Supports readers with dyslexia)
-HANDWRITING PRACTICE (Digital pen is suggested for best practice)
-Practice tracing letters (both print and cursive) with fun and in while listening and grooving. (Also Supports writers with dysgraphia)
-FREE WRITING PRACTICE (Digital pen is suggested for best practice)
-Practice tracing words (both print and cursive) with fun while listening and grooving. (Also Supports writers with dysgraphia)
-
-SMART WRITING
-Write. Learn. Improve. AI checks your grammar, structure, and style instantly.
-SPEAKING (I changed it from “Native Speaking” to just “Speaking”. Don’t want the user to think that it’s going to speak in their native language.) 
-Advanced AI pronunciation coaching with real-time feedback and accent training
-
-PRESENTATION PRACTICE
-Designed for those who speak or present to large audiences. Using AI powered activities as practice for those who have already mastered English and just need a quick warm-up!
-ENGLISH FOR ADULT PRACTICE
-If English is not your native language these AI powered activities will help improve your fluency, articulation, and increase your vocabulary!
-
-REWARD VIDEO
-
-Once you have completed all daily activities, tap here for your daily reward video! You can return here to see all rewarded videos in your bank. You can choose and lock your favorite two videos. All others will delete after 30 days.
-Go to the ABOUT section in your toolbar for more insight into our MANIFEX concept!
 
 REASONING:
-The activities you can click that are included in the “Practice Smarter not Harder” section don’t match up to the type of user accounts. For example, I have an adult account and there is an Interactive reading section, and adult accounts don’t have access to this activity. Plus, when I click it, there is nothing there. Moving the “About Section” up, and changing the information in it, gives visitors a chance to see what is offered, for all users, in the program at a quick glance!
+We prefer the user to use the app. This way they see the details sooner! Especially with users coming from clicking the ads. And the logo image (like the one in the header of this document) on the phone helps users recognize the app in the app stores. 
