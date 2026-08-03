@@ -5,7 +5,6 @@ import LearningProgressSection from "@/components/Progress/LearningProgressSecti
 import Heading from "@/components/shared/Heading";
 import { useAuthStore } from "@/stores/authStore";
 import axios from "axios";
-import { Check, Award } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 interface Badge {
@@ -36,7 +35,7 @@ export default function Page() {
               "Content-Type": "application/json",
               Authorization: `Bearer ${accessToken}`,
             },
-          }
+          },
         );
         setBadges(response.data.data || []);
       } catch (error) {
@@ -82,6 +81,7 @@ export default function Page() {
         </div>
       </div>
 
+      {/*
       <div className="py-20 bg-brand-darker">
         <div className="app-container flex flex-col items-center gap-8">
           <div className="w-full items-start">
@@ -114,7 +114,6 @@ export default function Page() {
                   >
                     <div className="rounded-xl bg-[#232339] p-6 flex flex-col gap-3">
                       <div className="w-full flex items-start justify-between">
-                        {/* Main achievement icon */}
                         <div
                           className={`flex items-center justify-center w-12 h-12 rounded-full ${
                             isUnlocked
@@ -133,7 +132,6 @@ export default function Page() {
                           )}
                         </div>
 
-                        {/* Check mark */}
                         <div
                           className={`flex items-center justify-center w-6 h-6 rounded-full ${
                             isUnlocked ? "bg-gradient-brand" : "bg-[#91919C]"
@@ -170,6 +168,7 @@ export default function Page() {
           )}
         </div>
       </div>
+      */}
     </>
   );
 }
