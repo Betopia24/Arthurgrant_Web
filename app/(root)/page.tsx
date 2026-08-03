@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import FAQ from "@/components/landing/FAQ";
-import Features from "@/components/landing/Features";
 import Hero from "@/components/landing/Hero";
 import LearningProgress from "@/components/landing/LearningProgress";
 import Pricing from "@/components/landing/Pricing";
@@ -240,7 +239,6 @@ export default function Home() {
             onVideoModalOpen={handleVideoModalOpen}
             onVideoModalClose={handleVideoModalClose}
           />
-          <Features />
           <About />
           <Review />
           <Pricing />
