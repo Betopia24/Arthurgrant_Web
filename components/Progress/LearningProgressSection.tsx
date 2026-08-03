@@ -9,7 +9,7 @@ import LearningProgressSkeleton from "./LearningProgressSkeleton";
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_API;
 
 const LearningProgressSection = () => {
-  const { accessToken } = useAuthStore();
+  const { accessToken, user } = useAuthStore();
 
   const [progress, setProgress] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -48,10 +48,8 @@ const LearningProgressSection = () => {
   // ✅ Render Main UI
   return (
     <div className="mt-6 w-full flex flex-col lg:flex-row gap-10 lg:items-stretch">
-
       {/* ---------------- LEFT SIDE ---------------- */}
       <div className="flex-1 bg-gradient-to-br from-[#2B2E4E] to-brand-darker p-6 rounded-2xl shadow-lg flex flex-col justify-between">
-
         <div>
           <div className="flex justify-between items-start">
             <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">
@@ -70,35 +68,91 @@ const LearningProgressSection = () => {
             </div>
           </div>
 
-          <ProgressBar
-            label="Reading Comprehension"
-            value={progress.readingProgress || 0}
-            gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
-          />
+          {/* Conditionally Rendered Progress Bars based on User's Age */}
+          {user?.age === "6-9" && (
+            <>
+              <ProgressBar
+                label="Reading Comprehension"
+                value={progress.readingProgress || 0}
+                gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
+              />
+              <ProgressBar
+                label="Speaking Confidence"
+                value={progress.speakingProgress || 0}
+                gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
+              />
+            </>
+          )}
 
-          <ProgressBar
-            label="Writing Skills"
-            value={progress.writingProgress || 0}
-            gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
-          />
+          {(user?.age === "10-13" || user?.age === "14-17") && (
+            <>
+              <ProgressBar
+                label="Interactive Reading"
+                value={progress.readingProgress || 0}
+                gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
+              />
+              <ProgressBar
+                label="Smart Writing"
+                value={progress.writingProgress || 0}
+                gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
+              />
+              <ProgressBar
+                label="Speaking Confidence"
+                value={progress.speakingProgress || 0}
+                gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
+              />
+            </>
+          )}
 
-          <ProgressBar
-            label="Speaking Confidence"
-            value={progress.speakingProgress || 0}
-            gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
-          />
+          {user?.age === "18-40" && (
+            <>
+              <ProgressBar
+                label="Smart Writing "
+                value={progress.writingProgress || 0}
+                gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
+              />
+              <ProgressBar
+                label="Presentation"
+                value={progress.presentationProgress || 0}
+                gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
+              />
+              <ProgressBar
+                label="Vocabulary"
+                value={progress.vocabularyProgress || 0}
+                gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
+              />
+            </>
+          )}
 
-          <ProgressBar
-            label="Presentation"
-            value={progress.presentationProgress || 0}
-            gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
-          />
-
-          <ProgressBar
-            label="Vocabulary"
-            value={progress.vocabularyProgress || 0}
-            gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
-          />
+          {!user?.age && (
+            <>
+              <ProgressBar
+                label="Reading Comprehension"
+                value={progress.readingProgress || 0}
+                gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
+              />
+              <ProgressBar
+                label="Writing Skills"
+                value={progress.writingProgress || 0}
+                gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
+              />
+              <ProgressBar
+                label="Speaking Confidence"
+                value={progress.speakingProgress || 0}
+                gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
+              />
+              <ProgressBar
+                label="Presentation"
+                value={progress.presentationProgress || 0}
+                gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
+              />
+              <ProgressBar
+                label="Vocabulary"
+                value={progress.vocabularyProgress || 0}
+                gradient="bg-gradient-to-r from-[#001925] via-[#F27CB1] to-[#FBAAB1]"
+              />
+            </>
+          )}
         </div>
 
         {/* Today's Goal */}
@@ -119,12 +173,11 @@ const LearningProgressSection = () => {
       {/* ---------------- RIGHT SIDE ---------------- */}
       <div className="flex-1 flex flex-col justify-between">
         <p className="text-gray-300 mb-6 leading-relaxed">
-          Our advanced analytics dashboard provides real-time insights into
-          your learning performance and overall skill development.
+          Our advanced analytics dashboard provides real-time insights into your
+          learning performance and overall skill development.
         </p>
 
         <div className="grid grid-cols-2 gap-6">
-
           {/* Words Learned */}
           <div className="bg-gradient-to-br from-[#2B2E4E] to-brand-darker p-6 rounded-2xl">
             <h1 className="text-3xl font-bold text-yellow-400">
@@ -168,30 +221,8 @@ const LearningProgressSection = () => {
               gradient="bg-gradient-to-r from-blue-200 to-blue-600"
             />
           </div>
-
-          {/* Badges */}
-          <div className="bg-gradient-to-br from-[#2B2E4E] to-brand-darker p-6 rounded-2xl">
-            <h1 className="text-3xl font-bold text-purple-400">
-              {progress.totalBadges || 0}
-            </h1>
-            <p className="text-gray-300 mb-2 text-sm">Badges Earned</p>
-
-            <div className="flex items-center gap-2 mt-4">
-              {progress.badges?.slice(0, 4).map((_: any, i: number) => (
-                <FaMedal key={i} className="text-yellow-500 text-lg" />
-              ))}
-
-              {progress.totalBadges > 4 && (
-                <span className="text-gray-300 text-sm">
-                  +{progress.totalBadges - 4} more
-                </span>
-              )}
-            </div>
-          </div>
-
         </div>
       </div>
-
     </div>
   );
 };
