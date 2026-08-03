@@ -122,10 +122,32 @@ export default function RegisterStepOTP({
     index: number
   ) => {
     if (e.key === "Backspace" && otp[index] === "") {
+      // Focus the previous input if the current one is empty
       if (index > 0) {
         inputRefs.current[index - 1]?.focus();
       }
     }
+  };
+
+  // Handle Paste event for OTP input
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "");
+    if (!pastedData) return;
+
+    const newOtp = [...otp];
+    const digits = pastedData.slice(0, 6).split("");
+
+    digits.forEach((digit, i) => {
+      newOtp[i] = digit;
+    });
+
+    setOtp(newOtp);
+    updateData({ otp: newOtp, verified: false });
+
+    // Focus the next empty input or last digit
+    const nextFocusIndex = Math.min(digits.length, 5);
+    inputRefs.current[nextFocusIndex]?.focus();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -265,6 +287,7 @@ export default function RegisterStepOTP({
                     value={digit}
                     onChange={(e) => handleInputChange(e, index)}
                     onKeyDown={(e) => handleBackspace(e, index)}
+                    onPaste={handlePaste}
                     className="w-10 h-10 sm:w-12 sm:h-12 text-center bg-[#333450] text-white rounded-lg sm:rounded-xl border border-gray-500 focus:outline-none focus:border-[#3797CD] text-lg font-medium flex-1 max-w-[50px] sm:max-w-none"
                   />
                 ))}

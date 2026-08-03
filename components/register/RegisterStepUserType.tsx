@@ -79,7 +79,7 @@ const ResgisterStepUserType: React.FC<RegisterStepThreeProps> = ({
               <select
                 value={selectedUserType}
                 onChange={handleUserTypeChange}
-                className="w-full bg-[#24263A] border border-gray-500 text-white px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#F176B7] mt-2"
+                className="w-full bg-[#24263A] border border-gray-500 text-white px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#F176B7] mt-2 uppercase"
               >
                 <option value="" disabled>
                   Select an User Type
