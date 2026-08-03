@@ -20,7 +20,7 @@ const ResgisterStepUserType: React.FC<RegisterStepThreeProps> = ({
   const [selectedUserType, setSelectedUserType] = useState<string>(
     data.selectedUserType
   );
-  const userTypes: string[] = ["parent", "student", "teacher"];
+  const userTypes: string[] = ["adult", "student"];
 
   const handleUserTypeChange = (e: ChangeEvent<HTMLSelectElement>): void => {
     const newUserType = e.target.value;
